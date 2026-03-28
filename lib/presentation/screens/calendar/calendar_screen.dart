@@ -5,6 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../blocs/calendar/calendar_bloc.dart';
 import '../../blocs/calendar/calendar_event.dart';
 import '../../blocs/calendar/calendar_state.dart';
+import '../../widgets/error_state.dart';
+import '../../widgets/loading_indicator.dart';
 import 'widgets/event_card.dart';
 import 'widgets/google_sign_in_button_widget.dart';
 
@@ -18,7 +20,7 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  DateTime _focusedMonth = DateTime.now();
+  final DateTime _focusedMonth = DateTime.now();
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -45,176 +47,58 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── Header ───
+            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(
                 children: [
                   Text('Agenda', style: theme.textTheme.headlineMedium),
                   const Spacer(),
-                  // Sync button
-                  GestureDetector(
-                    onTap: _loadEvents,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.accentBlue.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.sync, size: 14, color: AppColors.accentBlue),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Sync',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.accentBlue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _SyncButton(onTap: _loadEvents),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-
-            // ─── Day Strip ───
+            // Day Strip
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _buildDayStrip(theme, isDark),
+              child: _DayStrip(
+                selectedDate: _selectedDate,
+                isDark: isDark,
+                onDateSelected: (date) => setState(() => _selectedDate = date),
+                onWeekChanged: (date) {
+                  setState(() => _selectedDate = date);
+                  _loadEvents();
+                },
+              ),
             ),
             const SizedBox(height: 8),
-
-            // ─── Events ───
+            // Events
             Expanded(
               child: BlocBuilder<CalendarBloc, CalendarState>(
                 builder: (context, state) {
                   if (state is CalendarNeedsSignIn) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.calendar_month,
-                            size: 64,
-                            color: isDark
-                                ? AppColors.darkTextTertiary
-                                : AppColors.lightTextTertiary,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Conecta tu Google Calendar',
-                            style: theme.textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Para ver tus eventos',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 24),
-                          const GoogleSignInButtonWidget(),
-                        ],
-                      ),
-                    );
+                    return _NeedsSignInView(isDark: isDark);
                   }
-
                   if (state is CalendarLoading) {
-                    return Center(
-                      child: CircularProgressIndicator(color: AppColors.accent),
-                    );
+                    return const LoadingIndicator();
                   }
-
                   if (state is CalendarError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.error_outline, size: 48, color: AppColors.error),
-                          const SizedBox(height: 16),
-                          Text(state.message),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _loadEvents,
-                            child: const Text('Reintentar'),
-                          ),
-                        ],
-                      ),
+                    return ErrorState(
+                      message: state.message,
+                      onRetry: _loadEvents,
                     );
                   }
-
                   if (state is CalendarLoaded) {
-                    final eventsByDate = <DateTime, List<dynamic>>{};
-                    for (final event in state.events) {
-                      final start = event.start?.dateTime ?? event.start?.date;
-                      if (start != null) {
-                        final date = DateTime(start.year, start.month, start.day);
-                        eventsByDate[date] = [
-                          ...(eventsByDate[date] ?? []),
-                          event,
-                        ];
-                      }
-                    }
-
-                    final selectedDateEvents =
-                        eventsByDate[DateTime(
-                          _selectedDate.year,
-                          _selectedDate.month,
-                          _selectedDate.day,
-                        )] ??
-                        [];
-
-                    if (selectedDateEvents.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.event_available,
-                              size: 48,
-                              color: isDark
-                                  ? AppColors.darkTextTertiary
-                                  : AppColors.lightTextTertiary,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No hay eventos para ${DateFormat('d MMMM').format(_selectedDate)}',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 80),
-                      itemCount: selectedDateEvents.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: EventCard(
-                            event: selectedDateEvents[index],
-                            onStartZenMode: widget.onStartZenMode,
-                          ),
-                        );
-                      },
+                    return _EventsView(
+                      events: state.events,
+                      selectedDate: _selectedDate,
+                      isDark: isDark,
+                      theme: theme,
+                      onStartZenMode: widget.onStartZenMode,
                     );
                   }
-
-                  return Center(
-                    child: CircularProgressIndicator(color: AppColors.accent),
-                  );
+                  return const LoadingIndicator();
                 },
               ),
             ),
@@ -223,16 +107,167 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
     );
   }
+}
 
-  Widget _buildDayStrip(ThemeData theme, bool isDark) {
-    // Show current week centered on selected day
-    final monday = _selectedDate.subtract(
-      Duration(days: _selectedDate.weekday - 1),
+class _SyncButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _SyncButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.accentBlue.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.sync, size: 14, color: AppColors.accentBlue),
+            const SizedBox(width: 6),
+            Text(
+              'Sync',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.accentBlue,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NeedsSignInView extends StatelessWidget {
+  final bool isDark;
+  const _NeedsSignInView({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.calendar_month,
+            size: 64,
+            color: isDark
+                ? AppColors.darkTextTertiary
+                : AppColors.lightTextTertiary,
+          ),
+          const SizedBox(height: 16),
+          Text('Conecta tu Google Calendar', style: theme.textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text('Para ver tus eventos', style: theme.textTheme.bodySmall),
+          const SizedBox(height: 24),
+          const GoogleSignInButtonWidget(),
+        ],
+      ),
+    );
+  }
+}
+
+class _EventsView extends StatelessWidget {
+  final List<dynamic> events;
+  final DateTime selectedDate;
+  final bool isDark;
+  final ThemeData theme;
+  final void Function(String)? onStartZenMode;
+
+  const _EventsView({
+    required this.events,
+    required this.selectedDate,
+    required this.isDark,
+    required this.theme,
+    this.onStartZenMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final eventsByDate = <DateTime, List<dynamic>>{};
+    for (final event in events) {
+      final start = event.start?.dateTime ?? event.start?.date;
+      if (start != null) {
+        final date = DateTime(start.year, start.month, start.day);
+        eventsByDate[date] = [...(eventsByDate[date] ?? []), event];
+      }
+    }
+
+    final selectedEvents =
+        eventsByDate[DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+        )] ??
+        [];
+
+    if (selectedEvents.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.event_available,
+              size: 48,
+              color: isDark
+                  ? AppColors.darkTextTertiary
+                  : AppColors.lightTextTertiary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No hay eventos para ${DateFormat('d MMMM').format(selectedDate)}',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 80),
+      itemCount: selectedEvents.length,
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: EventCard(
+          event: selectedEvents[index],
+          onStartZenMode: onStartZenMode,
+        ),
+      ),
+    );
+  }
+}
+
+class _DayStrip extends StatelessWidget {
+  final DateTime selectedDate;
+  final bool isDark;
+  final void Function(DateTime) onDateSelected;
+  final void Function(DateTime) onWeekChanged;
+
+  const _DayStrip({
+    required this.selectedDate,
+    required this.isDark,
+    required this.onDateSelected,
+    required this.onWeekChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final monday = selectedDate.subtract(
+      Duration(days: selectedDate.weekday - 1),
     );
 
     return Row(
       children: [
-        // Previous week
         IconButton(
           icon: Icon(
             Icons.chevron_left,
@@ -240,26 +275,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ? AppColors.darkTextSecondary
                 : AppColors.lightTextSecondary,
           ),
-          onPressed: () {
-            setState(() {
-              _selectedDate = _selectedDate.subtract(const Duration(days: 7));
-              _focusedMonth = _selectedDate;
-            });
-            _loadEvents();
-          },
+          onPressed: () =>
+              onWeekChanged(selectedDate.subtract(const Duration(days: 7))),
         ),
         ...List.generate(5, (index) {
           final date = monday.add(Duration(days: index));
-          final isSelected = date.day == _selectedDate.day &&
-              date.month == _selectedDate.month &&
-              date.year == _selectedDate.year;
+          final isSelected =
+              date.day == selectedDate.day &&
+              date.month == selectedDate.month &&
+              date.year == selectedDate.year;
           final isToday = _isToday(date);
 
           return Expanded(
             child: GestureDetector(
-              onTap: () {
-                setState(() => _selectedDate = date);
-              },
+              onTap: () => onDateSelected(date),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -283,12 +312,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1,
                         color: isSelected
-                            ? (isDark
-                                ? AppColors.darkBackground
-                                : Colors.white)
+                            ? (isDark ? AppColors.darkBackground : Colors.white)
                             : (isDark
-                                ? AppColors.darkTextTertiary
-                                : AppColors.lightTextTertiary),
+                                  ? AppColors.darkTextTertiary
+                                  : AppColors.lightTextTertiary),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -298,10 +325,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: isSelected
-                            ? (isDark
-                                ? AppColors.darkBackground
-                                : Colors.white)
-                            : theme.colorScheme.onSurface,
+                            ? (isDark ? AppColors.darkBackground : Colors.white)
+                            : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -310,7 +335,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           );
         }),
-        // Next week
         IconButton(
           icon: Icon(
             Icons.chevron_right,
@@ -318,21 +342,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ? AppColors.darkTextSecondary
                 : AppColors.lightTextSecondary,
           ),
-          onPressed: () {
-            setState(() {
-              _selectedDate = _selectedDate.add(const Duration(days: 7));
-              _focusedMonth = _selectedDate;
-            });
-            _loadEvents();
-          },
+          onPressed: () =>
+              onWeekChanged(selectedDate.add(const Duration(days: 7))),
         ),
       ],
     );
-  }
-
-  String _weekdayLetter(int weekday) {
-    const letters = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-    return letters[weekday - 1];
   }
 
   bool _isToday(DateTime date) {
@@ -340,5 +354,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return date.year == now.year &&
         date.month == now.month &&
         date.day == now.day;
+  }
+
+  String _weekdayLetter(int weekday) {
+    const letters = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+    return letters[weekday - 1];
   }
 }
