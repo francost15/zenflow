@@ -45,10 +45,8 @@ class GoogleCalendarDatasource {
     }
     try {
       final account = await _googleSignIn.authenticate(scopeHint: _scopes);
-      if (account != null) {
-        await _setupCalendarApi(account);
-        _isAuthorized = true;
-      }
+      await _setupCalendarApi(account);
+      _isAuthorized = true;
       return account;
     } catch (e) {
       debugPrint('Calendar sign-in error: $e');

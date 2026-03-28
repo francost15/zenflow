@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' hide Colors;
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'event_detail_sheet.dart';
 
-class EventCard extends StatefulWidget {
+class EventCard extends StatelessWidget {
   final Event event;
   final VoidCallback? onTap;
   final void Function(String taskName)? onStartZenMode;
@@ -16,17 +17,10 @@ class EventCard extends StatefulWidget {
   });
 
   @override
-  State<EventCard> createState() => _EventCardState();
-}
-
-class _EventCardState extends State<EventCard> {
-  bool _isExpanded = false;
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final start = widget.event.start?.dateTime ?? widget.event.start?.date;
+    final start = event.start?.dateTime ?? event.start?.date;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,16 +47,14 @@ class _EventCardState extends State<EventCard> {
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                color: _getEventColor(widget.event),
+                color: _getEventColor(event),
                 shape: BoxShape.circle,
               ),
             ),
             Container(
               width: 2,
-              height: _isExpanded ? 160 : 60,
-              color: isDark
-                  ? AppColors.darkBorder
-                  : AppColors.lightBorder,
+              height: 60,
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
           ],
         ),
@@ -71,21 +63,22 @@ class _EventCardState extends State<EventCard> {
         Expanded(
           child: GestureDetector(
             onTap: () {
-              setState(() => _isExpanded = !_isExpanded);
-              widget.onTap?.call();
+              onTap?.call();
+              showEventDetailSheet(
+                context,
+                event: event,
+                onStartZenMode: onStartZenMode != null
+                    ? () => onStartZenMode!(event.summary ?? 'Tarea')
+                    : null,
+              );
             },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+            child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark
-                    ? AppColors.darkSurface
-                    : AppColors.lightSurface,
+                color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark
-                      ? AppColors.darkBorder
-                      : AppColors.lightBorder,
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),
               ),
               child: Column(
@@ -95,100 +88,49 @@ class _EventCardState extends State<EventCard> {
                     children: [
                       Expanded(
                         child: Text(
-                          widget.event.summary ?? 'Sin título',
+                          event.summary ?? 'Sin título',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                             color: theme.colorScheme.onSurface,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (widget.event.location != null)
-                        Icon(
-                          Icons.place,
-                          size: 16,
-                          color: isDark
-                              ? AppColors.darkTextTertiary
-                              : AppColors.lightTextTertiary,
-                        ),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: isDark
+                            ? AppColors.darkTextTertiary
+                            : AppColors.lightTextTertiary,
+                      ),
                     ],
                   ),
-                  if (widget.event.location != null) ...[
+                  if (event.location != null) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.location_on, size: 13, color: AppColors.accent),
+                        Icon(
+                          Icons.location_on,
+                          size: 13,
+                          color: AppColors.accent,
+                        ),
                         const SizedBox(width: 4),
-                        Text(
-                          widget.event.location!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark
-                                ? AppColors.darkTextSecondary
-                                : AppColors.lightTextSecondary,
+                        Expanded(
+                          child: Text(
+                            event.location!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.lightTextSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
-                    ),
-                  ],
-                  if (_isExpanded) ...[
-                    if (widget.event.description != null &&
-                        widget.event.description!.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        widget.event.description!,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: isDark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    // Zen mode button
-                    GestureDetector(
-                      onTap: () {
-                        widget.onStartZenMode?.call(
-                          widget.event.summary ?? 'Tarea',
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white
-                              : AppColors.darkBackground,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.play_arrow,
-                              size: 16,
-                              color: isDark
-                                  ? AppColors.darkBackground
-                                  : Colors.white,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Iniciar Modo Zen',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                                color: isDark
-                                    ? AppColors.darkBackground
-                                    : Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                   ],
                 ],

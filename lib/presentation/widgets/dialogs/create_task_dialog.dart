@@ -66,7 +66,11 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
             decoration: InputDecoration(
               hintText: '¿En qué vas a enfocarte?',
               hintStyle: TextStyle(
-                color: (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary).withValues(alpha: 0.5),
+                color:
+                    (isDark
+                            ? AppColors.darkTextTertiary
+                            : AppColors.lightTextTertiary)
+                        .withValues(alpha: 0.5),
               ),
               border: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -82,13 +86,15 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
             decoration: InputDecoration(
               hintText: 'Notas adicionales (opcional)...',
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+                color: isDark
+                    ? AppColors.darkTextTertiary
+                    : AppColors.lightTextTertiary,
               ),
               border: InputBorder.none,
             ),
           ),
           const Divider(height: 32),
-          
+
           // Selection Row
           const Text(
             'PARÁMETROS DE ENFOQUE',
@@ -99,7 +105,7 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // Priority
           Wrap(
             spacing: 8,
@@ -111,12 +117,18 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
                 onSelected: (selected) {
                   if (selected) setState(() => _priority = p);
                 },
-                backgroundColor: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+                backgroundColor: isDark
+                    ? AppColors.darkSurfaceElevated
+                    : AppColors.lightSurfaceElevated,
                 selectedColor: _getPriorityColor(p).withValues(alpha: 0.2),
                 labelStyle: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: isSelected ? _getPriorityColor(p) : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                  color: isSelected
+                      ? _getPriorityColor(p)
+                      : (isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary),
                 ),
                 side: BorderSide(
                   color: isSelected ? _getPriorityColor(p) : Colors.transparent,
@@ -126,13 +138,14 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
             }).toList(),
           ),
           const SizedBox(height: 16),
-          
+
           // Date/Time
           Row(
             children: [
               _SelectionAction(
                 icon: Icons.calendar_today_outlined,
-                label: '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                label:
+                    '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                 onTap: () async {
                   final date = await showDatePicker(
                     context: context,
@@ -147,7 +160,7 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
               _SelectionAction(
                 icon: Icons.access_time,
                 label: _selectedTime != null
-                    ? '${_selectedTime!.format(context)}'
+                    ? _selectedTime!.format(context)
                     : 'Sin hora',
                 onTap: () async {
                   final time = await showTimePicker(
@@ -182,7 +195,9 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
     final task = Task(
       id: '',
       title: _titleController.text,
-      description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+      description: _descriptionController.text.isEmpty
+          ? null
+          : _descriptionController.text,
       dueDate: _selectedDate,
       dueTime: _selectedTime,
       priority: _priority,
@@ -217,7 +232,9 @@ class _SelectionAction extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+          color: isDark
+              ? AppColors.darkSurfaceElevated
+              : AppColors.lightSurfaceElevated,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -240,4 +257,3 @@ class _SelectionAction extends StatelessWidget {
     );
   }
 }
-
