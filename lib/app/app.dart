@@ -99,6 +99,11 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
     _calendarDatasource = GoogleCalendarDatasource();
     _calendarRepository = CalendarRepositoryImpl(_calendarDatasource);
     _calendarBloc = CalendarBloc(_calendarRepository);
+    // Initialize Calendar with serverClientId for OAuth
+    _calendarDatasource.initialize(
+      serverClientId:
+          '425631623811-3ir83r6i9kb688ml7rlnj4gnuelopo5m.apps.googleusercontent.com',
+    );
   }
 
   @override
