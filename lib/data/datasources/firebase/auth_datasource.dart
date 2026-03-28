@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthDatasource {
@@ -11,17 +12,27 @@ class AuthDatasource {
   }
 
   Future<UserCredential> signInWithGoogle() async {
-    // Use Firebase Auth's Google provider - works on all platforms
-    // including web where google_sign_in API has changed significantly
-    final googleProvider = GoogleAuthProvider();
-
-    // Request both ID and access tokens
-    googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
-    googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
-
-    // Use signInWithPopup for web compatibility
-    // On mobile, this falls back to native flow
-    return await _auth.signInWithPopup(googleProvider);
+    if (kIsWeb) {
+      // On web, use signInWithPopup
+      final googleProvider = GoogleAuthProvider();
+      googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
+      googleProvider.addScope(
+        'https://www.googleapis.com/auth/userinfo.profile',
+      );
+      return await _auth.signInWithPopup(googleProvider);
+    } else {
+      // On mobile, use google_sign_in.authenticate() to get ID token
+      final googleUser = await _googleSignIn.authenticate();
+      if (googleUser == null) {
+        throw Exception('Google sign in was cancelled');
+      }
+      // Get the ID token from authentication
+      final googleAuth = googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+      return await _auth.signInWithCredential(credential);
+    }
   }
 
   Future<void> signOut() async {
