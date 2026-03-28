@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:googleapis/calendar/v3.dart';
+import 'package:googleapis/calendar/v3.dart' hide Colors;
 import 'package:intl/intl.dart';
 
 class EventCard extends StatelessWidget {
