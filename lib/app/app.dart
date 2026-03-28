@@ -17,8 +17,11 @@ import '../presentation/blocs/auth/auth_bloc.dart';
 import '../presentation/blocs/auth/auth_event.dart';
 import '../presentation/blocs/auth/auth_state.dart';
 import '../presentation/blocs/task/task_bloc.dart';
+import '../presentation/blocs/calendar/calendar_bloc.dart';
 import '../presentation/blocs/streaks/streaks_bloc.dart';
 import '../presentation/blocs/course/course_bloc.dart';
+import '../data/datasources/google/google_calendar_datasource.dart';
+import '../data/repositories/calendar_repository_impl.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/calendar/calendar_screen.dart';
@@ -52,6 +55,10 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
   late final CourseRepository _courseRepository;
   late final CourseBloc _courseBloc;
 
+  late final GoogleCalendarDatasource _calendarDatasource;
+  late final CalendarRepositoryImpl _calendarRepository;
+  late final CalendarBloc _calendarBloc;
+
   bool _showZenMode = false;
 
   @override
@@ -61,6 +68,7 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
     _initTask();
     _initStreaks();
     _initCourse();
+    _initCalendar();
   }
 
   void _initAuth() {
@@ -87,12 +95,19 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
     _courseBloc = CourseBloc(_courseRepository);
   }
 
+  void _initCalendar() {
+    _calendarDatasource = GoogleCalendarDatasource();
+    _calendarRepository = CalendarRepositoryImpl(_calendarDatasource);
+    _calendarBloc = CalendarBloc(_calendarRepository);
+  }
+
   @override
   void dispose() {
     _authBloc.close();
     _taskBloc.close();
     _streaksBloc.close();
     _courseBloc.close();
+    _calendarBloc.close();
     super.dispose();
   }
 
@@ -104,6 +119,7 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
         BlocProvider.value(value: _taskBloc),
         BlocProvider.value(value: _streaksBloc),
         BlocProvider.value(value: _courseBloc),
+        BlocProvider.value(value: _calendarBloc),
       ],
       child: MaterialApp(
         title: 'ZenFlow',
