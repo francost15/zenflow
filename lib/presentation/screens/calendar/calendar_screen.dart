@@ -7,6 +7,7 @@ import '../../blocs/calendar/calendar_event.dart';
 import '../../blocs/calendar/calendar_state.dart';
 import 'widgets/calendar_grid.dart';
 import 'widgets/event_card.dart';
+import 'widgets/google_sign_in_button_widget.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -101,15 +102,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     style: TextStyle(color: Colors.grey),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      context.read<CalendarBloc>().add(
-                        CalendarGoogleSignInRequested(),
-                      );
-                    },
-                    icon: const Icon(Icons.login),
-                    label: const Text('Conectar Google'),
-                  ),
+                  const GoogleSignInButtonWidget(),
                 ],
               ),
             );
