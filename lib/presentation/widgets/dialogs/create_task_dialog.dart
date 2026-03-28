@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/task.dart';
-import '../blocs/task/task_bloc.dart';
-import '../blocs/task/task_event.dart';
+import '../../../domain/entities/task.dart';
+import '../../blocs/task/task_bloc.dart';
+import '../../blocs/task/task_event.dart';
 
 class CreateTaskDialog extends StatefulWidget {
   const CreateTaskDialog({super.key});

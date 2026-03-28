@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/streaks/streaks_bloc.dart';
-import '../blocs/streaks/streaks_event.dart';
+import '../../blocs/streaks/streaks_bloc.dart';
+import '../../blocs/streaks/streaks_event.dart';
 
 class CreateHabitDialog extends StatefulWidget {
   const CreateHabitDialog({super.key});

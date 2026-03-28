@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/course.dart';
-import '../blocs/course/course_bloc.dart';
-import '../blocs/course/course_event.dart';
+import '../../../domain/entities/course.dart';
+import '../../blocs/course/course_bloc.dart';
+import '../../blocs/course/course_event.dart';
 
 class CreateCourseDialog extends StatefulWidget {
   const CreateCourseDialog({super.key});

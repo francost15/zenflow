@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/habit.dart';
+import '../../../../domain/entities/habit.dart';
 
 class HabitCard extends StatelessWidget {
   final Habit habit;
