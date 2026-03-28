@@ -1,5 +1,6 @@
 import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 
 class GoogleCalendarDatasource {
   static const _scopes = [calendar.CalendarApi.calendarScope];
@@ -10,7 +11,8 @@ class GoogleCalendarDatasource {
   Future<void> initialize() async {
     final auth = await _googleSignIn.signInSilently();
     if (auth != null) {
-      _calendarApi = calendar.CalendarApi(auth);
+      final authHeaders = await auth.authHeaders;
+      _calendarApi = calendar.CalendarApi(_AuthenticatedClient(authHeaders));
     }
   }
 
@@ -21,7 +23,8 @@ class GoogleCalendarDatasource {
   Future<void> signIn() async {
     final account = await _googleSignIn.signIn();
     if (account != null) {
-      _calendarApi = calendar.CalendarApi(account);
+      final authHeaders = await account.authHeaders;
+      _calendarApi = calendar.CalendarApi(_AuthenticatedClient(authHeaders));
     }
   }
 
@@ -30,15 +33,13 @@ class GoogleCalendarDatasource {
       await initialize();
     }
 
-    final request = calendar.EventsList(
+    final events = await _calendarApi!.events.list(
       'primary',
       timeMin: start.toUtc(),
       timeMax: end.toUtc(),
       singleEvents: true,
       orderBy: 'startTime',
     );
-
-    final events = await _calendarApi!.events.list(request);
     return events.items ?? [];
   }
 
@@ -52,5 +53,17 @@ class GoogleCalendarDatasource {
 
   Future<void> deleteEvent(String eventId) async {
     await _calendarApi!.events.delete('primary', eventId);
+  }
+}
+
+class _AuthenticatedClient extends http.BaseClient {
+  final Map<String, String> _headers;
+
+  _AuthenticatedClient(this._headers);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    request.headers.addAll(_headers);
+    return request.send();
   }
 }
