@@ -41,7 +41,12 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     emit(CalendarLoading());
     try {
       await _calendarRepository.signIn();
-      emit(CalendarInitial());
+      // After successful sign-in, reload events for current month
+      final now = DateTime.now();
+      final start = DateTime(now.year, now.month, 1);
+      final end = DateTime(now.year, now.month + 1, 0);
+      final events = await _calendarRepository.getEvents(start, end);
+      emit(CalendarLoaded(events: events, start: start, end: end));
     } catch (e) {
       emit(CalendarError(e.toString()));
     }
