@@ -5,32 +5,37 @@ import 'package:http/http.dart' as http;
 class GoogleCalendarDatasource {
   static const _scopes = [calendar.CalendarApi.calendarScope];
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   calendar.CalendarApi? _calendarApi;
 
+  /// Initializes GoogleSignIn. Must be called before other methods.
   Future<void> initialize() async {
-    final auth = await _googleSignIn.signInSilently();
-    if (auth != null) {
-      final authHeaders = await auth.authHeaders;
-      _calendarApi = calendar.CalendarApi(_AuthenticatedClient(authHeaders));
-    }
+    await _googleSignIn.initialize();
   }
 
+  /// Checks if user is already signed in via google_sign_in
   Future<bool> isAuthorized() async {
-    return _googleSignIn.isSignedIn();
+    // In 7.x API, we check by attempting lightweight auth
+    final account = await _googleSignIn.attemptLightweightAuthentication();
+    return account != null;
   }
 
+  /// Signs in and obtains calendar API access
   Future<void> signIn() async {
-    final account = await _googleSignIn.signIn();
+    final account = await _googleSignIn.authenticate();
     if (account != null) {
-      final authHeaders = await account.authHeaders;
-      _calendarApi = calendar.CalendarApi(_AuthenticatedClient(authHeaders));
+      // Get authorization headers for the calendar scope
+      final authHeaders = await account.authorizationClient
+          .authorizationHeaders(_scopes);
+      if (authHeaders != null) {
+        _calendarApi = calendar.CalendarApi(_AuthenticatedClient(authHeaders));
+      }
     }
   }
 
   Future<List<calendar.Event>> getEvents(DateTime start, DateTime end) async {
     if (_calendarApi == null) {
-      await initialize();
+      await signIn();
     }
 
     final events = await _calendarApi!.events.list(
