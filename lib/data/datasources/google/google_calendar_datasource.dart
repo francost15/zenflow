@@ -1,25 +1,17 @@
-import 'package:googleapis/calendar/v3.dart';
+import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
 
 class GoogleCalendarDatasource {
-  static const _scopes = [CalendarApi.calendarScope];
+  static const _scopes = [calendar.CalendarApi.calendarScope];
 
-  GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
-  CalendarApi? _calendarApi;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
+  calendar.CalendarApi? _calendarApi;
 
   Future<void> initialize() async {
     final auth = await _googleSignIn.signInSilently();
     if (auth != null) {
-      _calendarApi = CalendarApi(_getAuthenticatedClient(auth));
+      _calendarApi = calendar.CalendarApi(auth);
     }
-  }
-
-  http.Client _getAuthenticatedClient(GoogleSignInAuthentication auth) {
-    final client = http.Client();
-    // In production, you'd use auth.accessToken directly
-    // This is simplified
-    return client;
   }
 
   Future<bool> isAuthorized() async {
@@ -29,19 +21,17 @@ class GoogleCalendarDatasource {
   Future<void> signIn() async {
     final account = await _googleSignIn.signIn();
     if (account != null) {
-      final auth = await account.authentication;
-      _calendarApi = CalendarApi(_getAuthenticatedClient(auth));
+      _calendarApi = calendar.CalendarApi(account);
     }
   }
 
-  Future<List<Event>> getEvents(DateTime start, DateTime end) async {
+  Future<List<calendar.Event>> getEvents(DateTime start, DateTime end) async {
     if (_calendarApi == null) {
       await initialize();
     }
 
-    final calendarId = 'primary';
-    final request = EventsList(
-      calendarId: calendarId,
+    final request = calendar.EventsList(
+      'primary',
       timeMin: start.toUtc(),
       timeMax: end.toUtc(),
       singleEvents: true,
@@ -52,11 +42,11 @@ class GoogleCalendarDatasource {
     return events.items ?? [];
   }
 
-  Future<Event> createEvent(Event event) async {
+  Future<calendar.Event> createEvent(calendar.Event event) async {
     return await _calendarApi!.events.insert(event, 'primary');
   }
 
-  Future<Event> updateEvent(Event event) async {
+  Future<calendar.Event> updateEvent(calendar.Event event) async {
     return await _calendarApi!.events.update(event, 'primary', event.id!);
   }
 

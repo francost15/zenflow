@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../core/theme/app_theme.dart';
 import '../data/datasources/firebase/auth_datasource.dart';
 import '../data/datasources/firestore/task_datasource.dart';
@@ -16,8 +15,8 @@ import '../domain/repositories/habit_repository.dart';
 import '../domain/repositories/course_repository.dart';
 import '../presentation/blocs/auth/auth_bloc.dart';
 import '../presentation/blocs/auth/auth_event.dart';
+import '../presentation/blocs/auth/auth_state.dart';
 import '../presentation/blocs/task/task_bloc.dart';
-import '../presentation/blocs/calendar/calendar_bloc.dart';
 import '../presentation/blocs/streaks/streaks_bloc.dart';
 import '../presentation/blocs/course/course_bloc.dart';
 import '../presentation/screens/auth/login_screen.dart';
