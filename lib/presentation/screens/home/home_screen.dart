@@ -9,6 +9,8 @@ import '../../blocs/auth/auth_state.dart';
 import '../../blocs/task/task_bloc.dart';
 import '../../blocs/task/task_event.dart';
 import '../../blocs/task/task_state.dart';
+import '../../blocs/streaks/streaks_bloc.dart';
+import '../../blocs/streaks/streaks_state.dart';
 import '../../widgets/task_tile.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/dialogs/create_task_dialog.dart';
@@ -66,7 +68,16 @@ class _HomeScreenState extends State<HomeScreen>
               // ─── Custom Header ───
               SliverToBoxAdapter(child: _buildHeader(theme, isDark)),
               // ─── Streak Hero ───
-              SliverToBoxAdapter(child: _buildStreakHero(theme, isDark)),
+              SliverToBoxAdapter(
+                child: BlocBuilder<StreaksBloc, StreaksState>(
+                  builder: (context, streaksState) {
+                    final streak = streaksState is StreaksLoaded
+                        ? streaksState.totalCurrentStreak
+                        : 0;
+                    return _buildStreakHero(theme, isDark, streak);
+                  },
+                ),
+              ),
               // ─── Today Section Header ───
               SliverToBoxAdapter(child: _buildTodayHeader(theme, isDark)),
               // ─── Task List ───
@@ -101,11 +112,7 @@ class _HomeScreenState extends State<HomeScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.bolt,
-                  size: 16,
-                  color: AppColors.accent,
-                ),
+                Icon(Icons.bolt, size: 16, color: AppColors.accent),
                 const SizedBox(width: 6),
                 Text(
                   'ZEN',
@@ -197,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildStreakHero(ThemeData theme, bool isDark) {
+  Widget _buildStreakHero(ThemeData theme, bool isDark, int streak) {
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       padding: const EdgeInsets.all(24),
@@ -228,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen>
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '14',
+                '$streak',
                 style: TextStyle(
                   fontSize: 72,
                   fontWeight: FontWeight.w800,
@@ -364,33 +371,27 @@ class _HomeScreenState extends State<HomeScreen>
           }
 
           return SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final task = state.tasks[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 4,
-                  ),
-                  child: TaskTile(
-                    task: task,
-                    onToggle: (completed) {
-                      context.read<TaskBloc>().add(
-                        TaskStatusToggled(
-                          taskId: task.id,
-                          completed: completed,
-                        ),
-                      );
-                    },
-                    onTap: () => _showTaskDetails(task),
-                    onDelete: () {
-                      context.read<TaskBloc>().add(TaskDeleted(task.id));
-                    },
-                  ),
-                );
-              },
-              childCount: state.tasks.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final task = state.tasks[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
+                child: TaskTile(
+                  task: task,
+                  onToggle: (completed) {
+                    context.read<TaskBloc>().add(
+                      TaskStatusToggled(taskId: task.id, completed: completed),
+                    );
+                  },
+                  onTap: () => _showTaskDetails(task),
+                  onDelete: () {
+                    context.read<TaskBloc>().add(TaskDeleted(task.id));
+                  },
+                ),
+              );
+            }, childCount: state.tasks.length),
           );
         }
 

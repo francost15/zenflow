@@ -6,7 +6,14 @@ class CourseDatasource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  String get _userId => _auth.currentUser!.uid;
+  String get _userId {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated. Please sign in again.');
+    }
+    return user.uid;
+  }
+
   CollectionReference get _coursesRef =>
       _firestore.collection('users').doc(_userId).collection('courses');
 

@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/task.dart';
 import '../../blocs/task/task_bloc.dart';
 import '../../blocs/task/task_event.dart';
+import '../../blocs/task/task_state.dart';
 import '../focus_sheet_shell.dart';
 
 class CreateTaskSheet extends StatefulWidget {
@@ -28,6 +29,8 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay? _selectedTime;
   TaskPriority _priority = TaskPriority.medium;
+  bool _isSubmitting = false;
+  String? _titleError;
 
   @override
   void dispose() {
@@ -41,141 +44,193 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return FocusSheetShell(
-      title: 'Nueva Tarea',
-      monospaceLabel: 'focus_protocol_01',
-      actions: [
-        ElevatedButton(
-          onPressed: _createTask,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accent,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          ),
-          child: const Text('INGRESAR TAREA'),
-        ),
-      ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _titleController,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-            decoration: InputDecoration(
-              hintText: '¿En qué vas a enfocarte?',
-              hintStyle: TextStyle(
-                color:
-                    (isDark
-                            ? AppColors.darkTextTertiary
-                            : AppColors.lightTextTertiary)
-                        .withValues(alpha: 0.5),
+    return BlocListener<TaskBloc, TaskState>(
+      listener: (context, state) {
+        if (state is TaskLoaded) {
+          Navigator.pop(context);
+        } else if (state is TaskError) {
+          setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Error al crear tarea: ${_getUserFriendlyError(state.message)}',
               ),
-              border: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              enabledBorder: InputBorder.none,
+              backgroundColor: AppColors.error,
             ),
-            autofocus: true,
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _descriptionController,
-            maxLines: 2,
-            style: theme.textTheme.bodyMedium,
-            decoration: InputDecoration(
-              hintText: 'Notas adicionales (opcional)...',
-              hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: isDark
-                    ? AppColors.darkTextTertiary
-                    : AppColors.lightTextTertiary,
-              ),
-              border: InputBorder.none,
+          );
+        }
+      },
+      child: FocusSheetShell(
+        title: 'Nueva Tarea',
+        monospaceLabel: 'focus_protocol_01',
+        actions: [
+          ElevatedButton(
+            onPressed: _isSubmitting ? null : _createTask,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             ),
+            child: _isSubmitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text('INGRESAR TAREA'),
           ),
-          const Divider(height: 32),
-
-          // Selection Row
-          const Text(
-            'PARÁMETROS DE ENFOQUE',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Priority
-          Wrap(
-            spacing: 8,
-            children: TaskPriority.values.map((p) {
-              final isSelected = _priority == p;
-              return ChoiceChip(
-                label: Text(p.name.toUpperCase()),
-                selected: isSelected,
-                onSelected: (selected) {
-                  if (selected) setState(() => _priority = p);
-                },
-                backgroundColor: isDark
-                    ? AppColors.darkSurfaceElevated
-                    : AppColors.lightSurfaceElevated,
-                selectedColor: _getPriorityColor(p).withValues(alpha: 0.2),
-                labelStyle: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: isSelected
-                      ? _getPriorityColor(p)
-                      : (isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary),
-                ),
-                side: BorderSide(
-                  color: isSelected ? _getPriorityColor(p) : Colors.transparent,
-                ),
-                showCheckmark: false,
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-
-          // Date/Time
-          Row(
-            children: [
-              _SelectionAction(
-                icon: Icons.calendar_today_outlined,
-                label:
-                    '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDate,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-                  if (date != null) setState(() => _selectedDate = date);
-                },
-              ),
-              const SizedBox(width: 12),
-              _SelectionAction(
-                icon: Icons.access_time,
-                label: _selectedTime != null
-                    ? _selectedTime!.format(context)
-                    : 'Sin hora',
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: _selectedTime ?? TimeOfDay.now(),
-                  );
-                  if (time != null) setState(() => _selectedTime = time);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
         ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title field with error
+            TextField(
+              controller: _titleController,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+              decoration: InputDecoration(
+                hintText: '¿En qué vas a enfocarte?',
+                hintStyle: TextStyle(
+                  color:
+                      (isDark
+                              ? AppColors.darkTextTertiary
+                              : AppColors.lightTextTertiary)
+                          .withValues(alpha: 0.5),
+                ),
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                errorText: _titleError,
+                errorBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.error),
+                ),
+              ),
+              onChanged: (_) {
+                if (_titleError != null) {
+                  setState(() => _titleError = null);
+                }
+              },
+              autofocus: true,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _descriptionController,
+              maxLines: 2,
+              style: theme.textTheme.bodyMedium,
+              decoration: InputDecoration(
+                hintText: 'Notas adicionales (opcional)...',
+                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                  color: isDark
+                      ? AppColors.darkTextTertiary
+                      : AppColors.lightTextTertiary,
+                ),
+                border: InputBorder.none,
+              ),
+            ),
+            const Divider(height: 32),
+
+            // Selection Row
+            const Text(
+              'PARÁMETROS DE ENFOQUE',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Priority
+            Wrap(
+              spacing: 8,
+              children: TaskPriority.values.map((p) {
+                final isSelected = _priority == p;
+                return ChoiceChip(
+                  label: Text(p.name.toUpperCase()),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) setState(() => _priority = p);
+                  },
+                  backgroundColor: isDark
+                      ? AppColors.darkSurfaceElevated
+                      : AppColors.lightSurfaceElevated,
+                  selectedColor: _getPriorityColor(p).withValues(alpha: 0.2),
+                  labelStyle: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected
+                        ? _getPriorityColor(p)
+                        : (isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary),
+                  ),
+                  side: BorderSide(
+                    color: isSelected
+                        ? _getPriorityColor(p)
+                        : Colors.transparent,
+                  ),
+                  showCheckmark: false,
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+
+            // Date/Time
+            Row(
+              children: [
+                _SelectionAction(
+                  icon: Icons.calendar_today_outlined,
+                  label:
+                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (date != null) setState(() => _selectedDate = date);
+                  },
+                ),
+                const SizedBox(width: 12),
+                _SelectionAction(
+                  icon: Icons.access_time,
+                  label: _selectedTime != null
+                      ? _selectedTime!.format(context)
+                      : 'Sin hora',
+                  onTap: () async {
+                    final time = await showTimePicker(
+                      context: context,
+                      initialTime: _selectedTime ?? TimeOfDay.now(),
+                    );
+                    if (time != null) setState(() => _selectedTime = time);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
+  }
+
+  String _getUserFriendlyError(String error) {
+    if (error.contains('ALREADY_EXISTS') || error.contains('already-exists')) {
+      return 'Esta tarea ya existe';
+    }
+    if (error.contains('PERMISSION_DENIED') ||
+        error.contains('permission-denied')) {
+      return 'No tienes permiso para crear tareas';
+    }
+    if (error.contains('network') || error.contains('NETWORK')) {
+      return 'Error de conexión. Verifica tu internet';
+    }
+    return 'Ocurrió un error. Intenta de nuevo';
   }
 
   Color _getPriorityColor(TaskPriority priority) {
@@ -190,14 +245,21 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
   }
 
   void _createTask() {
-    if (_titleController.text.isEmpty) return;
+    if (_titleController.text.trim().isEmpty) {
+      setState(() => _titleError = 'Ingresa un título para la tarea');
+      return;
+    }
+    setState(() {
+      _isSubmitting = true;
+      _titleError = null;
+    });
     final now = DateTime.now();
     final task = Task(
       id: '',
-      title: _titleController.text,
-      description: _descriptionController.text.isEmpty
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
           ? null
-          : _descriptionController.text,
+          : _descriptionController.text.trim(),
       dueDate: _selectedDate,
       dueTime: _selectedTime,
       priority: _priority,
@@ -206,7 +268,6 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
       updatedAt: now,
     );
     context.read<TaskBloc>().add(TaskCreated(task));
-    Navigator.pop(context);
   }
 }
 

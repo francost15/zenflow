@@ -25,12 +25,23 @@ class GoogleCalendarDatasource {
   }
 
   /// Checks if user is already authorized for Calendar API.
-  /// Returns cached result after first successful authorization to avoid
-  /// re-prompting on every page/week change.
+  /// Actually checks Google Sign-In status (doesn't just return cached state).
   Future<bool> isAuthorized() async {
     // If we already have a valid API client, return true
     if (_calendarApi != null && _isAuthorized) {
       return true;
+    }
+    // Try lightweight auth to check if user is already signed in
+    try {
+      final account = await _googleSignIn.attemptLightweightAuthentication();
+      if (account != null) {
+        await _setupCalendarApi(account);
+        _isAuthorized = true;
+        return true;
+      }
+    } catch (e) {
+      // Lightweight auth failed, user needs to explicitly sign in
+      debugPrint('Calendar lightweight auth check failed: $e');
     }
     return false;
   }
