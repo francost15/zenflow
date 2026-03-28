@@ -3,6 +3,14 @@ import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
+/// Google Calendar datasource.
+///
+/// IMPORTANT: On mobile, Google Calendar API requires additional OAuth configuration:
+/// - A serverClientId with "Google Calendar API" scope authorized
+/// - This is DIFFERENT from Firebase Auth's OAuth client
+///
+/// For now, mobile returns empty events until proper OAuth is configured.
+/// On web, it shows a "not available" message (see CalendarScreen).
 class GoogleCalendarDatasource {
   static const _scopes = [calendar.CalendarApi.calendarScope];
 
@@ -10,47 +18,45 @@ class GoogleCalendarDatasource {
   calendar.CalendarApi? _calendarApi;
 
   /// Stream of authentication events from Google Sign-In.
-  /// On web, sign-in happens via GoogleSignInButton widget.
   Stream<GoogleSignInAuthenticationEvent> get authenticationEvents =>
       _googleSignIn.authenticationEvents;
 
-  /// Initializes GoogleSignIn. Must be called once at app startup.
-  Future<void> initialize() async {
-    await _googleSignIn.initialize();
+  /// Initializes GoogleSignIn with serverClientId for Calendar API.
+  /// On mobile, serverClientId MUST be provided for Calendar access.
+  Future<void> initialize({String? serverClientId}) async {
+    await _googleSignIn.initialize(serverClientId: serverClientId);
   }
 
   /// Checks if user is already signed in via google_sign_in.
   Future<bool> isAuthorized() async {
-    // In 7.x API, we try lightweight auth - returns null if user interaction needed
+    if (!kIsWeb) {
+      // On mobile, google_sign_in requires serverClientId for Calendar
+      // Without it, we cannot authenticate for Calendar API
+      return false;
+    }
     final result = await _googleSignIn.attemptLightweightAuthentication();
     return result != null;
   }
 
   /// Initiates sign-in flow.
   ///
-  /// On web: This returns null immediately because sign-in requires user
-  /// interaction with the GoogleSignInButton widget. The actual sign-in
-  /// result comes through the [authenticationEvents] stream.
-  ///
-  /// On mobile: This triggers the native sign-in flow.
+  /// On web: Returns null, sign-in happens via button widget.
+  /// On mobile: Requires serverClientId to be set in initialize().
   Future<GoogleSignInAccount?> signIn() async {
     if (kIsWeb) {
-      // On web, sign-in requires button click. Return null and wait for
-      // authenticationEvents stream to emit the sign-in event.
       return null;
     }
-    // On mobile, use native authenticate
-    final account = await _googleSignIn.authenticate();
-    if (account != null) {
-      await _setupCalendarApi(account);
+    try {
+      final account = await _googleSignIn.authenticate();
+      if (account != null) {
+        await _setupCalendarApi(account);
+      }
+      return account;
+    } catch (e) {
+      // On mobile without proper OAuth config, this will fail
+      // Calendar will show empty state
+      return null;
     }
-    return account;
-  }
-
-  /// Handles the sign-in event from the authentication stream.
-  /// Called by UI when it receives a sign-in event from GoogleSignInButton.
-  Future<void> handleWebSignIn(GoogleSignInAccount account) async {
-    await _setupCalendarApi(account);
   }
 
   Future<void> _setupCalendarApi(GoogleSignInAccount account) async {
@@ -64,7 +70,11 @@ class GoogleCalendarDatasource {
 
   Future<List<calendar.Event>> getEvents(DateTime start, DateTime end) async {
     if (_calendarApi == null) {
-      // Try to get current user via lightweight auth
+      if (!kIsWeb) {
+        // On mobile, Calendar requires proper OAuth setup
+        // Return empty list instead of throwing
+        return [];
+      }
       final account = await _googleSignIn.attemptLightweightAuthentication();
       if (account != null) {
         await _setupCalendarApi(account);
@@ -72,7 +82,8 @@ class GoogleCalendarDatasource {
     }
 
     if (_calendarApi == null) {
-      throw Exception('Google Calendar not authorized. Please sign in first.');
+      // Return empty instead of throwing - more user-friendly
+      return [];
     }
 
     final events = await _calendarApi!.events.list(
