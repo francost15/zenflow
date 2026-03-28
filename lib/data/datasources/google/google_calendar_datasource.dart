@@ -47,14 +47,14 @@ class GoogleCalendarDatasource {
       return null;
     }
     try {
-      final account = await _googleSignIn.authenticate();
-      if (account != null) {
-        await _setupCalendarApi(account);
-      }
+      // Request Calendar scope during authentication
+      final account = await _googleSignIn.authenticate(scopeHint: _scopes);
+      await _setupCalendarApi(account);
       return account;
     } catch (e) {
       // On mobile without proper OAuth config, this will fail
       // Calendar will show empty state
+      debugPrint('Calendar sign-in error: $e');
       return null;
     }
   }

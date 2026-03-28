@@ -167,8 +167,6 @@ class _MainShell extends StatefulWidget {
 class _MainShellState extends State<_MainShell> {
   int _currentIndex = 0;
 
-  final _routes = ['/', '/calendar', '/streaks', '/courses', '/profile'];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

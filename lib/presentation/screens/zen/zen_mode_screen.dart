@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ZenModeScreen extends StatefulWidget {
   final VoidCallback onExit;
@@ -43,7 +42,7 @@ class _ZenModeScreenState extends State<ZenModeScreen> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w300,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                   const SizedBox(height: 48),
@@ -53,14 +52,16 @@ class _ZenModeScreenState extends State<ZenModeScreen> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'No hay eventos próximos',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -69,7 +70,7 @@ class _ZenModeScreenState extends State<ZenModeScreen> {
                     'Sin tarea activa',
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.white.withOpacity(0.4),
+                      color: Colors.white.withValues(alpha: 0.4),
                     ),
                   ),
                   const SizedBox(height: 64),
@@ -77,7 +78,7 @@ class _ZenModeScreenState extends State<ZenModeScreen> {
                     'Toca en cualquier lugar para salir',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                     ),
                   ),
                 ],

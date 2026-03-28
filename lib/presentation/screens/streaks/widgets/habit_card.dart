@@ -32,7 +32,7 @@ class HabitCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: checkedToday
                       ? const Color(0xFF10B981)
-                      : const Color(0xFF6366F1).withOpacity(0.1),
+                      : const Color(0xFF6366F1).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(

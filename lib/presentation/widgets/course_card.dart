@@ -100,7 +100,7 @@ class CourseCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: course.color.withOpacity(0.1),
+                            color: course.color.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(

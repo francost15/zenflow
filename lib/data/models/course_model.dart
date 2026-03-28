@@ -86,7 +86,7 @@ class CourseModel {
   factory CourseModel.fromEntity(Course entity) => CourseModel(
     id: entity.id,
     name: entity.name,
-    colorValue: entity.color.value,
+    colorValue: entity.color.toARGB32(),
     professor: entity.professor,
     schedule: entity.schedule.map((s) {
       return {

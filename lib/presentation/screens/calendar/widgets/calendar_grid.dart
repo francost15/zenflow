@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class CalendarGrid extends StatelessWidget {
   final DateTime selectedDate;
@@ -52,7 +51,7 @@ class CalendarGrid extends StatelessWidget {
               color: isSelected
                   ? const Color(0xFF6366F1)
                   : isToday
-                  ? const Color(0xFF6366F1).withOpacity(0.1)
+                  ? const Color(0xFF6366F1).withValues(alpha: 0.1)
                   : null,
               borderRadius: BorderRadius.circular(8),
             ),
