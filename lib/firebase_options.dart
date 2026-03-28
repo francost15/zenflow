@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -59,4 +56,15 @@ class DefaultFirebaseOptions {
     projectId: 'calendar-organization-4beac',
     storageBucket: 'calendar-organization-4beac.firebasestorage.app',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyB-EOayG5IWYImZ0_kpt372TyNganItU38',
+    appId: '1:425631623811:web:264d56c66e949a24bc49b6',
+    messagingSenderId: '425631623811',
+    projectId: 'calendar-organization-4beac',
+    authDomain: 'calendar-organization-4beac.firebaseapp.com',
+    storageBucket: 'calendar-organization-4beac.firebasestorage.app',
+    measurementId: 'G-ZMK6P7BNEW',
+  );
+
 }
