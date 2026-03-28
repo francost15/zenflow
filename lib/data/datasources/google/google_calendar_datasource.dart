@@ -7,15 +7,12 @@ import 'package:http/http.dart' as http;
 ///
 /// IMPORTANT: On mobile, Google Calendar API requires additional OAuth configuration:
 /// - A serverClientId with "Google Calendar API" scope authorized
-/// - This is DIFFERENT from Firebase Auth's OAuth client
-///
-/// For now, mobile returns empty events until proper OAuth is configured.
-/// On web, it shows a "not available" message (see CalendarScreen).
 class GoogleCalendarDatasource {
   static const _scopes = [calendar.CalendarApi.calendarScope];
 
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   calendar.CalendarApi? _calendarApi;
+  bool _isAuthorized = false;
 
   /// Stream of authentication events from Google Sign-In.
   Stream<GoogleSignInAuthenticationEvent> get authenticationEvents =>
@@ -27,39 +24,35 @@ class GoogleCalendarDatasource {
     await _googleSignIn.initialize(serverClientId: serverClientId);
   }
 
-  /// Checks if user is already signed in via google_sign_in.
+  /// Checks if user is already authorized for Calendar API.
+  /// Returns cached result after first successful authorization to avoid
+  /// re-prompting on every page/week change.
   Future<bool> isAuthorized() async {
-    // Check if we already have an account signed in
-    final account = await _googleSignIn.attemptLightweightAuthentication();
-    
-    if (account != null) {
-      // If we have an account, ensure the API is set up
-      if (_calendarApi == null) {
-        await _setupCalendarApi(account);
-      }
+    // If we already have a valid API client, return true
+    if (_calendarApi != null && _isAuthorized) {
       return true;
     }
-    
     return false;
   }
 
-  /// Initiates sign-in flow.
+  /// Initiates sign-in flow and sets up Calendar API access.
   ///
   /// On web: Returns null, sign-in happens via button widget.
-  /// On mobile: Requires serverClientId to be set in initialize().
+  /// On mobile: Uses native Google Sign-In with Calendar scope.
   Future<GoogleSignInAccount?> signIn() async {
     if (kIsWeb) {
       return null;
     }
     try {
-      // Request Calendar scope during authentication
       final account = await _googleSignIn.authenticate(scopeHint: _scopes);
-      await _setupCalendarApi(account);
+      if (account != null) {
+        await _setupCalendarApi(account);
+        _isAuthorized = true;
+      }
       return account;
     } catch (e) {
-      // On mobile without proper OAuth config, this will fail
-      // Calendar will show empty state
       debugPrint('Calendar sign-in error: $e');
+      _isAuthorized = false;
       return null;
     }
   }
@@ -74,31 +67,25 @@ class GoogleCalendarDatasource {
   }
 
   Future<List<calendar.Event>> getEvents(DateTime start, DateTime end) async {
+    // On mobile, if not authorized, return empty list
+    // Don't re-prompt - let user explicitly sign in via the button
     if (_calendarApi == null) {
-      if (!kIsWeb) {
-        // On mobile, Calendar requires proper OAuth setup
-        // Return empty list instead of throwing
-        return [];
-      }
-      final account = await _googleSignIn.attemptLightweightAuthentication();
-      if (account != null) {
-        await _setupCalendarApi(account);
-      }
-    }
-
-    if (_calendarApi == null) {
-      // Return empty instead of throwing - more user-friendly
       return [];
     }
 
-    final events = await _calendarApi!.events.list(
-      'primary',
-      timeMin: start.toUtc(),
-      timeMax: end.toUtc(),
-      singleEvents: true,
-      orderBy: 'startTime',
-    );
-    return events.items ?? [];
+    try {
+      final events = await _calendarApi!.events.list(
+        'primary',
+        timeMin: start.toUtc(),
+        timeMax: end.toUtc(),
+        singleEvents: true,
+        orderBy: 'startTime',
+      );
+      return events.items ?? [];
+    } catch (e) {
+      debugPrint('Error fetching calendar events: $e');
+      return [];
+    }
   }
 
   Future<calendar.Event> createEvent(calendar.Event event) async {
@@ -111,6 +98,12 @@ class GoogleCalendarDatasource {
 
   Future<void> deleteEvent(String eventId) async {
     await _calendarApi!.events.delete('primary', eventId);
+  }
+
+  /// Clears the authorization state.
+  void clearAuthorization() {
+    _calendarApi = null;
+    _isAuthorized = false;
   }
 }
 
