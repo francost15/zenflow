@@ -117,7 +117,11 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
   }
 
   Widget _buildMainScreen() {
-    return BlocBuilder<AuthBloc, AuthState>(
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        // Force rebuild on auth state changes for web
+        debugPrint('Auth state changed: $state');
+      },
       builder: (context, state) {
         if (state is AuthAuthenticated) {
           return _MainShell(
