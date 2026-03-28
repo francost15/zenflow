@@ -1,16 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../blocs/streaks/streaks_bloc.dart';
 import '../../blocs/streaks/streaks_event.dart';
+import '../focus_sheet_shell.dart';
 
-class CreateHabitDialog extends StatefulWidget {
-  const CreateHabitDialog({super.key});
+class CreateHabitSheet extends StatefulWidget {
+  const CreateHabitSheet({super.key});
+
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CreateHabitSheet(),
+    );
+  }
 
   @override
-  State<CreateHabitDialog> createState() => _CreateHabitDialogState();
+  State<CreateHabitSheet> createState() => _CreateHabitSheetState();
 }
 
-class _CreateHabitDialogState extends State<CreateHabitDialog> {
+class _CreateHabitSheetState extends State<CreateHabitSheet> {
   final _nameController = TextEditingController();
   String _selectedIcon = '🔥';
 
@@ -24,64 +35,93 @@ class _CreateHabitDialogState extends State<CreateHabitDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Nuevo Hábito'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return FocusSheetShell(
+      title: 'Nuevo Hábito',
+      monospaceLabel: 'habit_protocol_03',
+      actions: [
+        ElevatedButton(
+          onPressed: _createHabit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accent,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          ),
+          child: const Text('REFORZAR HÁBITO'),
+        ),
+      ],
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Nombre del hábito',
-              border: OutlineInputBorder(),
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Nombre del hábito...',
+              hintStyle: TextStyle(
+                color: (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary).withValues(alpha: 0.5),
+              ),
+              border: InputBorder.none,
             ),
             autofocus: true,
           ),
+          const Divider(height: 32),
+          const Text(
+            'SELECCIONAR ICONO',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 16),
-          const Text('Icono:'),
-          const SizedBox(height: 8),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 12,
+            runSpacing: 12,
             children: _icons.map((icon) {
               final isSelected = _selectedIcon == icon;
               return GestureDetector(
                 onTap: () => setState(() => _selectedIcon = icon),
-                child: Container(
-                  width: 48,
-                  height: 48,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
+                    color: isSelected 
+                        ? AppColors.accent.withValues(alpha: 0.15) 
+                        : (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected ? AppColors.accent : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                      width: 2,
+                    ),
                   ),
                   child: Center(
-                    child: Text(icon, style: const TextStyle(fontSize: 24)),
+                    child: Text(
+                      icon,
+                      style: const TextStyle(fontSize: 28),
+                    ),
                   ),
                 ),
               );
             }).toList(),
           ),
+          const SizedBox(height: 24),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(onPressed: _createHabit, child: const Text('Crear')),
-      ],
     );
   }
 
   void _createHabit() {
     if (_nameController.text.isEmpty) return;
-
     context.read<StreaksBloc>().add(
-      HabitCreated(name: _nameController.text, icon: _selectedIcon),
-    );
+          HabitCreated(name: _nameController.text, icon: _selectedIcon),
+        );
     Navigator.pop(context);
   }
 }
+

@@ -29,13 +29,18 @@ class GoogleCalendarDatasource {
 
   /// Checks if user is already signed in via google_sign_in.
   Future<bool> isAuthorized() async {
-    if (!kIsWeb) {
-      // On mobile, google_sign_in requires serverClientId for Calendar
-      // Without it, we cannot authenticate for Calendar API
-      return false;
+    // Check if we already have an account signed in
+    final account = await _googleSignIn.attemptLightweightAuthentication();
+    
+    if (account != null) {
+      // If we have an account, ensure the API is set up
+      if (_calendarApi == null) {
+        await _setupCalendarApi(account);
+      }
+      return true;
     }
-    final result = await _googleSignIn.attemptLightweightAuthentication();
-    return result != null;
+    
+    return false;
   }
 
   /// Initiates sign-in flow.

@@ -1,90 +1,216 @@
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' hide Colors;
 import 'package:intl/intl.dart';
+import '../../../../core/constants/app_colors.dart';
 
-class EventCard extends StatelessWidget {
+class EventCard extends StatefulWidget {
   final Event event;
   final VoidCallback? onTap;
+  final void Function(String taskName)? onStartZenMode;
 
-  const EventCard({super.key, required this.event, this.onTap});
+  const EventCard({
+    super.key,
+    required this.event,
+    this.onTap,
+    this.onStartZenMode,
+  });
+
+  @override
+  State<EventCard> createState() => _EventCardState();
+}
+
+class _EventCardState extends State<EventCard> {
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
-    final start = event.start?.dateTime ?? event.start?.date;
-    final end = event.end?.dateTime ?? event.end?.date;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final start = widget.event.start?.dateTime ?? widget.event.start?.date;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                width: 4,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: _getEventColor(event),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.summary ?? 'Sin título',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    if (event.description != null &&
-                        event.description!.isNotEmpty)
-                      Text(
-                        event.description!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                      ),
-                    if (start != null)
-                      Text(
-                        _formatTime(start, end),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                      ),
-                  ],
-                ),
-              ),
-              if (event.location != null)
-                const Icon(Icons.location_on, size: 16, color: Colors.grey),
-            ],
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Time label
+        SizedBox(
+          width: 50,
+          child: Text(
+            start != null ? DateFormat('HH:mm').format(start) : '',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.lightTextSecondary,
+            ),
           ),
         ),
-      ),
+        const SizedBox(width: 12),
+        // Timeline dot + line
+        Column(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: _getEventColor(widget.event),
+                shape: BoxShape.circle,
+              ),
+            ),
+            Container(
+              width: 2,
+              height: _isExpanded ? 160 : 60,
+              color: isDark
+                  ? AppColors.darkBorder
+                  : AppColors.lightBorder,
+            ),
+          ],
+        ),
+        const SizedBox(width: 12),
+        // Event card
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() => _isExpanded = !_isExpanded);
+              widget.onTap?.call();
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.darkSurface
+                    : AppColors.lightSurface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark
+                      ? AppColors.darkBorder
+                      : AppColors.lightBorder,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.event.summary ?? 'Sin título',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      if (widget.event.location != null)
+                        Icon(
+                          Icons.place,
+                          size: 16,
+                          color: isDark
+                              ? AppColors.darkTextTertiary
+                              : AppColors.lightTextTertiary,
+                        ),
+                    ],
+                  ),
+                  if (widget.event.location != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on, size: 13, color: AppColors.accent),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.event.location!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (_isExpanded) ...[
+                    if (widget.event.description != null &&
+                        widget.event.description!.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        widget.event.description!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    // Zen mode button
+                    GestureDetector(
+                      onTap: () {
+                        widget.onStartZenMode?.call(
+                          widget.event.summary ?? 'Tarea',
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white
+                              : AppColors.darkBackground,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.play_arrow,
+                              size: 16,
+                              color: isDark
+                                  ? AppColors.darkBackground
+                                  : Colors.white,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Iniciar Modo Zen',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: isDark
+                                    ? AppColors.darkBackground
+                                    : Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   Color _getEventColor(Event event) {
     final color = event.colorId;
-    if (color == null) return const Color(0xFF6366F1);
+    if (color == null) return AppColors.accent;
 
     const colorMap = {
-      '1': Color(0xFF6366F1), // Indigo
-      '2': Color(0xFF10B981), // Green
-      '3': Color(0xFFF59E0B), // Amber
-      '4': Color(0xFFEF4444), // Red
-      '5': Color(0xFF8B5CF6), // Purple
+      '1': AppColors.accent,
+      '2': AppColors.success,
+      '3': AppColors.warning,
+      '4': AppColors.error,
+      '5': AppColors.coursePurple,
     };
-    return colorMap[color] ?? const Color(0xFF6366F1);
-  }
-
-  String _formatTime(DateTime start, DateTime? end) {
-    final dateStr = DateFormat('MMM d').format(start);
-    final startStr = DateFormat('h:mm a').format(start);
-    if (end != null) {
-      final endStr = DateFormat('h:mm a').format(end);
-      return '$dateStr, $startStr - $endStr';
-    }
-    return '$dateStr, $startStr';
+    return colorMap[color] ?? AppColors.accent;
   }
 }

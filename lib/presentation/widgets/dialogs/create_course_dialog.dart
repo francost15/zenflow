@@ -1,29 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/course.dart';
 import '../../blocs/course/course_bloc.dart';
 import '../../blocs/course/course_event.dart';
+import '../focus_sheet_shell.dart';
 
-class CreateCourseDialog extends StatefulWidget {
-  const CreateCourseDialog({super.key});
+class CreateCourseSheet extends StatefulWidget {
+  const CreateCourseSheet({super.key});
+
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CreateCourseSheet(),
+    );
+  }
 
   @override
-  State<CreateCourseDialog> createState() => _CreateCourseDialogState();
+  State<CreateCourseSheet> createState() => _CreateCourseSheetState();
 }
 
-class _CreateCourseDialogState extends State<CreateCourseDialog> {
+class _CreateCourseSheetState extends State<CreateCourseSheet> {
   final _nameController = TextEditingController();
   final _professorController = TextEditingController();
-  Color _selectedColor = const Color(0xFF6366F1);
+  Color _selectedColor = AppColors.accent;
 
   final _colors = [
-    const Color(0xFF6366F1), // Indigo
-    const Color(0xFF10B981), // Green
-    const Color(0xFFF59E0B), // Amber
-    const Color(0xFFEF4444), // Red
-    const Color(0xFF8B5CF6), // Purple
+    AppColors.courseRed,
+    AppColors.courseBlue,
+    AppColors.coursePurple,
+    AppColors.courseGreen,
+    AppColors.courseAmber,
+    AppColors.coursePink,
     const Color(0xFF06B6D4), // Cyan
-    const Color(0xFFEC4899), // Pink
     const Color(0xFF84CC16), // Lime
   ];
 
@@ -36,66 +47,103 @@ class _CreateCourseDialogState extends State<CreateCourseDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Nueva Materia'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre de la materia',
-                border: OutlineInputBorder(),
-              ),
-              autofocus: true,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _professorController,
-              decoration: const InputDecoration(
-                labelText: 'Profesor (opcional)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Color:'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _colors.map((color) {
-                final isSelected = _selectedColor == color;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedColor = color),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(color: Colors.black, width: 3)
-                          : null,
-                    ),
-                    child: isSelected
-                        ? const Icon(Icons.check, color: Colors.white, size: 20)
-                        : null,
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return FocusSheetShell(
+      title: 'Nueva Materia',
+      monospaceLabel: 'course_registry_02',
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+        ElevatedButton(
+          onPressed: _createCourse,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accent,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          ),
+          child: const Text('REGISTRAR MATERIA'),
         ),
-        ElevatedButton(onPressed: _createCourse, child: const Text('Crear')),
       ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _nameController,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Nombre de la materia',
+              hintStyle: TextStyle(
+                color: (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary).withValues(alpha: 0.5),
+              ),
+              border: InputBorder.none,
+            ),
+            autofocus: true,
+          ),
+          TextField(
+            controller: _professorController,
+            style: theme.textTheme.bodyLarge,
+            decoration: InputDecoration(
+              hintText: 'Profesor (opcional)',
+              hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+              ),
+              border: InputBorder.none,
+            ),
+          ),
+          const Divider(height: 32),
+          const Text(
+            'ETIQUETA DE COLOR',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: _colors.map((color) {
+              final isSelected = _selectedColor == color;
+              return GestureDetector(
+                onTap: () => setState(() => _selectedColor = color),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected 
+                          ? (isDark ? Colors.white : Colors.black) 
+                          : Colors.transparent,
+                      width: 3,
+                    ),
+                    boxShadow: isSelected ? [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      )
+                    ] : null,
+                  ),
+                  child: isSelected
+                      ? Icon(
+                          Icons.check,
+                          color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
+                          size: 20,
+                        )
+                      : null,
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
     );
   }
 
@@ -116,3 +164,4 @@ class _CreateCourseDialogState extends State<CreateCourseDialog> {
     Navigator.pop(context);
   }
 }
+

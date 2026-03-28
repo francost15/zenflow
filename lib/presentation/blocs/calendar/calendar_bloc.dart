@@ -16,21 +16,32 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     CalendarLoadRequested event,
     Emitter<CalendarState> emit,
   ) async {
-    emit(CalendarLoading());
-    try {
+    // Only check auth if we're not already in a state that indicates we're signed in
+    if (state is! CalendarLoaded && state is! CalendarLoading) {
+      emit(CalendarLoading());
       final isAuthorized = await _calendarRepository.isAuthorized();
       if (!isAuthorized) {
         emit(CalendarNeedsSignIn());
         return;
       }
+    } else {
+      // Don't emit generic loading to avoid showing the spinner again if we have events
+      // instead, maybe show a small sync indicator later, but for now we keep the UI stable.
+    }
 
+    try {
       final events = await _calendarRepository.getEvents(
         event.start,
         event.end,
       );
       emit(CalendarLoaded(events: events, start: event.start, end: event.end));
     } catch (e) {
-      emit(CalendarError(e.toString()));
+      // If we hit an auth error specifically, then we go back to sign in
+      if (e.toString().contains('401') || e.toString().contains('unauthorized')) {
+        emit(CalendarNeedsSignIn());
+      } else {
+        emit(CalendarError(e.toString()));
+      }
     }
   }
 

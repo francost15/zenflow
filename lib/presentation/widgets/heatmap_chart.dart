@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_colors.dart';
 
 class HeatmapChart extends StatelessWidget {
   final Map<DateTime, int> data;
@@ -8,24 +9,32 @@ class HeatmapChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    const colors = [
-      Color(0xFFEBEDF0),
-      Color(0xFF9BE9A8),
-      Color(0xFF40C463),
-      Color(0xFF30A14E),
-      Color(0xFF216E39),
-    ];
+    final colors = isDark
+        ? [
+            AppColors.heatmapEmpty,
+            AppColors.heatmapLight.withValues(alpha: 0.3),
+            AppColors.heatmapLight.withValues(alpha: 0.5),
+            AppColors.heatmapMedium,
+            AppColors.heatmapDark,
+          ]
+        : [
+            AppColors.heatmapEmptyLight,
+            AppColors.heatmapLightLight,
+            AppColors.heatmapMediumLight,
+            AppColors.heatmapDarkLight,
+            AppColors.heatmapDarkestLight,
+          ];
 
     final startDate = today.subtract(Duration(days: weeksToShow * 7));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: _buildMonthLabels(startDate, today)),
-        const SizedBox(height: 4),
         SizedBox(
           height: 100,
           child: Row(
@@ -37,9 +46,14 @@ class HeatmapChart extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            const Text(
-              'Less',
-              style: TextStyle(fontSize: 10, color: Colors.grey),
+            Text(
+              'Menos',
+              style: TextStyle(
+                fontSize: 10,
+                color: isDark
+                    ? AppColors.darkTextTertiary
+                    : AppColors.lightTextTertiary,
+              ),
             ),
             const SizedBox(width: 4),
             for (int i = 0; i < colors.length; i++)
@@ -53,31 +67,19 @@ class HeatmapChart extends StatelessWidget {
                 ),
               ),
             const SizedBox(width: 4),
-            const Text(
-              'More',
-              style: TextStyle(fontSize: 10, color: Colors.grey),
+            Text(
+              'Más',
+              style: TextStyle(
+                fontSize: 10,
+                color: isDark
+                    ? AppColors.darkTextTertiary
+                    : AppColors.lightTextTertiary,
+              ),
             ),
           ],
         ),
       ],
     );
-  }
-
-  List<Widget> _buildMonthLabels(DateTime start, DateTime end) {
-    final labels = <Widget>[];
-    var current = DateTime(start.year, start.month);
-
-    while (current.isBefore(end)) {
-      labels.add(
-        Text(
-          _monthAbbr(current.month),
-          style: const TextStyle(fontSize: 10, color: Colors.grey),
-        ),
-      );
-      current = DateTime(current.year, current.month + 1);
-    }
-
-    return labels;
   }
 
   List<Widget> _buildWeeks(DateTime start, DateTime end, List<Color> colors) {
@@ -131,35 +133,17 @@ class HeatmapChart extends StatelessWidget {
   String _getTooltipText(int intensity) {
     switch (intensity) {
       case 0:
-        return 'No activity';
+        return 'Sin actividad';
       case 1:
-        return '1 habit';
+        return '1 hábito';
       case 2:
-        return '2 habits';
+        return '2 hábitos';
       case 3:
-        return '3 habits';
+        return '3 hábitos';
       case 4:
-        return '4+ habits';
+        return '4+ hábitos';
       default:
-        return 'No activity';
+        return 'Sin actividad';
     }
-  }
-
-  String _monthAbbr(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
   }
 }

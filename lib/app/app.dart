@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/theme/app_theme.dart';
 import '../data/datasources/firebase/auth_datasource.dart';
 import '../data/datasources/firestore/task_datasource.dart';
@@ -27,7 +28,6 @@ import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/calendar/calendar_screen.dart';
 import '../presentation/screens/streaks/streaks_screen.dart';
 import '../presentation/screens/courses/courses_screen.dart';
-import '../presentation/screens/profile/profile_screen.dart';
 import '../presentation/screens/zen/zen_mode_screen.dart';
 import '../presentation/widgets/bottom_nav_bar.dart';
 
@@ -60,6 +60,8 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
   late final CalendarBloc _calendarBloc;
 
   bool _showZenMode = false;
+  String? _zenTaskName;
+  ThemeMode _themeMode = ThemeMode.dark;
 
   @override
   void initState() {
@@ -69,6 +71,7 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
     _initStreaks();
     _initCourse();
     _initCalendar();
+    _loadThemePreference();
   }
 
   void _initAuth() {
@@ -99,11 +102,38 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
     _calendarDatasource = GoogleCalendarDatasource();
     _calendarRepository = CalendarRepositoryImpl(_calendarDatasource);
     _calendarBloc = CalendarBloc(_calendarRepository);
-    // Initialize Calendar with serverClientId for OAuth
     _calendarDatasource.initialize(
       serverClientId:
           '425631623811-3ir83r6i9kb688ml7rlnj4gnuelopo5m.apps.googleusercontent.com',
     );
+  }
+
+  Future<void> _loadThemePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDark = prefs.getBool('isDarkMode') ?? true;
+    setState(() => _themeMode = isDark ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  Future<void> _toggleTheme() async {
+    final newMode =
+        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    setState(() => _themeMode = newMode);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkMode', newMode == ThemeMode.dark);
+  }
+
+  void _enterZenMode({String? taskName}) {
+    setState(() {
+      _showZenMode = true;
+      _zenTaskName = taskName;
+    });
+  }
+
+  void _exitZenMode() {
+    setState(() {
+      _showZenMode = false;
+      _zenTaskName = null;
+    });
   }
 
   @override
@@ -129,9 +159,24 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
       child: MaterialApp(
         title: 'ZenFlow',
         theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: _themeMode,
         debugShowCheckedModeBanner: false,
+        builder: (context, child) {
+          return AnimatedTheme(
+            data: _themeMode == ThemeMode.dark
+                ? AppTheme.darkTheme
+                : AppTheme.lightTheme,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOutCubic,
+            child: child!,
+          );
+        },
         home: _showZenMode
-            ? ZenModeScreen(onExit: () => setState(() => _showZenMode = false))
+            ? ZenModeScreen(
+                onExit: _exitZenMode,
+                taskName: _zenTaskName,
+              )
             : _buildMainScreen(),
       ),
     );
@@ -140,13 +185,14 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
   Widget _buildMainScreen() {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
-        // Force rebuild on auth state changes for web
         debugPrint('Auth state changed: $state');
       },
       builder: (context, state) {
         if (state is AuthAuthenticated) {
           return _MainShell(
-            onZenModeToggle: () => setState(() => _showZenMode = true),
+            onZenModeToggle: _enterZenMode,
+            onThemeToggle: _toggleTheme,
+            isDarkMode: _themeMode == ThemeMode.dark,
           );
         }
         return const LoginScreen();
@@ -156,9 +202,15 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
 }
 
 class _MainShell extends StatefulWidget {
-  final VoidCallback onZenModeToggle;
+  final void Function({String? taskName}) onZenModeToggle;
+  final VoidCallback onThemeToggle;
+  final bool isDarkMode;
 
-  const _MainShell({required this.onZenModeToggle});
+  const _MainShell({
+    required this.onZenModeToggle,
+    required this.onThemeToggle,
+    required this.isDarkMode,
+  });
 
   @override
   State<_MainShell> createState() => _MainShellState();
@@ -173,24 +225,22 @@ class _MainShellState extends State<_MainShell> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          const HomeScreen(),
-          const CalendarScreen(),
-          const StreaksScreen(),
+          HomeScreen(
+            onThemeToggle: widget.onThemeToggle,
+            isDarkMode: widget.isDarkMode,
+          ),
+          CalendarScreen(
+            onStartZenMode: (taskName) =>
+                widget.onZenModeToggle(taskName: taskName),
+          ),
           const CoursesScreen(),
-          const ProfileScreen(),
+          const StreaksScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
       ),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton(
-              onPressed: widget.onZenModeToggle,
-              backgroundColor: const Color(0xFF111827),
-              child: const Icon(Icons.self_improvement, color: Colors.white),
-            )
-          : null,
     );
   }
 }

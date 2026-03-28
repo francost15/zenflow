@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../blocs/course/course_bloc.dart';
 import '../../blocs/course/course_event.dart';
 import '../../blocs/course/course_state.dart';
@@ -23,102 +24,180 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Cursos',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-      body: BlocBuilder<CourseBloc, CourseState>(
-        builder: (context, state) {
-          if (state is CourseLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-          if (state is CourseError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── Header ───
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Row(
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<CourseBloc>().add(CoursesLoadRequested());
-                    },
-                    child: const Text('Reintentar'),
+                  Text('Asignaturas', style: theme.textTheme.headlineMedium),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => _showCreateCourseDialog(context),
+                    icon: Icon(
+                      Icons.add,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
                 ],
               ),
-            );
-          }
+            ),
+            const SizedBox(height: 16),
+            // ─── Course Grid ───
+            Expanded(
+              child: BlocBuilder<CourseBloc, CourseState>(
+                builder: (context, state) {
+                  if (state is CourseLoading) {
+                    return Center(
+                      child: CircularProgressIndicator(color: AppColors.accent),
+                    );
+                  }
 
-          if (state is CourseLoaded) {
-            if (state.courses.isEmpty) {
-              return EmptyState(
-                icon: Icons.school,
-                title: 'No hay cursos',
-                subtitle: 'Agrega tus materias para organizarte mejor',
-                action: ElevatedButton.icon(
-                  onPressed: () => _showCreateCourseDialog(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Agregar Curso'),
-                ),
-              );
-            }
+                  if (state is CourseError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                          const SizedBox(height: 16),
+                          Text(state.message),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              context.read<CourseBloc>().add(CoursesLoadRequested());
+                            },
+                            child: const Text('Reintentar'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<CourseBloc>().add(CoursesLoadRequested());
-              },
-              child: ListView.builder(
-                padding: const EdgeInsets.only(top: 8, bottom: 80),
-                itemCount: state.courses.length,
-                itemBuilder: (context, index) {
-                  final course = state.courses[index];
-                  return CourseCard(
-                    course: course,
-                    onTap: () => _showCourseDetails(context, course),
-                    onEdit: () => _showEditCourseDialog(context, course),
-                    onDelete: () =>
-                        _confirmDelete(context, course.id, course.name),
+                  if (state is CourseLoaded) {
+                    if (state.courses.isEmpty) {
+                      return EmptyState(
+                        icon: Icons.school,
+                        title: 'No hay cursos',
+                        subtitle: 'Agrega tus materias para organizarte mejor',
+                        action: ElevatedButton.icon(
+                          onPressed: () => _showCreateCourseDialog(context),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Agregar Curso'),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<CourseBloc>().add(CoursesLoadRequested());
+                      },
+                      child: GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.9,
+                        ),
+                        itemCount: state.courses.length + 1, // +1 for "Añadir" card
+                        itemBuilder: (context, index) {
+                          if (index == state.courses.length) {
+                            return _buildAddCard(theme, isDark);
+                          }
+                          final course = state.courses[index];
+                          return CourseCard(
+                            course: course,
+                            onTap: () => _showCourseDetails(context, course),
+                            onEdit: () => _showEditCourseDialog(context, course),
+                            onDelete: () =>
+                                _confirmDelete(context, course.id, course.name),
+                          );
+                        },
+                      ),
+                    );
+                  }
+
+                  return Center(
+                    child: CircularProgressIndicator(color: AppColors.accent),
                   );
                 },
               ),
-            );
-          }
-
-          return const Center(child: CircularProgressIndicator());
-        },
+            ),
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateCourseDialog(context),
-        child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildAddCard(ThemeData theme, bool isDark) {
+    return GestureDetector(
+      onTap: () => _showCreateCourseDialog(context),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            width: 1.5,
+            // Can't do dashed easily in Flutter, so solid with lighter color
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.darkSurfaceElevated
+                    : AppColors.lightSurfaceElevated,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.add,
+                size: 24,
+                color: isDark
+                    ? AppColors.darkTextTertiary
+                    : AppColors.lightTextTertiary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Añadir',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isDark
+                    ? AppColors.darkTextTertiary
+                    : AppColors.lightTextTertiary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   void _showCreateCourseDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => BlocProvider.value(
-        value: context.read<CourseBloc>(),
-        child: const CreateCourseDialog(),
-      ),
-    );
+    CreateCourseSheet.show(context);
   }
 
   void _showEditCourseDialog(BuildContext context, dynamic course) {
-    // TODO: Implement edit dialog
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Editar curso - pronto disponible')),
     );
   }
 
   void _showCourseDetails(BuildContext context, dynamic course) {
+    final theme = Theme.of(context);
+
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -128,6 +207,18 @@ class _CoursesScreenState extends State<CoursesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               Row(
                 children: [
                   Container(
@@ -142,10 +233,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                   Expanded(
                     child: Text(
                       course.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: theme.textTheme.headlineSmall,
                     ),
                   ),
                 ],
@@ -154,31 +242,39 @@ class _CoursesScreenState extends State<CoursesScreen> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Icon(Icons.person, size: 16, color: Colors.grey),
+                    Icon(Icons.person, size: 16, color: theme.textTheme.bodySmall?.color),
                     const SizedBox(width: 8),
-                    Text(course.professor!),
+                    Text(course.professor!, style: theme.textTheme.bodyMedium),
                   ],
                 ),
               ],
               const SizedBox(height: 16),
               Row(
                 children: [
-                  const Text('Progreso: '),
+                  Text('Progreso: ', style: theme.textTheme.bodySmall),
                   Expanded(
-                    child: LinearProgressIndicator(
-                      value: course.progress,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(course.color),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: course.progress,
+                        minHeight: 8,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text('${(course.progress * 100).toInt()}%'),
+                  Text(
+                    '${(course.progress * 100).toInt()}%',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.accent,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Cerrar'),
                 ),
@@ -210,7 +306,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
               context.read<CourseBloc>().add(CourseDeleted(courseId));
               Navigator.pop(dialogContext);
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Eliminar'),
           ),
         ],

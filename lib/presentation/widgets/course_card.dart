@@ -1,5 +1,6 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../../core/constants/app_colors.dart';
 import '../../domain/entities/course.dart';
 
 class CourseCard extends StatelessWidget {
@@ -18,126 +19,95 @@ class CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final initial = course.name.isNotEmpty ? course.name[0].toUpperCase() : '?';
+    final pendingTasks = ((1 - course.progress) * 10).round(); // Approximate
+
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: () => _showContextMenu(context),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(height: 8, color: course.color),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            // Circular progress ring with initial
+            SizedBox(
+              width: 72,
+              height: 72,
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          course.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                      PopupMenuButton<String>(
-                        onSelected: (value) {
-                          if (value == 'edit') onEdit?.call();
-                          if (value == 'delete') onDelete?.call();
-                        },
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit),
-                                SizedBox(width: 8),
-                                Text('Editar'),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Eliminar',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  // Background ring
+                  SizedBox(
+                    width: 72,
+                    height: 72,
+                    child: CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 3,
+                      color: isDark
+                          ? AppColors.darkBorder
+                          : AppColors.lightBorder,
+                    ),
                   ),
-                  if (course.professor != null) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.person, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          course.professor!,
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ],
-                  if (course.schedule.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: course.schedule.map((s) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: course.color.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            '${_dayName(s.dayOfWeek)} ${_formatTime(s.startTime)}',
-                            style: TextStyle(fontSize: 12, color: course.color),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: course.progress,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              course.color,
-                            ),
-                            minHeight: 8,
-                          ),
-                        ),
+                  // Progress ring
+                  SizedBox(
+                    width: 72,
+                    height: 72,
+                    child: CustomPaint(
+                      painter: _CourseProgressPainter(
+                        progress: course.progress,
+                        color: course.color,
+                        strokeWidth: 3.5,
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '${(course.progress * 100).toInt()}%',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF6366F1),
-                        ),
-                      ),
-                    ],
+                    ),
+                  ),
+                  // Initial letter
+                  Text(
+                    initial,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Course name
+            Text(
+              course.name,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            // Status
+            Text(
+              course.progress >= 1.0
+                  ? 'Al día'
+                  : '$pendingTasks pendientes',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: course.progress >= 1.0
+                    ? AppColors.success
+                    : (isDark
+                        ? AppColors.darkTextTertiary
+                        : AppColors.lightTextTertiary),
               ),
             ),
           ],
@@ -146,14 +116,69 @@ class CourseCard extends StatelessWidget {
     );
   }
 
-  String _dayName(int day) {
-    const days = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    return days[day];
+  void _showContextMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Editar'),
+              onTap: () {
+                Navigator.pop(context);
+                onEdit?.call();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete, color: AppColors.error),
+              title: Text('Eliminar', style: TextStyle(color: AppColors.error)),
+              onTap: () {
+                Navigator.pop(context);
+                onDelete?.call();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CourseProgressPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double strokeWidth;
+
+  _CourseProgressPainter({
+    required this.progress,
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      2 * math.pi * progress,
+      false,
+      paint,
+    );
   }
 
-  String _formatTime(TimeOfDay time) {
-    final now = DateTime.now();
-    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    return DateFormat('h:mm a').format(dt);
+  @override
+  bool shouldRepaint(covariant _CourseProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }

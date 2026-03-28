@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_colors.dart';
 import '../../core/utils/connectivity_service.dart';
 
 class ConnectionIndicator extends StatelessWidget {
@@ -15,15 +16,20 @@ class ConnectionIndicator extends StatelessWidget {
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 4),
-          color: Colors.orange,
+          color: AppColors.warning,
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.cloud_off, size: 16, color: Colors.white),
+              Icon(Icons.cloud_off, size: 14, color: Colors.white),
               SizedBox(width: 8),
               Text(
                 'Modo offline',
-                style: TextStyle(color: Colors.white, fontSize: 12),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                ),
               ),
             ],
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_colors.dart';
 
 class StreakCounter extends StatelessWidget {
   final int currentStreak;
@@ -12,43 +13,101 @@ class StreakCounter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const Text('🔥', style: TextStyle(fontSize: 48)),
-          const SizedBox(height: 8),
-          Text(
-            '$currentStreak',
-            style: const TextStyle(
-              fontSize: 72,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF6366F1),
-            ),
-          ),
-          const Text(
-            'días consecutivos',
-            style: TextStyle(fontSize: 18, color: Color(0xFF6B7280)),
-          ),
-          if (longestStreak > 0) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Row(
+      children: [
+        // Current streak
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppColors.darkSurface
+                  : AppColors.lightSurface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark
+                    ? AppColors.darkBorder
+                    : AppColors.lightBorder,
               ),
-              child: Text(
-                'Récord: $longestStreak días',
-                style: const TextStyle(
-                  color: Color(0xFF10B981),
-                  fontWeight: FontWeight.w600,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ACTUAL',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                    color: isDark
+                        ? AppColors.darkTextTertiary
+                        : AppColors.lightTextTertiary,
+                  ),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  '$currentStreak',
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w800,
+                    color: theme.colorScheme.onSurface,
+                    height: 1.0,
+                    letterSpacing: -2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Longest streak
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppColors.darkSurface
+                  : AppColors.lightSurface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark
+                    ? AppColors.darkBorder
+                    : AppColors.lightBorder,
               ),
             ),
-          ],
-        ],
-      ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'MAYOR',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                    color: isDark
+                        ? AppColors.darkTextTertiary
+                        : AppColors.lightTextTertiary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$longestStreak',
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w800,
+                    color: theme.colorScheme.onSurface,
+                    height: 1.0,
+                    letterSpacing: -2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

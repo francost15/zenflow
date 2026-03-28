@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../blocs/calendar/calendar_bloc.dart';
 import '../../../blocs/calendar/calendar_event.dart';
 
@@ -22,7 +23,7 @@ class GoogleSignInButtonWidget extends StatelessWidget {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.schedule, size: 48, color: Color(0xFF6366F1)),
+          Icon(Icons.schedule, size: 48, color: AppColors.accent),
           const SizedBox(height: 16),
           const Text(
             'Google Calendar en web',

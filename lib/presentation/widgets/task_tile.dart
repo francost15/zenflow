@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../domain/entities/task.dart';
+import '../../../core/constants/app_colors.dart';
 
 class TaskTile extends StatelessWidget {
   final Task task;
@@ -19,21 +19,29 @@ class TaskTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCompleted = task.status == TaskStatus.completed;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Dismissible(
       key: Key(task.id),
       direction: DismissDirection.horizontal,
       background: Container(
-        color: Colors.green,
+        decoration: BoxDecoration(
+          color: AppColors.success,
+          borderRadius: BorderRadius.circular(16),
+        ),
         alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(left: 16),
+        padding: const EdgeInsets.only(left: 20),
         child: const Icon(Icons.check, color: Colors.white),
       ),
       secondaryBackground: Container(
-        color: Colors.red,
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(16),
+        ),
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
-        child: const Icon(Icons.delete, color: Colors.white),
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.startToEnd) {
@@ -52,6 +60,7 @@ class TaskTile extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
                   child: const Text('Eliminar'),
                 ),
               ],
@@ -64,20 +73,60 @@ class TaskTile extends StatelessWidget {
           onDelete?.call();
         }
       },
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _isActive(task) && !isCompleted
+                  ? AppColors.accentBlue.withValues(alpha: 0.4)
+                  : isDark
+                      ? AppColors.darkBorder
+                      : AppColors.lightBorder,
+            ),
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Checkbox(
-                  value: isCompleted,
-                  onChanged: (value) => onToggle(value ?? false),
-                  activeColor: const Color(0xFF10B981),
+                // Play icon / checkbox
+                GestureDetector(
+                  onTap: () => onToggle(!isCompleted),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isCompleted
+                          ? AppColors.accent
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isCompleted
+                            ? AppColors.accent
+                            : isDark
+                                ? AppColors.darkTextTertiary
+                                : AppColors.lightTextTertiary,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      isCompleted
+                          ? Icons.check
+                          : Icons.play_arrow,
+                      size: 16,
+                      color: isCompleted
+                          ? Colors.white
+                          : isDark
+                              ? AppColors.darkTextTertiary
+                              : AppColors.lightTextTertiary,
+                    ),
+                  ),
                 ),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,40 +134,47 @@ class TaskTile extends StatelessWidget {
                       Text(
                         task.title,
                         style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
                           decoration: isCompleted
                               ? TextDecoration.lineThrough
                               : null,
-                          fontWeight: FontWeight.w500,
+                          color: isCompleted
+                              ? (isDark
+                                  ? AppColors.darkTextTertiary
+                                  : AppColors.lightTextTertiary)
+                              : theme.colorScheme.onSurface,
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 12,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 4),
                           Text(
-                            DateFormat('MMM d').format(task.dueDate),
+                            _priorityLabel(task.priority).toUpperCase(),
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1,
+                              color: _priorityColor(task.priority),
                             ),
                           ),
                           if (task.dueTime != null) ...[
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.access_time,
-                              size: 12,
-                              color: Colors.grey[600],
-                            ),
-                            const SizedBox(width: 4),
                             Text(
-                              '${task.dueTime!.hour}:${task.dueTime!.minute.toString().padLeft(2, '0')}',
+                              ' · ',
                               style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
+                                color: isDark
+                                    ? AppColors.darkTextTertiary
+                                    : AppColors.lightTextTertiary,
+                              ),
+                            ),
+                            Text(
+                              '${task.dueTime!.hour.toString().padLeft(2, '0')}:${task.dueTime!.minute.toString().padLeft(2, '0')}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary,
                               ),
                             ),
                           ],
@@ -127,7 +183,13 @@ class TaskTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                _buildPriorityDot(task.priority),
+                Icon(
+                  Icons.chevron_right,
+                  size: 20,
+                  color: isDark
+                      ? AppColors.darkTextTertiary
+                      : AppColors.lightTextTertiary,
+                ),
               ],
             ),
           ),
@@ -136,23 +198,41 @@ class TaskTile extends StatelessWidget {
     );
   }
 
-  Widget _buildPriorityDot(TaskPriority priority) {
-    Color color;
+  bool _isActive(Task task) {
+    final now = DateTime.now();
+    if (task.dueTime != null) {
+      final taskTime = DateTime(
+        task.dueDate.year,
+        task.dueDate.month,
+        task.dueDate.day,
+        task.dueTime!.hour,
+        task.dueTime!.minute,
+      );
+      final diff = taskTime.difference(now).inMinutes;
+      return diff >= -30 && diff <= 60;
+    }
+    return false;
+  }
+
+  String _priorityLabel(TaskPriority priority) {
     switch (priority) {
       case TaskPriority.high:
-        color = const Color(0xFFEF4444);
-        break;
+        return 'Priority 01';
       case TaskPriority.medium:
-        color = const Color(0xFFF59E0B);
-        break;
+        return 'Priority 02';
       case TaskPriority.low:
-        color = const Color(0xFF6B7280);
-        break;
+        return 'Standard';
     }
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
+  }
+
+  Color _priorityColor(TaskPriority priority) {
+    switch (priority) {
+      case TaskPriority.high:
+        return AppColors.error;
+      case TaskPriority.medium:
+        return AppColors.warning;
+      case TaskPriority.low:
+        return AppColors.darkTextTertiary;
+    }
   }
 }
