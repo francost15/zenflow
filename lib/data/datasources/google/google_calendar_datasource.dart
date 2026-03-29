@@ -109,14 +109,23 @@ class GoogleCalendarDatasource {
   }
 
   Future<calendar.Event> createEvent(calendar.Event event) async {
+    if (_calendarApi == null) {
+      throw CalendarAuthRequiredException();
+    }
     return await _calendarApi!.events.insert(event, 'primary');
   }
 
   Future<calendar.Event> updateEvent(calendar.Event event) async {
+    if (_calendarApi == null) {
+      throw CalendarAuthRequiredException();
+    }
     return await _calendarApi!.events.update(event, 'primary', event.id!);
   }
 
   Future<void> deleteEvent(String eventId) async {
+    if (_calendarApi == null) {
+      throw CalendarAuthRequiredException();
+    }
     await _calendarApi!.events.delete('primary', eventId);
   }
 
