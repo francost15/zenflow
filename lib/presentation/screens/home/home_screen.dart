@@ -12,6 +12,7 @@ import '../../blocs/task/task_state.dart';
 import '../../blocs/streaks/streaks_bloc.dart';
 import '../../blocs/streaks/streaks_state.dart';
 import '../../widgets/task_tile.dart';
+import '../../widgets/sync_status_badge.dart';
 import '../../widgets/dialogs/create_task_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -159,7 +160,9 @@ class _HomeScreenState extends State<HomeScreen>
               backgroundColor: isDark
                   ? AppColors.darkSurfaceElevated
                   : AppColors.lightSurfaceElevated,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             icon: AnimatedSwitcher(
               duration: const Duration(milliseconds: 400),
@@ -168,7 +171,9 @@ class _HomeScreenState extends State<HomeScreen>
                 child: FadeTransition(opacity: anim, child: child),
               ),
               child: Icon(
-                widget.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                widget.isDarkMode
+                    ? Icons.light_mode_rounded
+                    : Icons.dark_mode_rounded,
                 key: ValueKey(widget.isDarkMode),
                 size: 20,
                 color: AppColors.accent,
@@ -210,7 +215,9 @@ class _HomeScreenState extends State<HomeScreen>
                         children: [
                           Text(
                             state.user.displayName ?? 'Usuario',
-                            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           Text(
                             state.user.email ?? '',
@@ -225,11 +232,18 @@ class _HomeScreenState extends State<HomeScreen>
                     value: 'logout',
                     child: Row(
                       children: [
-                        Icon(Icons.logout_rounded, size: 18, color: AppColors.error),
+                        Icon(
+                          Icons.logout_rounded,
+                          size: 18,
+                          color: AppColors.error,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           'Cerrar Sesión',
-                          style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -253,7 +267,9 @@ class _HomeScreenState extends State<HomeScreen>
       margin: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+        color: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.lightSurfaceElevated,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -363,7 +379,9 @@ class _HomeScreenState extends State<HomeScreen>
                     Icon(
                       Icons.keyboard_arrow_down_rounded,
                       size: 24,
-                      color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+                      color: isDark
+                          ? AppColors.darkTextTertiary
+                          : AppColors.lightTextTertiary,
                     ),
                   ],
                 ),
@@ -371,28 +389,7 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
           const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.bolt_rounded, size: 14, color: AppColors.accent),
-                const SizedBox(width: 6),
-                Text(
-                  'ACTIVO',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SyncStatusBadgeWithLogic(),
         ],
       ),
     );
@@ -403,9 +400,7 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (context, state) {
         if (state is TaskLoading) {
           return const SliverFillRemaining(
-            child: Center(
-              child: CircularProgressIndicator(strokeWidth: 3),
-            ),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 3)),
           );
         }
 
@@ -417,14 +412,24 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+                    Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: AppColors.error,
+                    ),
                     const SizedBox(height: 24),
                     Text(
                       'No pudimos cargar tus tareas',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    Text(state.message, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
                     const SizedBox(height: 32),
                     OutlinedButton(
                       onPressed: _loadTasks,
@@ -450,7 +455,9 @@ class _HomeScreenState extends State<HomeScreen>
                       'Día despejado',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -474,8 +481,8 @@ class _HomeScreenState extends State<HomeScreen>
                   task: task,
                   onToggle: (completed) {
                     context.read<TaskBloc>().add(
-                          TaskStatusToggled(task: task, completed: completed),
-                        );
+                      TaskStatusToggled(task: task, completed: completed),
+                    );
                   },
                   onTap: () => _showTaskDetails(task),
                   onDelete: () {
@@ -509,9 +516,12 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: isDark 
-              ? const ColorScheme.dark(primary: AppColors.accent, surface: AppColors.darkSurface)
-              : const ColorScheme.light(primary: AppColors.accent),
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: AppColors.accent,
+                    surface: AppColors.darkSurface,
+                  )
+                : const ColorScheme.light(primary: AppColors.accent),
           ),
           child: child!,
         );
@@ -552,7 +562,9 @@ class _HomeScreenState extends State<HomeScreen>
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 32),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -564,7 +576,9 @@ class _HomeScreenState extends State<HomeScreen>
                   if (task.dueTime != null)
                     Text(
                       '${task.dueTime!.hour.toString().padLeft(2, '0')}:${task.dueTime!.minute.toString().padLeft(2, '0')}',
-                      style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                 ],
               ),
@@ -581,7 +595,9 @@ class _HomeScreenState extends State<HomeScreen>
                 Text(
                   task.description!,
                   style: theme.textTheme.bodyLarge?.copyWith(
-                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
                   ),
                 ),
               ],
@@ -631,17 +647,23 @@ class _PriorityChip extends StatelessWidget {
 
   String _priorityLabel(TaskPriority priority) {
     switch (priority) {
-      case TaskPriority.high: return 'Prioridad Alta';
-      case TaskPriority.medium: return 'Prioridad Media';
-      case TaskPriority.low: return 'Estándar';
+      case TaskPriority.high:
+        return 'Prioridad Alta';
+      case TaskPriority.medium:
+        return 'Prioridad Media';
+      case TaskPriority.low:
+        return 'Estándar';
     }
   }
 
   Color _priorityColor(TaskPriority priority) {
     switch (priority) {
-      case TaskPriority.high: return AppColors.error;
-      case TaskPriority.medium: return AppColors.warning;
-      case TaskPriority.low: return AppColors.darkTextTertiary;
+      case TaskPriority.high:
+        return AppColors.error;
+      case TaskPriority.medium:
+        return AppColors.warning;
+      case TaskPriority.low:
+        return AppColors.darkTextTertiary;
     }
   }
 }
