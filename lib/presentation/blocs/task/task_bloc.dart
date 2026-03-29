@@ -7,7 +7,7 @@ import 'task_state.dart';
 class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final TaskRepository _taskRepository;
   DateTime? _selectedDate;
-  String? _pendingNoticeMessage;
+  final List<String> _pendingNotices = [];
 
   TaskBloc(this._taskRepository) : super(TaskInitial()) {
     on<TasksLoadRequested>(_onLoadRequested);
@@ -16,6 +16,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<TaskUpdated>(_onUpdated);
     on<TaskDeleted>(_onDeleted);
     on<TaskStatusToggled>(_onStatusToggled);
+    on<TaskSyncWarningQueued>(_onSyncWarningQueued);
   }
 
   Future<void> _onLoadRequested(
@@ -26,7 +27,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     try {
       final tasks = await _taskRepository.getTasks();
       emit(
-        TaskLoaded(tasks: tasks, noticeMessage: _consumePendingNoticeMessage()),
+        TaskLoaded(tasks: tasks, noticeMessage: _consumeNextPendingNotice()),
       );
     } catch (e) {
       emit(TaskError(e.toString()));
@@ -45,7 +46,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         TaskLoaded(
           tasks: tasks,
           selectedDate: event.date,
-          noticeMessage: _consumePendingNoticeMessage(),
+          noticeMessage: _consumeNextPendingNotice(),
         ),
       );
     } catch (e) {
@@ -96,10 +97,16 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     }
   }
 
-  String? _consumePendingNoticeMessage() {
-    final message = _pendingNoticeMessage;
-    _pendingNoticeMessage = null;
-    return message;
+  void _onSyncWarningQueued(
+    TaskSyncWarningQueued event,
+    Emitter<TaskState> emit,
+  ) {
+    _pendingNotices.add(event.message);
+  }
+
+  String? _consumeNextPendingNotice() {
+    if (_pendingNotices.isEmpty) return null;
+    return _pendingNotices.removeAt(0);
   }
 
   Future<bool> _runTaskMutation(
@@ -110,7 +117,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
       await action();
       return true;
     } on CalendarSyncWarningException catch (e) {
-      _pendingNoticeMessage = e.message;
+      _pendingNotices.add(e.message);
       return true;
     } catch (e) {
       emit(TaskError(e.toString()));

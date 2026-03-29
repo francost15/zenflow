@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app/tool/planning/models.dart';
 import 'package:app/tool/planning/gate_checker.dart';
+import 'dart:io' as io;
 
 void main() {
   group('TaskId parsing', () {
@@ -499,6 +500,155 @@ void main() {
     test('Band 4 (21-25): max 1 agent', () {
       expect(getMaxAgents(21), 1);
       expect(getMaxAgents(25), 1);
+    });
+  });
+
+  group(
+    'Requirement 13 - block closure when verification artifacts missing',
+    () {
+      test('blocks phase closure when required verification file missing', () {
+        final task = TaskEntry(
+          taskId: 'PHASE-01-PLAN-01-T01',
+          planId: 'PHASE-01-PLAN-01',
+          phaseId: 'PHASE-01',
+          impact: 3,
+          riskClosed: 4,
+          effort: 2,
+          verifiability: 5,
+          dependencyUnlock: 2,
+          validationFactor: 1.0,
+          required: true,
+        );
+        final plan = PlanEntry(
+          planId: 'PHASE-01-PLAN-01',
+          phaseId: 'PHASE-01',
+          tasks: [task],
+        );
+        final phase = PhaseEntry(
+          phaseId: 'PHASE-01',
+          plans: [plan],
+          targetScore: 16,
+          requiredVerificationFiles: ['PHASE-01-VERIFICATION.md'],
+          closedDependencies: ['PHASE-00'],
+        );
+        final result = evaluatePhaseGateWithVerification(
+          phase,
+          getDefaultClosedDependenciesForPhase,
+        );
+        expect(result.passed, false);
+        expect(
+          result.blockers.any((b) => b.contains('verification artifact')),
+          true,
+        );
+      });
+
+      test('allows phase closure when verification file exists', () async {
+        final tmpDir = io.Directory.systemTemp.createTempSync('gate_test_');
+        final verificationFile = io.File(
+          '${tmpDir.path}/PHASE-01-VERIFICATION.md',
+        );
+        verificationFile.writeAsStringSync('# Verification');
+
+        final task = TaskEntry(
+          taskId: 'PHASE-01-PLAN-01-T01',
+          planId: 'PHASE-01-PLAN-01',
+          phaseId: 'PHASE-01',
+          impact: 3,
+          riskClosed: 4,
+          effort: 2,
+          verifiability: 5,
+          dependencyUnlock: 2,
+          validationFactor: 1.0,
+          required: true,
+        );
+        final plan = PlanEntry(
+          planId: 'PHASE-01-PLAN-01',
+          phaseId: 'PHASE-01',
+          tasks: [task],
+        );
+        final phase = PhaseEntry(
+          phaseId: 'PHASE-01',
+          plans: [plan],
+          targetScore: 16,
+          requiredVerificationFiles: [verificationFile.path],
+          closedDependencies: ['PHASE-00'],
+        );
+        final result = evaluatePhaseGateWithVerification(
+          phase,
+          getDefaultClosedDependenciesForPhase,
+        );
+        expect(result.passed, true);
+
+        tmpDir.deleteSync(recursive: true);
+      });
+    },
+  );
+
+  group('Requirement 14 - block advancement when dependencies are open', () {
+    test('blocks phase advancement when dependency phase not closed', () {
+      final task = TaskEntry(
+        taskId: 'PHASE-01-PLAN-01-T01',
+        planId: 'PHASE-01-PLAN-01',
+        phaseId: 'PHASE-01',
+        impact: 3,
+        riskClosed: 4,
+        effort: 2,
+        verifiability: 5,
+        dependencyUnlock: 2,
+        validationFactor: 1.0,
+        required: true,
+      );
+      final plan = PlanEntry(
+        planId: 'PHASE-01-PLAN-01',
+        phaseId: 'PHASE-01',
+        tasks: [task],
+      );
+      final phase = PhaseEntry(
+        phaseId: 'PHASE-01',
+        plans: [plan],
+        targetScore: 16,
+        closedDependencies: [],
+      );
+      final result = evaluatePhaseGateWithVerification(
+        phase,
+        getDefaultClosedDependenciesForPhase,
+      );
+      expect(result.passed, false);
+      expect(
+        result.blockers.any((b) => b.contains('Open dependency phases')),
+        true,
+      );
+    });
+
+    test('allows phase advancement when all dependencies closed', () {
+      final task = TaskEntry(
+        taskId: 'PHASE-01-PLAN-01-T01',
+        planId: 'PHASE-01-PLAN-01',
+        phaseId: 'PHASE-01',
+        impact: 3,
+        riskClosed: 4,
+        effort: 2,
+        verifiability: 5,
+        dependencyUnlock: 2,
+        validationFactor: 1.0,
+        required: true,
+      );
+      final plan = PlanEntry(
+        planId: 'PHASE-01-PLAN-01',
+        phaseId: 'PHASE-01',
+        tasks: [task],
+      );
+      final phase = PhaseEntry(
+        phaseId: 'PHASE-01',
+        plans: [plan],
+        targetScore: 16,
+        closedDependencies: ['PHASE-00'],
+      );
+      final result = evaluatePhaseGateWithVerification(
+        phase,
+        getDefaultClosedDependenciesForPhase,
+      );
+      expect(result.passed, true);
     });
   });
 }

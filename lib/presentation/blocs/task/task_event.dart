@@ -55,3 +55,12 @@ class TaskStatusToggled extends TaskEvent {
   @override
   List<Object?> get props => [task, completed];
 }
+
+class TaskSyncWarningQueued extends TaskEvent {
+  final String message;
+
+  const TaskSyncWarningQueued(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

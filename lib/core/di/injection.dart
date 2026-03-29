@@ -65,7 +65,11 @@ Future<void> initDependencies() async {
   // ─── BLoCs ────────────────────────────────────────────────────────────────
 
   getIt.registerFactory<AuthBloc>(
-    () => AuthBloc(getIt<AuthRepository>(), getIt<CalendarRepository>()),
+    () => AuthBloc(
+      getIt<AuthRepository>(),
+      getIt<CalendarRepository>(),
+      getIt<TaskRepository>(),
+    ),
   );
   getIt.registerFactory<TaskBloc>(() => TaskBloc(getIt<TaskRepository>()));
   getIt.registerFactory<StreaksBloc>(
@@ -75,7 +79,7 @@ Future<void> initDependencies() async {
     () => CourseBloc(getIt<CourseRepository>()),
   );
   getIt.registerFactory<CalendarBloc>(
-    () => CalendarBloc(getIt<CalendarRepository>()),
+    () => CalendarBloc(getIt<CalendarRepository>(), getIt<TaskRepository>()),
   );
 
   // ─── External services ────────────────────────────────────────────────────

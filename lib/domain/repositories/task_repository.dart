@@ -1,4 +1,5 @@
 import '../entities/task.dart';
+import '../../data/services/task_calendar_sync_service.dart';
 
 abstract class TaskRepository {
   Future<List<Task>> getTasks();
@@ -7,4 +8,5 @@ abstract class TaskRepository {
   Future<Task> updateTask(Task task);
   Future<void> deleteTask(Task task);
   Future<void> toggleTaskStatus(Task task, bool completed);
+  Future<ReconciliationResult> reconcileUnsyncedTasks();
 }

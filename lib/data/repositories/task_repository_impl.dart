@@ -44,4 +44,11 @@ class TaskRepositoryImpl implements TaskRepository {
     );
     await updateTask(updatedTask);
   }
+
+  @override
+  Future<ReconciliationResult> reconcileUnsyncedTasks() async {
+    final models = await _datasource.getTasksWithoutCalendarEvent();
+    final tasks = models.map((m) => m.toEntity()).toList();
+    return _syncService.reconcileUnsyncedTasks(tasks);
+  }
 }

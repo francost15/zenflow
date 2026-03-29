@@ -308,6 +308,9 @@ class FakeTaskDatasource implements TaskDatasource {
     updatedTask = task;
     return task;
   }
+
+  @override
+  Future<List<TaskModel>> getTasksWithoutCalendarEvent() async => const [];
 }
 
 class FakeCalendarRepository implements CalendarRepository {

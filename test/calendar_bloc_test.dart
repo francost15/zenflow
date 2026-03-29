@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:googleapis/calendar/v3.dart';
+import 'package:app/data/services/task_calendar_sync_service.dart';
+import 'package:app/domain/entities/task.dart';
 import 'package:app/domain/repositories/calendar_repository.dart';
+import 'package:app/domain/repositories/task_repository.dart';
 import 'package:app/presentation/blocs/calendar/calendar_bloc.dart';
 import 'package:app/presentation/blocs/calendar/calendar_event.dart';
 import 'package:app/presentation/blocs/calendar/calendar_state.dart';
@@ -55,13 +58,48 @@ class FakeCalendarRepository implements CalendarRepository {
   void clearAuthorization() {}
 }
 
+class FakeTaskRepository implements TaskRepository {
+  FakeTaskRepository({this.shouldFailOnReconcile = false});
+
+  final bool shouldFailOnReconcile;
+  bool reconcileUnsyncedTasksCalled = false;
+
+  @override
+  Future<List<Task>> getTasks() async => [];
+
+  @override
+  Future<List<Task>> getTasksByDate(DateTime date) async => [];
+
+  @override
+  Future<Task> createTask(Task task) async => task;
+
+  @override
+  Future<Task> updateTask(Task task) async => task;
+
+  @override
+  Future<void> deleteTask(Task task) async {}
+
+  @override
+  Future<void> toggleTaskStatus(Task task, bool completed) async {}
+
+  @override
+  Future<ReconciliationResult> reconcileUnsyncedTasks() async {
+    reconcileUnsyncedTasksCalled = true;
+    if (shouldFailOnReconcile) {
+      throw Exception('reconciliation failed');
+    }
+    return const ReconciliationResult(syncedTasks: [], failedTasks: []);
+  }
+}
+
 void main() {
   group('CalendarBloc', () {
     test('connect canceled/denied → CalendarNeedsSignIn', () async {
       final calendarRepository = FakeCalendarRepository(
         isAuthorizedResult: false,
       );
-      final bloc = CalendarBloc(calendarRepository);
+      final taskRepository = FakeTaskRepository();
+      final bloc = CalendarBloc(calendarRepository, taskRepository);
 
       final states = <CalendarState>[];
       final subscription = bloc.stream.listen(states.add);
@@ -87,7 +125,8 @@ void main() {
           isAuthorizedResult: true,
           shouldThrowAuthRequiredOnGetEvents: true,
         );
-        final bloc = CalendarBloc(calendarRepository);
+        final taskRepository = FakeTaskRepository();
+        final bloc = CalendarBloc(calendarRepository, taskRepository);
 
         final states = <CalendarState>[];
         final subscription = bloc.stream.listen(states.add);
@@ -114,7 +153,8 @@ void main() {
         isAuthorizedResult: true,
         getEventsResult: events,
       );
-      final bloc = CalendarBloc(calendarRepository);
+      final taskRepository = FakeTaskRepository();
+      final bloc = CalendarBloc(calendarRepository, taskRepository);
 
       final states = <CalendarState>[];
       final subscription = bloc.stream.listen(states.add);
@@ -133,5 +173,56 @@ void main() {
       await subscription.cancel();
       await bloc.close();
     });
+
+    test(
+      'manual calendar connect triggers reconciliation for unsynced tasks',
+      () async {
+        final calendarRepository = FakeCalendarRepository(
+          isAuthorizedResult: true,
+          getEventsResult: [],
+        );
+        final taskRepository = FakeTaskRepository();
+        final bloc = CalendarBloc(calendarRepository, taskRepository);
+
+        final states = <CalendarState>[];
+        final subscription = bloc.stream.listen(states.add);
+
+        bloc.add(CalendarGoogleSignInRequested());
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        expect(states[0], isA<CalendarLoading>());
+        expect(states[1], isA<CalendarLoaded>());
+        expect(taskRepository.reconcileUnsyncedTasksCalled, isTrue);
+
+        await subscription.cancel();
+        await bloc.close();
+      },
+    );
+
+    test(
+      'manual calendar connect still succeeds if reconciliation fails; notice is surfaced',
+      () async {
+        final calendarRepository = FakeCalendarRepository(
+          isAuthorizedResult: true,
+          getEventsResult: [],
+        );
+        final taskRepository = FakeTaskRepository(shouldFailOnReconcile: true);
+        final bloc = CalendarBloc(calendarRepository, taskRepository);
+
+        final states = <CalendarState>[];
+        final subscription = bloc.stream.listen(states.add);
+
+        bloc.add(CalendarGoogleSignInRequested());
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        expect(states[0], isA<CalendarLoading>());
+        expect(states[1], isA<CalendarLoaded>());
+        final loadedState = states[1] as CalendarLoaded;
+        expect(loadedState.noticeMessage, isNotNull);
+
+        await subscription.cancel();
+        await bloc.close();
+      },
+    );
   });
 }

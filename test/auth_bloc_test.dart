@@ -2,8 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:googleapis/calendar/v3.dart';
 
+import 'package:app/data/services/task_calendar_sync_service.dart';
+import 'package:app/domain/entities/task.dart';
 import 'package:app/domain/repositories/auth_repository.dart';
 import 'package:app/domain/repositories/calendar_repository.dart';
+import 'package:app/domain/repositories/task_repository.dart';
 import 'package:app/presentation/blocs/auth/auth_bloc.dart';
 import 'package:app/presentation/blocs/auth/auth_event.dart';
 import 'package:app/presentation/blocs/auth/auth_state.dart';
@@ -16,7 +19,8 @@ void main() {
       final calendarRepository = FakeCalendarRepository(
         isAuthorizedResult: true,
       );
-      final bloc = AuthBloc(authRepository, calendarRepository);
+      final taskRepository = FakeTaskRepository();
+      final bloc = AuthBloc(authRepository, calendarRepository, taskRepository);
 
       final states = <AuthState>[];
       final subscription = bloc.stream.listen(states.add);
@@ -35,7 +39,8 @@ void main() {
   test('AuthGoogleSignInRequested links Google Calendar after login', () async {
     final authRepository = FakeAuthRepository(user: FakeUser());
     final calendarRepository = FakeCalendarRepository(isAuthorizedResult: true);
-    final bloc = AuthBloc(authRepository, calendarRepository);
+    final taskRepository = FakeTaskRepository();
+    final bloc = AuthBloc(authRepository, calendarRepository, taskRepository);
 
     final states = <AuthState>[];
     final subscription = bloc.stream.listen(states.add);
@@ -55,7 +60,8 @@ void main() {
   test('AuthSignOutRequested clears cached Calendar authorization', () async {
     final authRepository = FakeAuthRepository(user: FakeUser());
     final calendarRepository = FakeCalendarRepository(isAuthorizedResult: true);
-    final bloc = AuthBloc(authRepository, calendarRepository);
+    final taskRepository = FakeTaskRepository();
+    final bloc = AuthBloc(authRepository, calendarRepository, taskRepository);
 
     bloc.add(AuthSignOutRequested());
     await Future<void>.delayed(const Duration(milliseconds: 10));
@@ -73,7 +79,8 @@ void main() {
         isAuthorizedResult: false,
         shouldFailOnSignIn: true,
       );
-      final bloc = AuthBloc(authRepository, calendarRepository);
+      final taskRepository = FakeTaskRepository();
+      final bloc = AuthBloc(authRepository, calendarRepository, taskRepository);
 
       final states = <AuthState>[];
       final subscription = bloc.stream.listen(states.add);
@@ -85,6 +92,58 @@ void main() {
       expect(states[1], isA<AuthAuthenticated>());
       final authenticatedState = states[1] as AuthAuthenticated;
       expect(authenticatedState.calendarLinked, isFalse);
+      expect(authenticatedState.noticeMessage, isNotNull);
+
+      await subscription.cancel();
+      await bloc.close();
+    },
+  );
+
+  test(
+    'AuthGoogleSignInRequested triggers reconciliation for unsynced tasks after successful calendar link',
+    () async {
+      final authRepository = FakeAuthRepository(user: FakeUser());
+      final calendarRepository = FakeCalendarRepository(
+        isAuthorizedResult: true,
+      );
+      final taskRepository = FakeTaskRepository();
+      final bloc = AuthBloc(authRepository, calendarRepository, taskRepository);
+
+      final states = <AuthState>[];
+      final subscription = bloc.stream.listen(states.add);
+
+      bloc.add(AuthGoogleSignInRequested());
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(states[0], isA<AuthLoading>());
+      expect(states[1], isA<AuthAuthenticated>());
+      expect(taskRepository.reconcileUnsyncedTasksCalled, isTrue);
+
+      await subscription.cancel();
+      await bloc.close();
+    },
+  );
+
+  test(
+    'AuthGoogleSignInRequested still succeeds if reconciliation fails; notice is surfaced',
+    () async {
+      final authRepository = FakeAuthRepository(user: FakeUser());
+      final calendarRepository = FakeCalendarRepository(
+        isAuthorizedResult: true,
+      );
+      final taskRepository = FakeTaskRepository(shouldFailOnReconcile: true);
+      final bloc = AuthBloc(authRepository, calendarRepository, taskRepository);
+
+      final states = <AuthState>[];
+      final subscription = bloc.stream.listen(states.add);
+
+      bloc.add(AuthGoogleSignInRequested());
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(states[0], isA<AuthLoading>());
+      expect(states[1], isA<AuthAuthenticated>());
+      final authenticatedState = states[1] as AuthAuthenticated;
+      expect(authenticatedState.calendarLinked, isTrue);
       expect(authenticatedState.noticeMessage, isNotNull);
 
       await subscription.cancel();
@@ -167,4 +226,38 @@ class FakeUser implements User {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class FakeTaskRepository implements TaskRepository {
+  FakeTaskRepository({this.shouldFailOnReconcile = false});
+
+  final bool shouldFailOnReconcile;
+  bool reconcileUnsyncedTasksCalled = false;
+
+  @override
+  Future<List<Task>> getTasks() async => [];
+
+  @override
+  Future<List<Task>> getTasksByDate(DateTime date) async => [];
+
+  @override
+  Future<Task> createTask(Task task) async => task;
+
+  @override
+  Future<Task> updateTask(Task task) async => task;
+
+  @override
+  Future<void> deleteTask(Task task) async {}
+
+  @override
+  Future<void> toggleTaskStatus(Task task, bool completed) async {}
+
+  @override
+  Future<ReconciliationResult> reconcileUnsyncedTasks() async {
+    reconcileUnsyncedTasksCalled = true;
+    if (shouldFailOnReconcile) {
+      throw Exception('reconciliation failed');
+    }
+    return const ReconciliationResult(syncedTasks: [], failedTasks: []);
+  }
 }
