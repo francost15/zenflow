@@ -21,86 +21,70 @@ class StreakCounter extends StatelessWidget {
         // Current streak
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
             decoration: BoxDecoration(
               color: isDark
-                  ? AppColors.darkSurface
-                  : AppColors.lightSurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark
-                    ? AppColors.darkBorder
-                    : AppColors.lightBorder,
-              ),
+                  ? AppColors.darkSurfaceElevated
+                  : AppColors.lightSurfaceElevated,
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'ACTUAL',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
                     letterSpacing: 2,
-                    color: isDark
-                        ? AppColors.darkTextTertiary
-                        : AppColors.lightTextTertiary,
+                    color: AppColors.accent,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   '$currentStreak',
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w800,
+                  style: theme.textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
                     color: theme.colorScheme.onSurface,
-                    height: 1.0,
                     letterSpacing: -2,
+                    height: 1,
                   ),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         // Longest streak
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
             decoration: BoxDecoration(
               color: isDark
-                  ? AppColors.darkSurface
-                  : AppColors.lightSurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark
-                    ? AppColors.darkBorder
-                    : AppColors.lightBorder,
-              ),
+                  ? AppColors.darkSurfaceElevated
+                  : AppColors.lightSurfaceElevated,
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'MAYOR',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                  'MÁXIMO',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
                     letterSpacing: 2,
                     color: isDark
                         ? AppColors.darkTextTertiary
                         : AppColors.lightTextTertiary,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   '$longestStreak',
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w800,
+                  style: theme.textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
                     color: theme.colorScheme.onSurface,
-                    height: 1.0,
                     letterSpacing: -2,
+                    height: 1,
                   ),
                 ),
               ],

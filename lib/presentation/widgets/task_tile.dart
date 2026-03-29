@@ -21,160 +21,117 @@ class TaskTile extends StatelessWidget {
     final isCompleted = task.status == TaskStatus.completed;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isActive = _isActive(task) && !isCompleted;
 
-    return Dismissible(
-      key: Key(task.id),
-      direction: DismissDirection.horizontal,
-      background: Container(
-        decoration: BoxDecoration(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Dismissible(
+        key: Key(task.id),
+        direction: DismissDirection.horizontal,
+        background: _buildDismissBackground(
+          alignment: Alignment.centerLeft,
           color: AppColors.success,
-          borderRadius: BorderRadius.circular(16),
+          icon: Icons.check_rounded,
         ),
-        alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(left: 20),
-        child: const Icon(Icons.check, color: Colors.white),
-      ),
-      secondaryBackground: Container(
-        decoration: BoxDecoration(
+        secondaryBackground: _buildDismissBackground(
+          alignment: Alignment.centerRight,
           color: AppColors.error,
-          borderRadius: BorderRadius.circular(16),
+          icon: Icons.delete_outline_rounded,
         ),
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: const Icon(Icons.delete_outline, color: Colors.white),
-      ),
-      confirmDismiss: (direction) async {
-        if (direction == DismissDirection.startToEnd) {
-          onToggle(!isCompleted);
-          return false;
-        } else {
-          return await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Eliminar tarea'),
-              content: const Text('¿Estás seguro?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                  child: const Text('Eliminar'),
-                ),
-              ],
+        confirmDismiss: (direction) async => _handleDismissConfirm(context, direction, isCompleted),
+        onDismissed: (direction) {
+          if (direction == DismissDirection.endToStart) {
+            onDelete?.call();
+          }
+        },
+        child: GestureDetector(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            decoration: BoxDecoration(
+              color: isActive
+                  ? (isDark ? AppColors.accent.withValues(alpha: 0.1) : AppColors.accent.withValues(alpha: 0.05))
+                  : (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated),
+              borderRadius: BorderRadius.circular(20),
             ),
-          );
-        }
-      },
-      onDismissed: (direction) {
-        if (direction == DismissDirection.endToStart) {
-          onDelete?.call();
-        }
-      },
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: _isActive(task) && !isCompleted
-                  ? AppColors.accentBlue.withValues(alpha: 0.4)
-                  : isDark
-                      ? AppColors.darkBorder
-                      : AppColors.lightBorder,
-            ),
-          ),
-          child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Play icon / checkbox
+                // Premium Checkbox/Play
                 GestureDetector(
                   onTap: () => onToggle(!isCompleted),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 32,
-                    height: 32,
+                    duration: const Duration(milliseconds: 250),
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
                       color: isCompleted
                           ? AppColors.accent
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isCompleted
-                            ? AppColors.accent
-                            : isDark
-                                ? AppColors.darkTextTertiary
-                                : AppColors.lightTextTertiary,
-                        width: 1.5,
-                      ),
+                          : (isDark ? AppColors.darkSurface : Colors.white),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: isCompleted
+                          ? [
+                              BoxShadow(
+                                color: AppColors.accent.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              )
+                            ]
+                          : null,
                     ),
                     child: Icon(
-                      isCompleted
-                          ? Icons.check
-                          : Icons.play_arrow,
-                      size: 16,
+                      isCompleted ? Icons.check_rounded : Icons.play_arrow_rounded,
+                      size: 20,
                       color: isCompleted
                           ? Colors.white
-                          : isDark
-                              ? AppColors.darkTextTertiary
-                              : AppColors.lightTextTertiary,
+                          : (isActive ? AppColors.accent : (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary)),
                     ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         task.title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
                           fontSize: 15,
-                          decoration: isCompleted
-                              ? TextDecoration.lineThrough
-                              : null,
+                          letterSpacing: -0.2,
+                          decoration: isCompleted ? TextDecoration.lineThrough : null,
                           color: isCompleted
-                              ? (isDark
-                                  ? AppColors.darkTextTertiary
-                                  : AppColors.lightTextTertiary)
+                              ? (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary)
                               : theme.colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Text(
-                            _priorityLabel(task.priority).toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1,
-                              color: _priorityColor(task.priority),
-                            ),
-                          ),
+                          _PriorityChip(priority: task.priority),
                           if (task.dueTime != null) ...[
-                            Text(
-                              ' · ',
-                              style: TextStyle(
-                                color: isDark
-                                    ? AppColors.darkTextTertiary
-                                    : AppColors.lightTextTertiary,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text(
+                                '·',
+                                style: TextStyle(
+                                  color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
+                            Icon(
+                              Icons.access_time_rounded,
+                              size: 12,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                            ),
+                            const SizedBox(width: 4),
                             Text(
                               '${task.dueTime!.hour.toString().padLeft(2, '0')}:${task.dueTime!.minute.toString().padLeft(2, '0')}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -184,11 +141,9 @@ class TaskTile extends StatelessWidget {
                   ),
                 ),
                 Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: isDark
-                      ? AppColors.darkTextTertiary
-                      : AppColors.lightTextTertiary,
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
                 ),
               ],
             ),
@@ -196,6 +151,48 @@ class TaskTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildDismissBackground({
+    required Alignment alignment,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Icon(icon, color: Colors.white),
+    );
+  }
+
+  Future<bool?> _handleDismissConfirm(BuildContext context, DismissDirection direction, bool isCompleted) async {
+    if (direction == DismissDirection.startToEnd) {
+      onToggle(!isCompleted);
+      return false;
+    } else {
+      return await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Eliminar tarea'),
+          content: const Text('¿Estás seguro de que quieres eliminar esta tarea?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   bool _isActive(Task task) {
@@ -213,26 +210,46 @@ class TaskTile extends StatelessWidget {
     }
     return false;
   }
+}
+
+class _PriorityChip extends StatelessWidget {
+  final TaskPriority priority;
+
+  const _PriorityChip({required this.priority});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: _priorityColor(priority).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        _priorityLabel(priority).toUpperCase(),
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+          color: _priorityColor(priority),
+        ),
+      ),
+    );
+  }
 
   String _priorityLabel(TaskPriority priority) {
     switch (priority) {
-      case TaskPriority.high:
-        return 'Priority 01';
-      case TaskPriority.medium:
-        return 'Priority 02';
-      case TaskPriority.low:
-        return 'Standard';
+      case TaskPriority.high: return 'Prioridad Alta';
+      case TaskPriority.medium: return 'Prioridad Media';
+      case TaskPriority.low: return 'Estándar';
     }
   }
 
   Color _priorityColor(TaskPriority priority) {
     switch (priority) {
-      case TaskPriority.high:
-        return AppColors.error;
-      case TaskPriority.medium:
-        return AppColors.warning;
-      case TaskPriority.low:
-        return AppColors.darkTextTertiary;
+      case TaskPriority.high: return AppColors.error;
+      case TaskPriority.medium: return AppColors.warning;
+      case TaskPriority.low: return AppColors.darkTextTertiary;
     }
   }
 }

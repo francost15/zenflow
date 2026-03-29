@@ -6,7 +6,6 @@ import '../../blocs/streaks/streaks_bloc.dart';
 import '../../blocs/streaks/streaks_event.dart';
 import '../../blocs/streaks/streaks_state.dart';
 import '../../widgets/streak_counter.dart';
-import '../../widgets/empty_state.dart';
 import '../../widgets/dialogs/create_habit_dialog.dart';
 import 'widgets/habit_card.dart';
 
@@ -34,27 +33,33 @@ class _StreaksScreenState extends State<StreaksScreen> {
         child: BlocBuilder<StreaksBloc, StreaksState>(
           builder: (context, state) {
             if (state is StreaksLoading) {
-              return Center(
-                child: CircularProgressIndicator(color: AppColors.accent),
+              return const Center(
+                child: CircularProgressIndicator(strokeWidth: 3),
               );
             }
 
             if (state is StreaksError) {
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 48, color: AppColors.error),
-                    const SizedBox(height: 16),
-                    Text(state.message),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<StreaksBloc>().add(StreaksLoadRequested());
-                      },
-                      child: const Text('Reintentar'),
-                    ),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Error de conexión',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 32),
+                      OutlinedButton(
+                        onPressed: () {
+                          context.read<StreaksBloc>().add(StreaksLoadRequested());
+                        },
+                        child: const Text('REINTENTAR'),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
@@ -65,20 +70,37 @@ class _StreaksScreenState extends State<StreaksScreen> {
                   context.read<StreaksBloc>().add(StreaksLoadRequested());
                 },
                 child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 100),
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 120),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ─── Header ───
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: Text(
-                          'Rachas',
-                          style: theme.textTheme.headlineMedium,
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'RENDIMIENTO',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 2,
+                                color: AppColors.accent,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Rachas y Foco',
+                              style: theme.textTheme.headlineLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -1,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 32),
 
                       // ─── Streak Counters ───
                       Padding(
@@ -88,86 +110,117 @@ class _StreaksScreenState extends State<StreaksScreen> {
                           longestStreak: state.longestStreak,
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 48),
 
-                      // ─── Achievements / Logros ───
+                      // ─── Achievements Header ───
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          'Logros',
-                          style: theme.textTheme.titleLarge,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'SISTEMA DE LOGROS',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.5,
+                                color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       _buildAchievements(theme, isDark, state),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 48),
 
-                      // ─── Habits Section ───
+                      // ─── Habits Section Header ───
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Hábitos', style: theme.textTheme.titleLarge),
-                            TextButton.icon(
-                              onPressed: () => _showCreateHabitDialog(context),
-                              icon: const Icon(Icons.add, size: 18),
-                              label: const Text('Agregar'),
+                            Text(
+                              'HÁBITOS DE PROTOCOLO',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.5,
+                                color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
                       if (state.habits.isEmpty)
                         Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: EmptyState(
-                            icon: Icons.local_fire_department,
-                            title: 'No hay hábitos',
-                            subtitle: 'Crea tu primer hábito para empezar',
-                            action: ElevatedButton.icon(
-                              onPressed: () =>
-                                  _showCreateHabitDialog(context),
-                              icon: const Icon(Icons.add),
-                              label: const Text('Crear Hábito'),
-                            ),
+                          padding: const EdgeInsets.all(40),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Sin hábitos activos',
+                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Crea rutinas para fortalecer tu racha.',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
                           ),
                         )
                       else
-                        ...state.habits.map((habit) {
-                          final checkedToday = _isCheckedToday(habit);
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 4,
-                            ),
-                            child: HabitCard(
-                              habit: habit,
-                              checkedToday: checkedToday,
-                              onCheckIn: () {
-                                context.read<StreaksBloc>().add(
-                                  HabitCheckInRequested(habit.id),
-                                );
-                              },
-                              onDelete: () => _confirmDelete(context, habit),
-                            ),
-                          );
-                        }),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: state.habits.map((habit) {
+                              final checkedToday = _isCheckedToday(habit);
+                              return HabitCard(
+                                habit: habit,
+                                checkedToday: checkedToday,
+                                onCheckIn: () {
+                                  context.read<StreaksBloc>().add(
+                                        HabitCheckInRequested(habit.id),
+                                      );
+                                },
+                                onDelete: () => _confirmDelete(context, habit),
+                              );
+                            }).toList(),
+                          ),
+                        ),
                     ],
                   ),
                 ),
               );
             }
 
-            return Center(
-              child: CircularProgressIndicator(color: AppColors.accent),
-            );
+            return const Center(child: CircularProgressIndicator());
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateHabitDialog(context),
-        child: const Icon(Icons.add),
+        backgroundColor: AppColors.accent,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        highlightElevation: 0,
+        label: const Text(
+          'NUEVO HÁBITO',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 12,
+            letterSpacing: 1.2,
+          ),
+        ),
+        icon: const Icon(Icons.add_rounded, size: 20),
       ),
     );
   }

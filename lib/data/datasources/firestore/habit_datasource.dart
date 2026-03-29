@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/error/exceptions.dart';
 import '../../models/habit_model.dart';
 
 class HabitDatasource {
@@ -9,7 +10,10 @@ class HabitDatasource {
   String get _userId {
     final user = _auth.currentUser;
     if (user == null) {
-      throw Exception('User not authenticated. Please sign in again.');
+      throw const AuthException(
+        'No authenticated user found. Please sign in again.',
+        'AUTH_REQUIRED',
+      );
     }
     return user.uid;
   }

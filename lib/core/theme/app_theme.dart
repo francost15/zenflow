@@ -40,7 +40,6 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.darkBorder, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -143,7 +142,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.accent, width: 2),
         ),
         hintStyle: const TextStyle(color: AppColors.darkTextTertiary),
         labelStyle: const TextStyle(color: AppColors.darkTextSecondary),
@@ -230,7 +229,6 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.lightBorder, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -388,6 +386,7 @@ class AppTheme {
   static TextTheme _buildTextTheme({required bool isDark}) {
     final primary = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final secondary = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final tertiary = isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary;
 
     return TextTheme(
       displayLarge: TextStyle(
@@ -487,9 +486,9 @@ class AppTheme {
       labelSmall: TextStyle(
         fontFamily: 'PlusJakartaSans',
         fontSize: 10,
-        fontWeight: FontWeight.w600,
-        color: secondary,
-        letterSpacing: 1.2,
+        fontWeight: FontWeight.w700,
+        color: tertiary,
+        letterSpacing: 1.5,
       ),
     );
   }

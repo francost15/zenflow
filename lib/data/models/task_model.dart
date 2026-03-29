@@ -12,6 +12,7 @@ class TaskModel {
   final String status;
   final String? courseId;
   final List<String> subtasks;
+  final String? calendarEventId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -25,6 +26,7 @@ class TaskModel {
     required this.status,
     this.courseId,
     required this.subtasks,
+    this.calendarEventId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -41,6 +43,7 @@ class TaskModel {
       status: data['status'] ?? 'pending',
       courseId: data['courseId'],
       subtasks: List<String>.from(data['subtasks'] ?? []),
+      calendarEventId: data['calendarEventId'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -56,6 +59,7 @@ class TaskModel {
       'status': status,
       'courseId': courseId,
       'subtasks': subtasks,
+      'calendarEventId': calendarEventId,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
@@ -84,6 +88,7 @@ class TaskModel {
       ),
       courseId: courseId,
       subtasks: subtasks,
+      calendarEventId: calendarEventId,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -102,6 +107,7 @@ class TaskModel {
       status: entity.status.name,
       courseId: entity.courseId,
       subtasks: entity.subtasks,
+      calendarEventId: entity.calendarEventId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );

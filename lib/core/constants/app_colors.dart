@@ -60,7 +60,7 @@ class AppColors {
   static const courseAmber = Color(0xFFF59E0B);
   static const coursePink = Color(0xFFEC4899);
 
-  static List<Color> get courseColorPalette => [
+  static const List<Color> courseColorPalette = [
     courseRed,
     courseBlue,
     coursePurple,

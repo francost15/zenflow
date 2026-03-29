@@ -16,7 +16,6 @@ class AuthDatasource {
 
   Future<UserCredential> signInWithGoogle() async {
     if (kIsWeb) {
-      // On web, use signInWithPopup
       final googleProvider = GoogleAuthProvider();
       googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
       googleProvider.addScope(
@@ -24,16 +23,14 @@ class AuthDatasource {
       );
       return await _auth.signInWithPopup(googleProvider);
     } else {
-      // On mobile, use Firebase Auth's Google Sign-In
-      // This uses the Google Play Services / Firebase UI flow
-      final googleProvider = GoogleAuthProvider();
-      googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
-      googleProvider.addScope(
-        'https://www.googleapis.com/auth/userinfo.profile',
+      final googleUser = await _googleSignIn.authenticate();
+      final googleAuth = googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
       );
 
-      // Use signInWithRedirect for mobile to get native experience
-      return await _auth.signInWithProvider(googleProvider);
+      return await _auth.signInWithCredential(credential);
     }
   }
 

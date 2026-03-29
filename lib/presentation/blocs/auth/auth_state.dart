@@ -14,11 +14,17 @@ class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
   final User user;
+  final bool calendarLinked;
+  final String? noticeMessage;
 
-  const AuthAuthenticated(this.user);
+  const AuthAuthenticated(
+    this.user, {
+    this.calendarLinked = false,
+    this.noticeMessage,
+  });
 
   @override
-  List<Object?> get props => [user.uid];
+  List<Object?> get props => [user.uid, calendarLinked, noticeMessage];
 }
 
 class AuthUnauthenticated extends AuthState {}

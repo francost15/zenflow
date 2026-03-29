@@ -38,20 +38,20 @@ class TaskUpdated extends TaskEvent {
 }
 
 class TaskDeleted extends TaskEvent {
-  final String taskId;
+  final Task task;
 
-  const TaskDeleted(this.taskId);
+  const TaskDeleted(this.task);
 
   @override
-  List<Object?> get props => [taskId];
+  List<Object?> get props => [task];
 }
 
 class TaskStatusToggled extends TaskEvent {
-  final String taskId;
+  final Task task;
   final bool completed;
 
-  const TaskStatusToggled({required this.taskId, required this.completed});
+  const TaskStatusToggled({required this.task, required this.completed});
 
   @override
-  List<Object?> get props => [taskId, completed];
+  List<Object?> get props => [task, completed];
 }

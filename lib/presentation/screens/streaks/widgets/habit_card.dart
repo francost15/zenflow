@@ -22,23 +22,19 @@ class HabitCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: checkedToday
-              ? AppColors.success.withValues(alpha: 0.3)
-              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-        ),
+        color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: InkWell(
         onTap: checkedToday ? null : onCheckIn,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Status icon
+              // Premium Status Icon
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: 44,
@@ -46,84 +42,102 @@ class HabitCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: checkedToday
                       ? AppColors.success
-                      : AppColors.accent.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                      : (isDark ? AppColors.darkSurface : Colors.white),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: checkedToday
+                      ? [
+                          BoxShadow(
+                            color: AppColors.success.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          )
+                        ]
+                      : null,
                 ),
                 child: Icon(
                   checkedToday
-                      ? Icons.check
-                      : Icons.local_fire_department,
+                      ? Icons.check_rounded
+                      : Icons.local_fire_department_rounded,
                   color: checkedToday
                       ? Colors.white
                       : AppColors.accent,
-                  size: 22,
+                  size: 24,
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       habit.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
                         color: theme.colorScheme.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      checkedToday
-                          ? '¡Completado hoy! 🎉'
-                          : '${habit.currentStreak} días de racha',
-                      style: TextStyle(
-                        color: checkedToday
-                            ? AppColors.success
-                            : (isDark
-                                ? AppColors.darkTextSecondary
-                                : AppColors.lightTextSecondary),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Text(
+                          checkedToday
+                              ? '¡COMPLETADO HOY! 🎉'
+                              : '${habit.currentStreak} DÍAS DE RACHA',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: checkedToday
+                                ? AppColors.success
+                                : (isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary),
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               if (!checkedToday)
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.add, size: 18),
-                    color: AppColors.accent,
-                    onPressed: onCheckIn,
-                    padding: EdgeInsets.zero,
-                  ),
+                _buildActionButton(
+                  icon: Icons.add_rounded,
+                  color: AppColors.accent,
+                  onPressed: onCheckIn,
+                  isDark: isDark,
                 ),
               const SizedBox(width: 8),
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 18),
-                  color: isDark
-                      ? AppColors.darkTextTertiary
-                      : AppColors.lightTextTertiary,
-                  onPressed: onDelete,
-                  padding: EdgeInsets.zero,
-                ),
+              _buildActionButton(
+                icon: Icons.delete_outline_rounded,
+                color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+                onPressed: onDelete,
+                isDark: isDark,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+    required bool isDark,
+  }) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: IconButton(
+        icon: Icon(icon, size: 18),
+        color: color,
+        onPressed: onPressed,
+        padding: EdgeInsets.zero,
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/connectivity_service.dart';
 
@@ -8,9 +7,10 @@ class ConnectionIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ConnectivityService>(
-      builder: (context, connectivity, child) {
-        if (connectivity.isOnline) {
+    return ListenableBuilder(
+      listenable: ConnectivityService.instance,
+      builder: (context, child) {
+        if (ConnectivityService.instance.isOnline) {
           return const SizedBox.shrink();
         }
         return Container(

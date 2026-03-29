@@ -7,5 +7,6 @@ abstract class CalendarRepository {
   Future<Event> updateEvent(Event event);
   Future<void> deleteEvent(String eventId);
   Future<bool> isAuthorized();
-  Future<void> signIn();
+  Future<bool> signIn();
+  void clearAuthorization();
 }

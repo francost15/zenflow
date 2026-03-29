@@ -14,7 +14,7 @@ class CalendarRepositoryImpl implements CalendarRepository {
   Future<bool> isAuthorized() => _datasource.isAuthorized();
 
   @override
-  Future<void> signIn() => _datasource.signIn();
+  Future<bool> signIn() async => (await _datasource.signIn()) != null;
 
   @override
   Future<List<Event>> getEvents(DateTime start, DateTime end) =>
@@ -28,4 +28,7 @@ class CalendarRepositoryImpl implements CalendarRepository {
 
   @override
   Future<void> deleteEvent(String eventId) => _datasource.deleteEvent(eventId);
+
+  @override
+  void clearAuthorization() => _datasource.clearAuthorization();
 }

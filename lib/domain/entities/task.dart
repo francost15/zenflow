@@ -15,6 +15,7 @@ class Task extends Equatable {
   final TaskStatus status;
   final String? courseId;
   final List<String> subtasks;
+  final String? calendarEventId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -28,6 +29,7 @@ class Task extends Equatable {
     this.status = TaskStatus.pending,
     this.courseId,
     this.subtasks = const [],
+    this.calendarEventId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -42,6 +44,7 @@ class Task extends Equatable {
     TaskStatus? status,
     String? courseId,
     List<String>? subtasks,
+    String? calendarEventId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -55,6 +58,7 @@ class Task extends Equatable {
       status: status ?? this.status,
       courseId: courseId ?? this.courseId,
       subtasks: subtasks ?? this.subtasks,
+      calendarEventId: calendarEventId ?? this.calendarEventId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -71,6 +75,7 @@ class Task extends Equatable {
     status,
     courseId,
     subtasks,
+    calendarEventId,
     createdAt,
     updatedAt,
   ];

@@ -1,28 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/di/injection.dart';
 import '../core/theme/app_theme.dart';
-import '../data/datasources/firebase/auth_datasource.dart';
-import '../data/datasources/firestore/task_datasource.dart';
-import '../data/datasources/firestore/habit_datasource.dart';
-import '../data/datasources/firestore/course_datasource.dart';
-import '../data/repositories/auth_repository_impl.dart';
-import '../data/repositories/task_repository_impl.dart';
-import '../data/repositories/habit_repository_impl.dart';
-import '../data/repositories/course_repository_impl.dart';
-import '../domain/repositories/auth_repository.dart';
-import '../domain/repositories/task_repository.dart';
-import '../domain/repositories/habit_repository.dart';
-import '../domain/repositories/course_repository.dart';
-import '../presentation/blocs/auth/auth_bloc.dart';
-import '../presentation/blocs/auth/auth_event.dart';
-import '../presentation/blocs/auth/auth_state.dart';
-import '../presentation/blocs/task/task_bloc.dart';
-import '../presentation/blocs/calendar/calendar_bloc.dart';
-import '../presentation/blocs/streaks/streaks_bloc.dart';
-import '../presentation/blocs/course/course_bloc.dart';
-import '../data/datasources/google/google_calendar_datasource.dart';
-import '../data/repositories/calendar_repository_impl.dart';
+import '../presentation/blocs/auth/auth.dart';
+import '../presentation/blocs/task/task.dart';
+import '../presentation/blocs/streaks/streaks.dart';
+import '../presentation/blocs/course/course.dart';
+import '../presentation/blocs/calendar/calendar.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/calendar/calendar_screen.dart';
@@ -39,24 +24,10 @@ class ZenFlowApp extends StatefulWidget {
 }
 
 class _ZenFlowAppState extends State<ZenFlowApp> {
-  late final AuthDatasource _authDatasource;
-  late final AuthRepository _authRepository;
   late final AuthBloc _authBloc;
-
-  late final TaskDatasource _taskDatasource;
-  late final TaskRepository _taskRepository;
   late final TaskBloc _taskBloc;
-
-  late final HabitDatasource _habitDatasource;
-  late final HabitRepository _habitRepository;
   late final StreaksBloc _streaksBloc;
-
-  late final CourseDatasource _courseDatasource;
-  late final CourseRepository _courseRepository;
   late final CourseBloc _courseBloc;
-
-  late final GoogleCalendarDatasource _calendarDatasource;
-  late final CalendarRepositoryImpl _calendarRepository;
   late final CalendarBloc _calendarBloc;
 
   bool _showZenMode = false;
@@ -66,46 +37,16 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
   @override
   void initState() {
     super.initState();
-    _initAuth();
-    _initTask();
-    _initStreaks();
-    _initCourse();
-    _initCalendar();
+    _initBlocs();
     _loadThemePreference();
   }
 
-  void _initAuth() {
-    _authDatasource = AuthDatasource();
-    _authRepository = AuthRepositoryImpl(_authDatasource);
-    _authBloc = AuthBloc(_authRepository)..add(AuthCheckRequested());
-  }
-
-  void _initTask() {
-    _taskDatasource = TaskDatasource();
-    _taskRepository = TaskRepositoryImpl(_taskDatasource);
-    _taskBloc = TaskBloc(_taskRepository);
-  }
-
-  void _initStreaks() {
-    _habitDatasource = HabitDatasource();
-    _habitRepository = HabitRepositoryImpl(_habitDatasource);
-    _streaksBloc = StreaksBloc(_habitRepository);
-  }
-
-  void _initCourse() {
-    _courseDatasource = CourseDatasource();
-    _courseRepository = CourseRepositoryImpl(_courseDatasource);
-    _courseBloc = CourseBloc(_courseRepository);
-  }
-
-  void _initCalendar() {
-    _calendarDatasource = GoogleCalendarDatasource();
-    _calendarRepository = CalendarRepositoryImpl(_calendarDatasource);
-    _calendarBloc = CalendarBloc(_calendarRepository);
-    _calendarDatasource.initialize(
-      serverClientId:
-          '425631623811-3ir83r6i9kb688ml7rlnj4gnuelopo5m.apps.googleusercontent.com',
-    );
+  void _initBlocs() {
+    _authBloc = getIt<AuthBloc>()..add(AuthCheckRequested());
+    _taskBloc = getIt<TaskBloc>();
+    _streaksBloc = getIt<StreaksBloc>();
+    _courseBloc = getIt<CourseBloc>();
+    _calendarBloc = getIt<CalendarBloc>();
   }
 
   Future<void> _loadThemePreference() async {
@@ -115,8 +56,9 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
   }
 
   Future<void> _toggleTheme() async {
-    final newMode =
-        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    final newMode = _themeMode == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
     setState(() => _themeMode = newMode);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', newMode == ThemeMode.dark);
@@ -173,10 +115,7 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
           );
         },
         home: _showZenMode
-            ? ZenModeScreen(
-                onExit: _exitZenMode,
-                taskName: _zenTaskName,
-              )
+            ? ZenModeScreen(onExit: _exitZenMode, taskName: _zenTaskName)
             : _buildMainScreen(),
       ),
     );
@@ -186,6 +125,11 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         debugPrint('Auth state changed: $state');
+        if (state is AuthAuthenticated && state.noticeMessage != null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.noticeMessage!)));
+        }
       },
       builder: (context, state) {
         if (state is AuthAuthenticated) {

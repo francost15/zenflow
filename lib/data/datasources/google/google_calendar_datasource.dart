@@ -35,9 +35,7 @@ class GoogleCalendarDatasource {
     try {
       final account = await _googleSignIn.attemptLightweightAuthentication();
       if (account != null) {
-        await _setupCalendarApi(account);
-        _isAuthorized = true;
-        return true;
+        return await _setupCalendarApi(account);
       }
     } catch (e) {
       // Lightweight auth failed, user needs to explicitly sign in
@@ -55,10 +53,14 @@ class GoogleCalendarDatasource {
       return null;
     }
     try {
-      final account = await _googleSignIn.authenticate(scopeHint: _scopes);
-      await _setupCalendarApi(account);
-      _isAuthorized = true;
-      return account;
+      final existingAccount = await _googleSignIn
+          .attemptLightweightAuthentication(reportAllExceptions: true);
+      final account = existingAccount ?? await _googleSignIn.authenticate();
+      final isAuthorized = await _setupCalendarApi(
+        account,
+        promptIfNecessary: true,
+      );
+      return isAuthorized ? account : null;
     } catch (e) {
       debugPrint('Calendar sign-in error: $e');
       _isAuthorized = false;
@@ -66,13 +68,23 @@ class GoogleCalendarDatasource {
     }
   }
 
-  Future<void> _setupCalendarApi(GoogleSignInAccount account) async {
+  Future<bool> _setupCalendarApi(
+    GoogleSignInAccount account, {
+    bool promptIfNecessary = false,
+  }) async {
     final authHeaders = await account.authorizationClient.authorizationHeaders(
       _scopes,
+      promptIfNecessary: promptIfNecessary,
     );
-    if (authHeaders != null) {
-      _calendarApi = calendar.CalendarApi(_AuthenticatedClient(authHeaders));
+    if (authHeaders == null) {
+      _calendarApi = null;
+      _isAuthorized = false;
+      return false;
     }
+
+    _calendarApi = calendar.CalendarApi(_AuthenticatedClient(authHeaders));
+    _isAuthorized = true;
+    return true;
   }
 
   Future<List<calendar.Event>> getEvents(DateTime start, DateTime end) async {
