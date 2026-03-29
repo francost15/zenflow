@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/error/exceptions.dart';
+import '../../../domain/entities/task.dart';
 import '../../../domain/repositories/task_repository.dart';
 import 'task_event.dart';
 import 'task_state.dart';
@@ -8,6 +9,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final TaskRepository _taskRepository;
   DateTime? _selectedDate;
   final List<String> _pendingNotices = [];
+  List<Task> _lastLoadedTasks = [];
 
   TaskBloc(this._taskRepository) : super(TaskInitial()) {
     on<TasksLoadRequested>(_onLoadRequested);
@@ -26,6 +28,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     emit(TaskLoading());
     try {
       final tasks = await _taskRepository.getTasks();
+      _lastLoadedTasks = tasks;
       emit(
         TaskLoaded(tasks: tasks, noticeMessage: _consumeNextPendingNotice()),
       );
@@ -42,6 +45,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     _selectedDate = event.date;
     try {
       final tasks = await _taskRepository.getTasksByDate(event.date);
+      _lastLoadedTasks = tasks;
       emit(
         TaskLoaded(
           tasks: tasks,
@@ -117,7 +121,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
       await action();
       return true;
     } on CalendarSyncWarningException catch (e) {
-      _pendingNotices.add(e.message);
+      emit(TaskLoaded(tasks: _lastLoadedTasks, noticeMessage: e.message));
       return true;
     } catch (e) {
       emit(TaskError(e.toString()));
