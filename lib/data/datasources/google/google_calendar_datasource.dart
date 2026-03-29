@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import '../../../domain/repositories/calendar_repository.dart';
 
 /// Google Calendar datasource.
 ///
@@ -88,10 +89,8 @@ class GoogleCalendarDatasource {
   }
 
   Future<List<calendar.Event>> getEvents(DateTime start, DateTime end) async {
-    // On mobile, if not authorized, return empty list
-    // Don't re-prompt - let user explicitly sign in via the button
     if (_calendarApi == null) {
-      return [];
+      throw CalendarAuthRequiredException();
     }
 
     try {
@@ -105,7 +104,7 @@ class GoogleCalendarDatasource {
       return events.items ?? [];
     } catch (e) {
       debugPrint('Error fetching calendar events: $e');
-      return [];
+      rethrow;
     }
   }
 

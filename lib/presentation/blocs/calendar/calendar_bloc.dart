@@ -36,9 +36,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       );
       emit(CalendarLoaded(events: events, start: event.start, end: event.end));
     } catch (e) {
-      // If we hit an auth error specifically, then we go back to sign in
-      if (e.toString().contains('401') ||
-          e.toString().contains('unauthorized')) {
+      if (e is CalendarAuthRequiredException) {
         emit(CalendarNeedsSignIn());
       } else {
         emit(CalendarError(e.toString()));
