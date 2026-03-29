@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({
-    super.key,
-    this.onStartZenMode,
-  });
+  const CalendarScreen({super.key, this.onStartZenMode});
 
   final void Function(String taskName)? onStartZenMode;
 
@@ -64,17 +61,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   DateTime _startOfSelectedWeek(DateTime date) {
-    return DateTime(date.year, date.month, date.day).subtract(
-      Duration(days: date.weekday - 1),
-    );
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+    ).subtract(Duration(days: date.weekday - 1));
   }
 
   void _loadEvents() {
     final start = DateTime(_focusedWeekStart.year, _focusedWeekStart.month, 1);
-    final end = DateTime(_focusedWeekStart.year, _focusedWeekStart.month + 2, 0);
+    final end = DateTime(
+      _focusedWeekStart.year,
+      _focusedWeekStart.month + 2,
+      0,
+    );
     context.read<CalendarBloc>().add(
-          CalendarLoadRequested(start: start, end: end),
-        );
+      CalendarLoadRequested(start: start, end: end),
+    );
   }
 
   void _moveWeek(int weeks) {

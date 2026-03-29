@@ -73,8 +73,9 @@ class _HomeScreenState extends State<HomeScreen>
                 SliverToBoxAdapter(
                   child: BlocBuilder<StreaksBloc, StreaksState>(
                     builder: (context, state) {
-                      final streak =
-                          state is StreaksLoaded ? state.totalCurrentStreak : 0;
+                      final streak = state is StreaksLoaded
+                          ? state.totalCurrentStreak
+                          : 0;
                       return HomeStreakHero(streak: streak);
                     },
                   ),

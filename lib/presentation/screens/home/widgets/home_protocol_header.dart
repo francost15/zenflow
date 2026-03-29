@@ -1,5 +1,9 @@
 import 'package:app/core/constants/app_colors.dart';
+import 'package:app/presentation/blocs/auth/auth.dart';
+import 'package:app/presentation/blocs/calendar/calendar.dart';
+import 'package:app/presentation/widgets/sync_status_badge.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class HomeProtocolHeader extends StatelessWidget {
@@ -61,31 +65,17 @@ class HomeProtocolHeader extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.darkSurfaceElevated
-                  : AppColors.lightSurfaceElevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.bolt_rounded, size: 14, color: AppColors.accent),
-                const SizedBox(width: 6),
-                Text(
-                  'ACTIVO',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                    color: isDark
-                        ? AppColors.darkTextPrimary
-                        : AppColors.lightTextPrimary,
-                  ),
-                ),
-              ],
-            ),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              return BlocBuilder<CalendarBloc, CalendarState>(
+                builder: (context, calendarState) {
+                  return SyncStatusBadge(
+                    authState: authState,
+                    calendarState: calendarState,
+                  );
+                },
+              );
+            },
           ),
         ],
       ),

@@ -12,6 +12,7 @@ import 'package:app/presentation/screens/courses/courses_screen.dart';
 import 'package:app/presentation/screens/home/home_screen.dart';
 import 'package:app/presentation/screens/streaks/streaks_screen.dart';
 import 'package:app/presentation/screens/zen/zen_mode_screen.dart';
+import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:app/presentation/widgets/bottom_nav_bar.dart';
 import 'package:app/presentation/widgets/connection_indicator.dart';
 import 'package:flutter/material.dart';
@@ -128,9 +129,7 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
       listener: (context, state) {
         debugPrint('Auth state changed: $state');
         if (state is AuthAuthenticated && state.noticeMessage != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.noticeMessage!)));
+          AppSnackbars.showNotice(context, state.noticeMessage!);
         }
       },
       builder: (context, state) {
