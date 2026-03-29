@@ -30,13 +30,11 @@ class SyncStatusBadge extends StatelessWidget {
         calendarState is CalendarNeedsSignIn) {
       return SyncStatus.reconnectNeeded;
     }
-    if (authState is AuthAuthenticated &&
-        calendarState is CalendarLoaded &&
-        (authState as AuthAuthenticated).calendarLinked) {
-      return SyncStatus.connected;
-    }
-    if (calendarState is CalendarNeedsSignIn) {
-      return SyncStatus.reconnectNeeded;
+    if (authState is AuthAuthenticated && calendarState is CalendarLoaded) {
+      final auth = authState as AuthAuthenticated;
+      if (auth.calendarLinked) {
+        return SyncStatus.connected;
+      }
     }
     return SyncStatus.error;
   }
