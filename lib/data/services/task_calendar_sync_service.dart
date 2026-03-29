@@ -123,11 +123,20 @@ class TaskCalendarSyncService {
     final createdEvent = await _calendarRepository.createEvent(
       _toCalendarEvent(task),
     );
-    final syncedTask = task.copyWith(calendarEventId: createdEvent.id);
-    final syncedModel = await _datasource.updateTask(
-      TaskModel.fromEntity(syncedTask),
-    );
-    return syncedModel.toEntity();
+    try {
+      final syncedTask = task.copyWith(calendarEventId: createdEvent.id);
+      final syncedModel = await _datasource.updateTask(
+        TaskModel.fromEntity(syncedTask),
+      );
+      return syncedModel.toEntity();
+    } catch (_) {
+      if (createdEvent.id != null) {
+        try {
+          await _calendarRepository.deleteEvent(createdEvent.id!);
+        } catch (_) {}
+      }
+      rethrow;
+    }
   }
 
   Future<void> deleteAndUnlink(Task task) async {
