@@ -50,3 +50,15 @@ flutter test test/auth_bloc_test.dart
 - [x] Bloc catches typed exception and maps to `CalendarNeedsSignIn`
 - [x] All tests pass
 - [x] Existing auth tests still pass
+
+## Additional Evidence
+
+### Flutter Analyze (2026-03-29)
+```
+No issues found! (ran in 1.0s)
+```
+
+### Gate Check
+```
+PASS: phase PHASE-01 gate passed
+```

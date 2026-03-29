@@ -11,8 +11,8 @@
 | PHASE-02-PLAN-01-T01 | PHASE-02-PLAN-01 | PHASE-02 | 3 | 4 | 3 | 5 | 8 | 23 | 1.0 | .planning/phases/PHASE-02/PHASE-02-VERIFICATION.md |
 | PHASE-03-PLAN-01-T01 | PHASE-03-PLAN-01 | PHASE-03 | 3 | 4 | 3 | 5 | 3 | 18 | 1.0 | .planning/phases/PHASE-03/PHASE-03-VERIFICATION.md |
 | PHASE-03-PLAN-02-T01 | PHASE-03-PLAN-02 | PHASE-03 | 3 | 3 | 2 | 4 | 3 | 15 | 1.0 | .planning/phases/PHASE-03/PHASE-03-VERIFICATION.md |
-| PHASE-04-PLAN-01-T01 | PHASE-04-PLAN-01 | PHASE-04 | 3 | 4 | 3 | 5 | 5 | 20 | 1.0 | - |
-| PHASE-04-PLAN-02-T01 | PHASE-04-PLAN-02 | PHASE-04 | 3 | 4 | 3 | 5 | 8 | 23 | 1.0 | - |
+| PHASE-04-PLAN-01-T01 | PHASE-04-PLAN-01 | PHASE-04 | 3 | 4 | 3 | 5 | 5 | 20 | 1.0 | All gates PHASE-01 to PHASE-04 pass; flutter analyze no issues |
+| PHASE-04-PLAN-02-T01 | PHASE-04-PLAN-02 | PHASE-04 | 3 | 4 | 3 | 5 | 8 | 23 | 1.0 | This verification; 31 tests pass, all phases closed except PHASE-00 |
 
 ## Plan Rollups
 
