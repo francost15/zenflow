@@ -44,18 +44,22 @@ void main() {
       bloc.add(TaskCreated(task2));
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      expect(states[0], isA<TaskLoading>());
-      expect(states[1], isA<TaskLoaded>());
+      expect(states[0], isA<TaskLoaded>());
       expect(
-        (states[1] as TaskLoaded).noticeMessage,
+        (states[0] as TaskLoaded).noticeMessage,
         'La tarea se guardo, pero no se pudo sincronizar con Google Calendar.',
       );
-      expect(states[2], isA<TaskLoading>());
+      expect(states[1], isA<TaskLoading>());
+      expect(states[2], isA<TaskLoaded>());
+      expect((states[2] as TaskLoaded).noticeMessage, isNull);
       expect(states[3], isA<TaskLoaded>());
       expect(
         (states[3] as TaskLoaded).noticeMessage,
         'La tarea se guardo, pero no se pudo sincronizar con Google Calendar.',
       );
+      expect(states[4], isA<TaskLoading>());
+      expect(states[5], isA<TaskLoaded>());
+      expect((states[5] as TaskLoaded).noticeMessage, isNull);
 
       await subscription.cancel();
       await bloc.close();
@@ -87,9 +91,8 @@ void main() {
         bloc.add(TaskDeleted(task));
         await Future<void>.delayed(const Duration(milliseconds: 10));
 
-        expect(states[0], isA<TaskLoading>());
-        expect(states[1], isA<TaskLoaded>());
-        final loadedState = states[1] as TaskLoaded;
+        expect(states[0], isA<TaskLoaded>());
+        final loadedState = states[0] as TaskLoaded;
         expect(loadedState.noticeMessage, isNotNull);
         expect(loadedState.noticeMessage, contains('No se pudo sincronizar'));
 
@@ -164,10 +167,9 @@ void main() {
       bloc.add(TaskCreated(task));
       await Future<void>.delayed(const Duration(milliseconds: 10));
 
-      expect(states[0], isA<TaskLoading>());
-      expect(states[1], isA<TaskLoaded>());
+      expect(states[0], isA<TaskLoaded>());
       expect(
-        (states[1] as TaskLoaded).noticeMessage,
+        (states[0] as TaskLoaded).noticeMessage,
         'La tarea se guardo, pero no se pudo sincronizar con Google Calendar.',
       );
 
