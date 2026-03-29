@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'models.dart';
+import 'markdown_io.dart';
 
 void main(List<String> args) async {
   if (args.isEmpty || args.contains('--help') || args.contains('-h')) {
@@ -24,7 +25,7 @@ void main(List<String> args) async {
   }
 
   if (targetPhase != null) {
-    final result = checkPhaseGate(targetPhase);
+    final result = await checkPhaseGate(targetPhase);
     if (result.passed) {
       print('PASS: phase $targetPhase gate passed');
     } else {
@@ -37,7 +38,7 @@ void main(List<String> args) async {
   }
 
   if (targetPlan != null) {
-    final result = checkPlanGate(targetPlan);
+    final result = await checkPlanGate(targetPlan);
     if (result.passed) {
       print('PASS: plan $targetPlan gate passed');
     } else {
@@ -53,7 +54,7 @@ void main(List<String> args) async {
     final phases = ['PHASE-00', 'PHASE-01', 'PHASE-02', 'PHASE-03', 'PHASE-04'];
     bool allPassed = true;
     for (final phase in phases) {
-      final result = checkPhaseGate(phase);
+      final result = await checkPhaseGate(phase);
       if (result.passed) {
         print('PASS: $phase');
       } else {
@@ -71,48 +72,32 @@ void main(List<String> args) async {
   exit(1);
 }
 
-GateResult checkPhaseGate(String phaseId) {
-  final plans = <PlanEntry>[];
-  final issues = <Issue>[];
+Future<GateResult> checkPhaseGate(String phaseId) async {
+  final scorecardFile = File('.planning/SCORECARD.md');
+  if (!scorecardFile.existsSync()) {
+    return GateResult(
+      passed: false,
+      blockers: ['SCORECARD.md not found at .planning/SCORECARD.md'],
+    );
+  }
 
-  final task1 = TaskEntry(
-    taskId: '$phaseId-PLAN-01-T01',
-    planId: '$phaseId-PLAN-01',
-    phaseId: phaseId,
-    impact: 3,
-    riskClosed: 4,
-    effort: 2,
-    verifiability: 5,
-    dependencyUnlock: 2,
-    validationFactor: 0.0,
-    required: true,
-  );
+  final content = scorecardFile.readAsStringSync();
+  final tasks = MarkdownReader.parseTaskScores(content);
+  final plans = MarkdownReader.parsePlanRollups(content, tasks);
+  final phases = MarkdownReader.parsePhaseRollups(content, plans);
 
-  final plan1 = PlanEntry(
-    planId: '$phaseId-PLAN-01',
-    phaseId: phaseId,
-    tasks: [task1],
-  );
-  plans.add(plan1);
-
-  int targetScore = 16;
-  if (phaseId == 'PHASE-00') targetScore = 44;
-  if (phaseId == 'PHASE-01') targetScore = 40;
-  if (phaseId == 'PHASE-02') targetScore = 23;
-  if (phaseId == 'PHASE-03') targetScore = 33;
-  if (phaseId == 'PHASE-04') targetScore = 43;
-
-  final phase = PhaseEntry(
-    phaseId: phaseId,
-    plans: plans,
-    targetScore: targetScore,
-    openIssues: issues,
-  );
+  final phase = phases.where((p) => p.phaseId == phaseId).firstOrNull;
+  if (phase == null) {
+    return GateResult(
+      passed: false,
+      blockers: ['Phase $phaseId not found in SCORECARD.md'],
+    );
+  }
 
   return evaluatePhaseGate(phase);
 }
 
-GateResult checkPlanGate(String planId) {
+Future<GateResult> checkPlanGate(String planId) async {
   final parts = planId.split('-');
   if (parts.length < 2) {
     return const GateResult(
@@ -122,21 +107,26 @@ GateResult checkPlanGate(String planId) {
   }
 
   final phaseId = '${parts[0]}-${parts[1]}';
+  final planFile = File('.planning/phases/$phaseId/$planId.md');
 
-  final task = TaskEntry(
-    taskId: '$planId-T01',
-    planId: planId,
-    phaseId: phaseId,
-    impact: 3,
-    riskClosed: 4,
-    effort: 2,
-    verifiability: 5,
-    dependencyUnlock: 2,
-    validationFactor: 0.0,
-    required: true,
-  );
+  if (!planFile.existsSync()) {
+    return GateResult(
+      passed: false,
+      blockers: ['Plan file not found at .planning/phases/$phaseId/$planId.md'],
+    );
+  }
 
-  final plan = PlanEntry(planId: planId, phaseId: phaseId, tasks: [task]);
+  final content = planFile.readAsStringSync();
+  final tasks = MarkdownReader.parseTaskScores(content);
+  final planTasks = tasks.where((t) => t.planId == planId).toList();
 
+  if (planTasks.isEmpty) {
+    return GateResult(
+      passed: false,
+      blockers: ['No tasks found for plan $planId'],
+    );
+  }
+
+  final plan = PlanEntry(planId: planId, phaseId: phaseId, tasks: planTasks);
   return evaluatePlanGate(plan);
 }

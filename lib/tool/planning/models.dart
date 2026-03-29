@@ -1,3 +1,5 @@
+import 'dart:io' as io;
+
 class TaskId {
   final String phase;
   final String plan;
@@ -186,12 +188,16 @@ class PhaseEntry {
   final List<PlanEntry> plans;
   final int targetScore;
   final List<Issue> openIssues;
+  final List<String> closedDependencies;
+  final List<String> requiredVerificationFiles;
 
   const PhaseEntry({
     required this.phaseId,
     required this.plans,
     required this.targetScore,
     this.openIssues = const [],
+    this.closedDependencies = const [],
+    this.requiredVerificationFiles = const [],
   });
 
   int get estimatedTotal => plans.fold(0, (sum, p) => sum + p.estimatedTotal);
@@ -278,4 +284,69 @@ GateResult evaluatePhaseGate(PhaseEntry phase) {
     blockers: blockers,
     warnings: warnings,
   );
+}
+
+List<String> findMissingVerificationFiles(List<String> requiredFiles) {
+  return requiredFiles.where((file) {
+    final f = io.File(file);
+    return !f.existsSync();
+  }).toList();
+}
+
+List<String> findOpenDependencies(
+  List<String> requiredDependencies,
+  List<String> closedDependencies,
+) {
+  return requiredDependencies
+      .where((dep) => !closedDependencies.contains(dep))
+      .toList();
+}
+
+GateResult evaluatePhaseGateWithVerification(
+  PhaseEntry phase,
+  List<String> Function(String) getClosedDependenciesForPhase,
+) {
+  final result = evaluatePhaseGate(phase);
+
+  final missingFiles = findMissingVerificationFiles(
+    phase.requiredVerificationFiles,
+  );
+  if (missingFiles.isNotEmpty) {
+    result.blockers.add(
+      'Missing required verification artifacts: ${missingFiles.join(', ')}',
+    );
+  }
+
+  final requiredDeps = phase.closedDependencies.isEmpty
+      ? getClosedDependenciesForPhase(phase.phaseId)
+      : phase.closedDependencies;
+  final openDeps = findOpenDependencies(requiredDeps, phase.closedDependencies);
+  if (openDeps.isNotEmpty) {
+    result.blockers.add(
+      'Open dependency phases must be closed before advancement: ${openDeps.join(', ')}',
+    );
+  }
+
+  return GateResult(
+    passed: result.passed && missingFiles.isEmpty && openDeps.isEmpty,
+    blockers: result.blockers,
+    warnings: result.warnings,
+  );
+}
+
+const _phaseDependencies = {
+  'PHASE-00': <String>[],
+  'PHASE-01': ['PHASE-00'],
+  'PHASE-02': ['PHASE-00', 'PHASE-01'],
+  'PHASE-03': ['PHASE-00', 'PHASE-01', 'PHASE-02'],
+  'PHASE-04': ['PHASE-00', 'PHASE-01', 'PHASE-02', 'PHASE-03'],
+};
+
+List<String> getDefaultClosedDependenciesForPhase(String phaseId) {
+  final phaseNum = int.tryParse(phaseId.split('-')[1]) ?? 0;
+  final closedDeps = <String>[];
+  for (int i = 0; i < phaseNum; i++) {
+    closedDeps.add('PHASE-${i.toString().padLeft(2, '0')}');
+  }
+  return closedDeps;
 }
