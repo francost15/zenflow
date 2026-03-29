@@ -4,8 +4,8 @@
 
 | Task ID | Plan ID | Phase ID | Impact | Risk Closed | Effort | Verifiability | Dependency Unlock | Estimated | Validation Factor |
 |---------|---------|---------|--------|-------------|--------|---------------|------------------|-----------|------------------|
-| PHASE-00-PLAN-01-T01 | PHASE-00-PLAN-01 | PHASE-00 | 3 | 4 | 3 | 5 | 8 | 23 | 1.0 |
-| PHASE-00-PLAN-01-T02 | PHASE-00-PLAN-01 | PHASE-00 | 3 | 4 | 3 | 5 | 6 | 21 | 1.0 |
+| PHASE-00-PLAN-01-T01 | PHASE-00-PLAN-01 | PHASE-00 | 3 | 4 | 3 | 5 | 8 | 23 | 0.0 |
+| PHASE-00-PLAN-01-T02 | PHASE-00-PLAN-01 | PHASE-00 | 3 | 4 | 3 | 5 | 6 | 21 | 0.0 |
 | PHASE-01-PLAN-01-T01 | PHASE-01-PLAN-01 | PHASE-01 | 3 | 4 | 3 | 5 | 6 | 21 | 1.0 |
 | PHASE-01-PLAN-02-T01 | PHASE-01-PLAN-02 | PHASE-01 | 3 | 4 | 3 | 5 | 4 | 19 | 1.0 |
 | PHASE-02-PLAN-01-T01 | PHASE-02-PLAN-01 | PHASE-02 | 3 | 4 | 3 | 5 | 8 | 23 | 1.0 |
@@ -18,7 +18,7 @@
 
 | Plan ID | Phase ID | Estimated | Validated | Gate Status |
 |---------|---------|-----------|-----------|-------------|
-| PHASE-00-PLAN-01 | PHASE-00 | 44 | 44.0 | open |
+| PHASE-00-PLAN-01 | PHASE-00 | 44 | 0.0 | open |
 | PHASE-01-PLAN-01 | PHASE-01 | 21 | 21.0 | open |
 | PHASE-01-PLAN-02 | PHASE-01 | 19 | 19.0 | open |
 | PHASE-02-PLAN-01 | PHASE-02 | 23 | 23.0 | open |
@@ -31,7 +31,7 @@
 
 | Phase ID | Estimated | Closure Score | Validated | Gate Status |
 |----------|-----------|---------------|-----------|-------------|
-| PHASE-00 | 44 | 40 | 44.0 | open |
+| PHASE-00 | 44 | 40 | 0.0 | open |
 | PHASE-01 | 40 | 36 | 40.0 | open |
 | PHASE-02 | 23 | 21 | 23.0 | open |
 | PHASE-03 | 33 | 30 | 33.0 | open |
