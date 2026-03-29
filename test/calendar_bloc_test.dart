@@ -90,6 +90,9 @@ class FakeTaskRepository implements TaskRepository {
     }
     return const ReconciliationResult(syncedTasks: [], failedTasks: []);
   }
+
+  @override
+  Future<List<Task>> getTasksByCourse(String courseId) async => [];
 }
 
 void main() {
