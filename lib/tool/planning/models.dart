@@ -1,6 +1,3 @@
-import 'package:meta/meta.dart';
-
-@immutable
 class TaskId {
   final String phase;
   final String plan;
@@ -14,7 +11,7 @@ class TaskId {
     required this.taskNumber,
   });
 
-  static final _pattern = RegExp(r'^PHASE-(\d+)-PLAN-(\d+)-T(\d+)$');
+  static final _pattern = RegExp(r'^PHASE-(\d{2})-PLAN-(\d{2})-T(\d{2})$');
 
   static TaskId parse(String id) {
     final match = _pattern.firstMatch(id);
@@ -87,7 +84,6 @@ class Issue {
   });
 }
 
-@immutable
 class TaskEntry {
   final String taskId;
   final String planId;
@@ -113,13 +109,43 @@ class TaskEntry {
     this.required = true,
   });
 
+  factory TaskEntry.withValidation({
+    required String taskId,
+    required String planId,
+    required String phaseId,
+    required int impact,
+    required int riskClosed,
+    required int effort,
+    required int verifiability,
+    required int dependencyUnlock,
+    double validationFactor = 1.0,
+    bool required = true,
+  }) {
+    if (!allowedValidationFactors.contains(validationFactor)) {
+      throw FormatException(
+        'validationFactor must be one of $allowedValidationFactors, got $validationFactor',
+      );
+    }
+    return TaskEntry(
+      taskId: taskId,
+      planId: planId,
+      phaseId: phaseId,
+      impact: impact,
+      riskClosed: riskClosed,
+      effort: effort,
+      verifiability: verifiability,
+      dependencyUnlock: dependencyUnlock,
+      validationFactor: validationFactor,
+      required: required,
+    );
+  }
+
   int get estimatedScore =>
       impact + riskClosed + effort + verifiability + dependencyUnlock;
 
   double get validatedScore => estimatedScore * validationFactor;
 }
 
-@immutable
 class TaskScoreEntry {
   final String taskId;
   final TaskStatus status;
@@ -136,7 +162,6 @@ class TaskScoreEntry {
   });
 }
 
-@immutable
 class PlanEntry {
   final String planId;
   final String phaseId;
@@ -156,7 +181,6 @@ class PlanEntry {
   }
 }
 
-@immutable
 class PhaseEntry {
   final String phaseId;
   final List<PlanEntry> plans;

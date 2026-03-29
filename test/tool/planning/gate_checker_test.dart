@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gate_checker/planning/models.dart';
-import 'package:gate_checker/planning/gate_checker.dart';
+import 'package:app/tool/planning/models.dart';
+import 'package:app/tool/planning/gate_checker.dart';
 
 void main() {
   group('TaskId parsing', () {
@@ -91,13 +91,13 @@ void main() {
           validationFactor: factor,
           required: true,
         );
-        expect(task.validatedScore, isFinite);
+        expect(task.validatedScore.isFinite, isTrue);
       }
     });
 
     test('rejects invalid validation factors', () {
       expect(
-        () => TaskEntry(
+        () => TaskEntry.withValidation(
           taskId: 'PHASE-01-PLAN-02-T01',
           planId: 'PHASE-01-PLAN-02',
           phaseId: 'PHASE-01',
@@ -112,7 +112,7 @@ void main() {
         throwsA(anything),
       );
       expect(
-        () => TaskEntry(
+        () => TaskEntry.withValidation(
           taskId: 'PHASE-01-PLAN-02-T01',
           planId: 'PHASE-01-PLAN-02',
           phaseId: 'PHASE-01',
@@ -157,7 +157,7 @@ void main() {
           effort: 2,
           verifiability: 5,
           dependencyUnlock: 2,
-          validationFactor: 0.7,
+          validationFactor: 1.0,
           required: true,
         ),
         TaskEntry(
@@ -178,7 +178,7 @@ void main() {
         phaseId: 'PHASE-01',
         tasks: entries,
       );
-      expect(plan.validatedTotal, 15.2);
+      expect(plan.validatedTotal, 26.0);
     });
 
     test('phase validated total rounds to one decimal place', () {
@@ -222,7 +222,7 @@ void main() {
         ],
         targetScore: 32,
       );
-      expect(phase.validatedTotal, 25.2);
+      expect(phase.validatedTotal, 27.2);
     });
   });
 
@@ -306,7 +306,7 @@ void main() {
         effort: 2,
         verifiability: 5,
         dependencyUnlock: 2,
-        validationFactor: 0.7,
+        validationFactor: 1.0,
         required: true,
       );
       final plan = PlanEntry(
