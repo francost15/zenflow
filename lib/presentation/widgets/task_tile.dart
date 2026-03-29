@@ -1,10 +1,10 @@
+import 'dart:async';
 import 'package:app/core/constants/app_colors.dart';
 import 'package:app/domain/entities/task.dart';
 import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:app/presentation/widgets/task_tile_content.dart';
 import 'package:app/presentation/widgets/task_tile_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 
 class TaskTile extends StatefulWidget {
   final Task task;
@@ -54,17 +54,18 @@ class _TaskTileState extends State<TaskTile> {
             _handleDismissConfirm(context, direction, isCompleted),
         onDismissed: (direction) {
           if (direction == DismissDirection.endToStart) {
-            AppSnackbars.showAction(
-              context,
-              'Tarea eliminada',
-              actionLabel: 'DESHACER',
-              onAction: () => widget.onUndoDelete?.call(),
-            ).closed.then((reason) {
-              if (reason != SnackBarClosedReason.action) {
-                SchedulerBinding.instance.addPostFrameCallback((_) {
+            Timer(const Duration(milliseconds: 300), () {
+              if (!mounted) return;
+              AppSnackbars.showAction(
+                context,
+                'Tarea eliminada',
+                actionLabel: 'DESHACER',
+                onAction: () => widget.onUndoDelete?.call(),
+              ).closed.then((reason) {
+                if (reason != SnackBarClosedReason.action) {
                   widget.onDelete?.call();
-                });
-              }
+                }
+              });
             });
           }
         },
