@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:app/core/constants/app_colors.dart';
 import 'package:app/domain/entities/task.dart';
 import 'package:app/presentation/widgets/app_snackbars.dart';
@@ -28,9 +27,14 @@ class TaskTile extends StatefulWidget {
 
 class _TaskTileState extends State<TaskTile> {
   bool _isPressed = false;
+  bool _isDismissed = false;
 
   @override
   Widget build(BuildContext context) {
+    if (_isDismissed) {
+      return const SizedBox.shrink();
+    }
+
     final isCompleted = widget.task.status == TaskStatus.completed;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = isTaskActive(widget.task) && !isCompleted;
@@ -54,13 +58,22 @@ class _TaskTileState extends State<TaskTile> {
             _handleDismissConfirm(context, direction, isCompleted),
         onDismissed: (direction) {
           if (direction == DismissDirection.endToStart) {
-            Timer(const Duration(milliseconds: 300), () {
-              if (!mounted) return;
+            setState(() => _isDismissed = true);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!context.mounted) {
+                return;
+              }
+
               AppSnackbars.showAction(
                 context,
                 'Tarea eliminada',
                 actionLabel: 'DESHACER',
-                onAction: () => widget.onUndoDelete?.call(),
+                onAction: () {
+                  if (mounted) {
+                    setState(() => _isDismissed = false);
+                  }
+                  widget.onUndoDelete?.call();
+                },
               ).closed.then((reason) {
                 if (reason != SnackBarClosedReason.action) {
                   widget.onDelete?.call();
