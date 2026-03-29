@@ -48,12 +48,14 @@ class _BrandChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.darkSurfaceElevated
-            : AppColors.lightSurfaceElevated,
-        borderRadius: BorderRadius.circular(12),
+        color: isDark ? const Color(0xFF0C0F14) : Colors.white,
+        border: Border.all(
+          color: isDark ? const Color(0xFF27272A) : Colors.black12,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -63,9 +65,10 @@ class _BrandChip extends StatelessWidget {
           Text(
             'ZENFLOW',
             style: TextStyle(
+              fontFamily: 'Space Grotesk',
               fontWeight: FontWeight.w900,
               fontSize: 13,
-              letterSpacing: 1.5,
+              letterSpacing: 2.5,
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
@@ -92,9 +95,12 @@ class _ThemeToggleButton extends StatelessWidget {
       onPressed: onPressed,
       padding: const EdgeInsets.all(12),
       style: IconButton.styleFrom(
-        backgroundColor:
-            isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: isDark ? const Color(0xFF0C0F14) : Colors.white,
+        side: BorderSide(
+          color: isDark ? const Color(0xFF27272A) : Colors.black12,
+          width: 1,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
       icon: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
@@ -126,16 +132,24 @@ class _UserMenu extends StatelessWidget {
       builder: (context, state) {
         return PopupMenuButton<String>(
           offset: const Offset(0, 56),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          color: isDark ? AppColors.darkSurface : Colors.white,
-          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+            side: BorderSide(
+              color: isDark ? const Color(0xFF27272A) : Colors.black12,
+              width: 1,
+            ),
+          ),
+          color: isDark ? const Color(0xFF0C0F14) : Colors.white,
+          elevation: 0,
           padding: EdgeInsets.zero,
           icon: Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.darkSurfaceElevated
-                  : AppColors.lightSurfaceElevated,
+              color: isDark ? const Color(0xFF0C0F14) : Colors.white,
+              border: Border.all(
+                color: isDark ? const Color(0xFF27272A) : Colors.black12,
+                width: 1,
+              ),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -157,7 +171,10 @@ class _UserMenu extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    Text(state.user.email ?? '', style: theme.textTheme.labelSmall),
+                    Text(
+                      state.user.email ?? '',
+                      style: theme.textTheme.labelSmall,
+                    ),
                   ],
                 ),
               ),
@@ -194,9 +211,7 @@ class _UserMenu extends StatelessWidget {
           onSelected: (value) {
             if (value == 'profile') {
               Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const ProfileScreen(),
-                ),
+                MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
               );
               return;
             }
@@ -210,10 +225,7 @@ class _UserMenu extends StatelessWidget {
 }
 
 class _MenuItem extends StatelessWidget {
-  const _MenuItem({
-    required this.icon,
-    required this.label,
-  });
+  const _MenuItem({required this.icon, required this.label});
 
   final IconData icon;
   final String label;

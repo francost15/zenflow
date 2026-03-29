@@ -24,7 +24,9 @@ class HabitCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+        color: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.lightSurfaceElevated,
         borderRadius: BorderRadius.circular(20),
       ),
       child: InkWell(
@@ -50,7 +52,7 @@ class HabitCard extends StatelessWidget {
                             color: AppColors.success.withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ]
                       : null,
                 ),
@@ -58,18 +60,13 @@ class HabitCard extends StatelessWidget {
                   alignment: Alignment.center,
                   children: [
                     if (habit.icon != null)
-                      Text(
-                        habit.icon!,
-                        style: const TextStyle(fontSize: 24),
-                      )
+                      Text(habit.icon!, style: const TextStyle(fontSize: 24))
                     else
                       Icon(
                         checkedToday
                             ? Icons.check_rounded
                             : Icons.local_fire_department_rounded,
-                        color: checkedToday
-                            ? Colors.white
-                            : AppColors.accent,
+                        color: checkedToday ? Colors.white : AppColors.accent,
                         size: 24,
                       ),
                     if (checkedToday && habit.icon != null)
@@ -117,8 +114,8 @@ class HabitCard extends StatelessWidget {
                             color: checkedToday
                                 ? AppColors.success
                                 : (isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.lightTextSecondary),
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.lightTextSecondary),
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.5,
                           ),
@@ -138,7 +135,9 @@ class HabitCard extends StatelessWidget {
               const SizedBox(width: 8),
               _buildActionButton(
                 icon: Icons.delete_outline_rounded,
-                color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+                color: isDark
+                    ? AppColors.darkTextTertiary
+                    : AppColors.lightTextTertiary,
                 onPressed: onDelete,
                 isDark: isDark,
               ),
@@ -159,7 +158,9 @@ class HabitCard extends StatelessWidget {
       width: 36,
       height: 36,
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(10),
       ),
       child: IconButton(

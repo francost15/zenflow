@@ -21,9 +21,7 @@ class BottomNavBar extends StatelessWidget {
     return Container(
       height: 88,
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
-      ),
+      decoration: const BoxDecoration(color: Colors.transparent),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: BackdropFilter(
@@ -102,11 +100,7 @@ class BottomNavBar extends StatelessWidget {
         color: isSelected ? AppColors.accent : theme.hintColor,
         size: 22,
       ),
-      selectedIcon: Icon(
-        selectedIcon,
-        color: AppColors.accent,
-        size: 22,
-      ),
+      selectedIcon: Icon(selectedIcon, color: AppColors.accent, size: 22),
       label: label,
     );
   }

@@ -25,20 +25,25 @@ class CalendarHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Agenda',
+                'AGENDA',
                 style: theme.textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
+                  fontFamily: 'Space Grotesk',
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  letterSpacing: 2.5,
+                  color: isDark ? AppColors.stone : Colors.black87,
                 ),
               ),
+              const SizedBox(height: 4),
               Text(
-                DateFormat('MMMM yyyy', 'es_ES')
-                    .format(focusedWeekStart)
-                    .toUpperCase(),
+                DateFormat(
+                  'MMMM yyyy',
+                  'es_ES',
+                ).format(focusedWeekStart).toUpperCase(),
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: AppColors.accent,
                   fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.5,
                 ),
               ),
             ],
@@ -81,10 +86,12 @@ class CalendarWeekStrip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.darkSurfaceElevated.withValues(alpha: 0.5)
-            : AppColors.lightSurfaceElevated.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? AppColors.obsidian : Colors.white,
+        border: Border.all(
+          color: isDark ? AppColors.monolithBorder : Colors.black12,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         children: List.generate(7, (index) {
@@ -98,21 +105,12 @@ class CalendarWeekStrip extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOutCubic,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? (isDark ? AppColors.darkSurface : Colors.white)
+                      ? (isDark ? const Color(0xFF18181B) : Colors.black12)
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: isSelected && !isDark
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ]
-                      : null,
+                  borderRadius: BorderRadius.circular(2),
                 ),
                 child: Column(
                   children: [
@@ -124,7 +122,7 @@ class CalendarWeekStrip extends StatelessWidget {
                             : isDark
                                 ? AppColors.darkTextTertiary
                                 : AppColors.lightTextTertiary,
-                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                         fontSize: 9,
                         letterSpacing: 0.5,
                       ),
@@ -133,13 +131,14 @@ class CalendarWeekStrip extends StatelessWidget {
                     Text(
                       '${date.day}',
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w900,
                         color: isSelected
                             ? (isDark ? Colors.white : AppColors.lightTextPrimary)
                             : (isDark
                                 ? AppColors.darkTextSecondary
                                 : AppColors.lightTextSecondary),
-                        fontSize: 16,
+                        fontSize: 14,
+                        fontFamily: 'Space Grotesk',
                       ),
                     ),
                     if (isToday && !isSelected)
@@ -178,8 +177,9 @@ class _NavButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color:
-            isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+        color: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.lightSurfaceElevated,
         borderRadius: BorderRadius.circular(10),
       ),
       child: IconButton(

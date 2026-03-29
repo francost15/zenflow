@@ -63,7 +63,11 @@ class _CreateHabitSheetState extends State<CreateHabitSheet> {
             decoration: InputDecoration(
               hintText: 'Nombre del hábito...',
               hintStyle: TextStyle(
-                color: (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary).withValues(alpha: 0.5),
+                color:
+                    (isDark
+                            ? AppColors.darkTextTertiary
+                            : AppColors.lightTextTertiary)
+                        .withValues(alpha: 0.5),
               ),
               border: InputBorder.none,
             ),
@@ -91,20 +95,23 @@ class _CreateHabitSheetState extends State<CreateHabitSheet> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? AppColors.accent.withValues(alpha: 0.15) 
-                        : (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated),
+                    color: isSelected
+                        ? AppColors.accent.withValues(alpha: 0.15)
+                        : (isDark
+                              ? AppColors.darkSurfaceElevated
+                              : AppColors.lightSurfaceElevated),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isSelected ? AppColors.accent : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                      color: isSelected
+                          ? AppColors.accent
+                          : (isDark
+                                ? AppColors.darkBorder
+                                : AppColors.lightBorder),
                       width: 2,
                     ),
                   ),
                   child: Center(
-                    child: Text(
-                      icon,
-                      style: const TextStyle(fontSize: 28),
-                    ),
+                    child: Text(icon, style: const TextStyle(fontSize: 28)),
                   ),
                 ),
               );
@@ -119,9 +126,8 @@ class _CreateHabitSheetState extends State<CreateHabitSheet> {
   void _createHabit() {
     if (_nameController.text.isEmpty) return;
     context.read<StreaksBloc>().add(
-          HabitCreated(name: _nameController.text, icon: _selectedIcon),
-        );
+      HabitCreated(name: _nameController.text, icon: _selectedIcon),
+    );
     Navigator.pop(context);
   }
 }
-

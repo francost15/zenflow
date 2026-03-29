@@ -174,7 +174,8 @@ class PlanEntry {
   final String phaseId;
   final List<TaskEntry> tasks;
 
-  int get estimatedTotal => tasks.fold(0, (sum, task) => sum + task.estimatedScore);
+  int get estimatedTotal =>
+      tasks.fold(0, (sum, task) => sum + task.estimatedScore);
 
   double get validatedTotal {
     final total = tasks.fold(0.0, (sum, task) => sum + task.validatedScore);
@@ -199,7 +200,8 @@ class PhaseEntry {
   final List<String> closedDependencies;
   final List<String> requiredVerificationFiles;
 
-  int get estimatedTotal => plans.fold(0, (sum, plan) => sum + plan.estimatedTotal);
+  int get estimatedTotal =>
+      plans.fold(0, (sum, plan) => sum + plan.estimatedTotal);
 
   double get validatedTotal {
     final total = plans.fold(0.0, (sum, plan) => sum + plan.validatedTotal);

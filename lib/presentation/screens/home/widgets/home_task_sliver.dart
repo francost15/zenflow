@@ -1,8 +1,8 @@
+import 'package:app/core/constants/app_colors.dart';
 import 'package:app/domain/entities/task.dart';
 import 'package:app/presentation/blocs/task/task_bloc.dart';
 import 'package:app/presentation/blocs/task/task_event.dart';
 import 'package:app/presentation/blocs/task/task_state.dart';
-import 'package:app/presentation/widgets/empty_state.dart';
 import 'package:app/presentation/widgets/error_state.dart';
 import 'package:app/presentation/widgets/loading_indicator.dart';
 import 'package:app/presentation/widgets/task_tile.dart';
@@ -21,12 +21,12 @@ class HomeTaskSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return BlocBuilder<TaskBloc, TaskState>(
       builder: (context, state) {
         if (state is TaskLoading) {
-          return const SliverFillRemaining(
-            child: LoadingIndicator(),
-          );
+          return const SliverFillRemaining(child: LoadingIndicator());
         }
 
         if (state is TaskError) {
@@ -44,38 +44,88 @@ class HomeTaskSliver extends StatelessWidget {
         }
 
         if (state.tasks.isEmpty) {
-          return const SliverFillRemaining(
+          return SliverFillRemaining(
             hasScrollBody: false,
-            child: EmptyState(
-              title: 'Día despejado',
-              message: 'No tienes tareas pendientes para hoy.',
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.wb_sunny_outlined,
+                    size: 32,
+                    color: Color(0xFF27272A),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'PROTOCOLO COMPLETADO',
+                    style: TextStyle(
+                      fontFamily: 'Space Grotesk',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 3.5,
+                      color: isDark ? AppColors.stone : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'DÍA DESPEJADO',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color:
+                          isDark ? AppColors.darkTextTertiary : Colors.black45,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }
 
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          sliver: SliverList.builder(
-            itemCount: state.tasks.length,
-            itemBuilder: (context, index) {
-              final task = state.tasks[index];
-              return TaskTile(
-                task: task,
-                onToggle: (completed) {
-                  context.read<TaskBloc>().add(
-                        TaskStatusToggled(task: task, completed: completed),
-                      );
+        return SliverMainAxisGroup(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+                child: Text(
+                  'HOY',
+                  style: TextStyle(
+                    fontFamily: 'Space Grotesk',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 4.0,
+                    color: isDark ? AppColors.darkTextTertiary : Colors.black45,
+                  ),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList.builder(
+                itemCount: state.tasks.length,
+                itemBuilder: (context, index) {
+                  final task = state.tasks[index];
+                  return TaskTile(
+                    task: task,
+                    onToggle: (completed) {
+                      context.read<TaskBloc>().add(
+                            TaskStatusToggled(task: task, completed: completed),
+                          );
+                    },
+                    onTap: () => onEditTask(task),
+                    onDelete: () {
+                      context.read<TaskBloc>().add(TaskDeleted(task));
+                    },
+                    onUndoDelete: () {
+                      context
+                          .read<TaskBloc>()
+                          .add(TaskUndoDeletionRequested(task));
+                    },
+                  );
                 },
-                onTap: () => onEditTask(task),
-                onDelete: () {
-                  context.read<TaskBloc>().add(TaskDeleted(task));
-                },
-                onUndoDelete: () {
-                  context.read<TaskBloc>().add(TaskUndoDeletionRequested(task));
-                },
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         );
       },
     );

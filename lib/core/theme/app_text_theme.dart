@@ -13,14 +13,39 @@ TextTheme buildAppTextTheme({required bool isDark}) {
       : AppColors.lightTextTertiary;
 
   return TextTheme(
-    displayLarge: _textStyle(64, FontWeight.w800, primary,
-        letterSpacing: -2, height: 1.0),
-    displayMedium: _textStyle(48, FontWeight.w700, primary,
-        letterSpacing: -1.5, height: 1.1),
-    displaySmall: _textStyle(36, FontWeight.w700, primary,
-        letterSpacing: -1, height: 1.1),
-    headlineLarge: _textStyle(28, FontWeight.w700, primary, letterSpacing: -0.5),
-    headlineMedium: _textStyle(24, FontWeight.w700, primary, letterSpacing: -0.5),
+    displayLarge: _textStyle(
+      64,
+      FontWeight.w800,
+      primary,
+      letterSpacing: -2,
+      height: 1.0,
+    ),
+    displayMedium: _textStyle(
+      48,
+      FontWeight.w700,
+      primary,
+      letterSpacing: -1.5,
+      height: 1.1,
+    ),
+    displaySmall: _textStyle(
+      36,
+      FontWeight.w700,
+      primary,
+      letterSpacing: -1,
+      height: 1.1,
+    ),
+    headlineLarge: _textStyle(
+      28,
+      FontWeight.w700,
+      primary,
+      letterSpacing: -0.5,
+    ),
+    headlineMedium: _textStyle(
+      24,
+      FontWeight.w700,
+      primary,
+      letterSpacing: -0.5,
+    ),
     headlineSmall: _textStyle(20, FontWeight.w600, primary),
     titleLarge: _textStyle(18, FontWeight.w600, primary),
     titleMedium: _textStyle(16, FontWeight.w600, primary),

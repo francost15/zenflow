@@ -55,7 +55,9 @@ void main() {
           PlanEntry(
             planId: 'PHASE-01-PLAN-01',
             phaseId: 'PHASE-01',
-            tasks: [_taskEntry(validationFactor: 1.0, taskId: 'PHASE-01-PLAN-01-T01')],
+            tasks: [
+              _taskEntry(validationFactor: 1.0, taskId: 'PHASE-01-PLAN-01-T01'),
+            ],
           ),
           PlanEntry(
             planId: 'PHASE-01-PLAN-02',

@@ -1,7 +1,8 @@
 import 'package:app/core/constants/app_colors.dart';
-import 'package:app/domain/entities/task.dart';
 import 'package:app/presentation/blocs/course/course_overview.dart';
 import 'package:app/presentation/screens/courses/course_formatters.dart';
+import 'package:app/presentation/screens/courses/widgets/course_detail_components.dart';
+import 'package:app/presentation/screens/courses/widgets/course_subject_badge.dart';
 import 'package:flutter/material.dart';
 
 class CourseDetailSheet extends StatelessWidget {
@@ -9,10 +10,12 @@ class CourseDetailSheet extends StatelessWidget {
     super.key,
     required this.overview,
     required this.onEdit,
+    required this.onDelete,
   });
 
   final CourseOverview overview;
   final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,6 @@ class CourseDetailSheet extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
                 child: Container(
@@ -42,44 +44,73 @@ class CourseDetailSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              Row(
-                children: [
-                  Container(
-                    width: 14,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: overview.course.color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      overview.course.name,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: onEdit,
-                    icon: const Icon(Icons.edit_rounded),
-                  ),
-                ],
+              CourseSubjectBadge(
+                courseName: overview.course.name,
+                color: overview.course.color,
+                size: 72,
+                iconSize: 34,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                overview.course.name,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               if (overview.course.professor != null) ...[
                 const SizedBox(height: 8),
-                Text(
-                  overview.course.professor!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.person_rounded,
+                      size: 16,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        overview.course.professor!,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit_rounded),
+                      label: const Text('Editar'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline_rounded),
+                      label: const Text('Eliminar materia'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
-              _DetailSection(
+              CourseDetailSection(
+                icon: Icons.schedule_rounded,
                 title: 'Próxima clase',
                 child: Text(
                   overview.nextClass != null
@@ -91,7 +122,8 @@ class CourseDetailSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _DetailSection(
+              CourseDetailSection(
+                icon: Icons.calendar_view_week_rounded,
                 title: 'Horario semanal',
                 child: overview.course.schedule.isEmpty
                     ? Text(
@@ -117,7 +149,8 @@ class CourseDetailSheet extends StatelessWidget {
                       ),
               ),
               const SizedBox(height: 16),
-              _DetailSection(
+              CourseDetailSection(
+                icon: Icons.assignment_rounded,
                 title: 'Tareas del curso',
                 child: overview.tasks.isEmpty
                     ? Text(
@@ -126,12 +159,13 @@ class CourseDetailSheet extends StatelessWidget {
                       )
                     : Column(
                         children: overview.tasks.map((task) {
-                          return _TaskRow(task: task);
+                          return CourseTaskRow(task: task);
                         }).toList(),
                       ),
               ),
               const SizedBox(height: 16),
-              _DetailSection(
+              CourseDetailSection(
+                icon: Icons.sticky_note_2_rounded,
                 title: 'Notas',
                 child: Text(
                   overview.course.notes?.isNotEmpty == true
@@ -143,86 +177,6 @@ class CourseDetailSheet extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DetailSection extends StatelessWidget {
-  const _DetailSection({
-    required this.title,
-    required this.child,
-  });
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.4,
-                color: AppColors.accent,
-              ),
-        ),
-        const SizedBox(height: 10),
-        child,
-      ],
-    );
-  }
-}
-
-class _TaskRow extends StatelessWidget {
-  const _TaskRow({required this.task});
-
-  final Task task;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isCompleted = task.status == TaskStatus.completed;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color:
-            isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            isCompleted
-                ? Icons.check_circle_rounded
-                : Icons.radio_button_unchecked_rounded,
-            color: isCompleted ? AppColors.success : AppColors.accent,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  task.title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  formatCourseTaskDue(task),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

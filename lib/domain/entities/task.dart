@@ -73,10 +73,14 @@ class Task extends Equatable {
           ? this.description
           : description as String?,
       dueDate: dueDate ?? this.dueDate,
-      dueTime: identical(dueTime, _taskUnset) ? this.dueTime : dueTime as TimeOfDay?,
+      dueTime: identical(dueTime, _taskUnset)
+          ? this.dueTime
+          : dueTime as TimeOfDay?,
       priority: priority ?? this.priority,
       status: status ?? this.status,
-      courseId: identical(courseId, _taskUnset) ? this.courseId : courseId as String?,
+      courseId: identical(courseId, _taskUnset)
+          ? this.courseId
+          : courseId as String?,
       subtasks: subtasks ?? this.subtasks,
       calendarEventId: identical(calendarEventId, _taskUnset)
           ? this.calendarEventId
@@ -84,8 +88,8 @@ class Task extends Equatable {
       isDeleted: isDeleted ?? this.isDeleted,
       pendingCalendarSyncAction:
           identical(pendingCalendarSyncAction, _taskUnset)
-              ? this.pendingCalendarSyncAction
-              : pendingCalendarSyncAction as CalendarSyncAction?,
+          ? this.pendingCalendarSyncAction
+          : pendingCalendarSyncAction as CalendarSyncAction?,
       calendarSyncStatus: calendarSyncStatus ?? this.calendarSyncStatus,
       lastCalendarSyncError: identical(lastCalendarSyncError, _taskUnset)
           ? this.lastCalendarSyncError

@@ -91,8 +91,9 @@ class _CourseEditorSheetState extends State<CourseEditorSheet> {
       },
       child: FocusSheetShell(
         title: _isEditMode ? 'Editar materia' : 'Nueva materia',
-        monospaceLabel:
-            _isEditMode ? 'course_registry_edit' : 'course_registry_02',
+        monospaceLabel: _isEditMode
+            ? 'course_registry_edit'
+            : 'course_registry_02',
         actions: [
           ElevatedButton(
             onPressed: _isSubmitting ? null : _submitCourse,
@@ -186,7 +187,7 @@ class _CourseEditorSheetState extends State<CourseEditorSheet> {
     });
 
     context.read<CourseBloc>().add(
-          initialCourse == null ? CourseCreated(course) : CourseUpdated(course),
-        );
+      initialCourse == null ? CourseCreated(course) : CourseUpdated(course),
+    );
   }
 }

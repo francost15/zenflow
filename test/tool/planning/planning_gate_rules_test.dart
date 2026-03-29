@@ -15,7 +15,9 @@ void main() {
 
       expect(result.passed, false);
       expect(
-        result.blockers.any((blocker) => blocker.contains('0.0 validation factor')),
+        result.blockers.any(
+          (blocker) => blocker.contains('0.0 validation factor'),
+        ),
         true,
       );
     });
@@ -82,7 +84,10 @@ void main() {
       );
 
       expect(result.passed, false);
-      expect(result.blockers.any((blocker) => blocker.contains('critical')), true);
+      expect(
+        result.blockers.any((blocker) => blocker.contains('critical')),
+        true,
+      );
     });
 
     test('blocks phase closure when major issue present', () {

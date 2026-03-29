@@ -70,7 +70,10 @@ class CalendarStateView extends StatelessWidget {
     );
   }
 
-  List<dynamic> _eventsForSelectedDate(DateTime selectedDate, List<dynamic> events) {
+  List<dynamic> _eventsForSelectedDate(
+    DateTime selectedDate,
+    List<dynamic> events,
+  ) {
     final normalizedDate = DateTime(
       selectedDate.year,
       selectedDate.month,

@@ -41,8 +41,11 @@ class FocusSheetShell extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: (isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary)
-                      .withValues(alpha: 0.3),
+                  color:
+                      (isDark
+                              ? AppColors.darkTextTertiary
+                              : AppColors.lightTextTertiary)
+                          .withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

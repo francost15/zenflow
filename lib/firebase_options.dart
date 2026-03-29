@@ -66,5 +66,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'calendar-organization-4beac.firebasestorage.app',
     measurementId: 'G-ZMK6P7BNEW',
   );
-
 }

@@ -23,7 +23,9 @@ class TaskDatasource {
 
   Future<List<TaskModel>> getTasks({bool includeDeleted = false}) async {
     final snapshot = await _tasksRef.orderBy('dueDate').get();
-    final tasks = snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList();
+    final tasks = snapshot.docs
+        .map((doc) => TaskModel.fromFirestore(doc))
+        .toList();
     if (includeDeleted) {
       return tasks;
     }
@@ -45,7 +47,9 @@ class TaskDatasource {
         .where('dueDate', isLessThan: Timestamp.fromDate(endOfDay))
         .get();
 
-    final tasks = snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList();
+    final tasks = snapshot.docs
+        .map((doc) => TaskModel.fromFirestore(doc))
+        .toList();
     if (includeDeleted) {
       return tasks;
     }
@@ -56,9 +60,12 @@ class TaskDatasource {
     String courseId, {
     bool includeDeleted = false,
   }) async {
-    final snapshot = await _tasksRef.where('courseId', isEqualTo: courseId).get();
-    final tasks = snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList()
-      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    final snapshot = await _tasksRef
+        .where('courseId', isEqualTo: courseId)
+        .get();
+    final tasks =
+        snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList()
+          ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
     if (includeDeleted) {
       return tasks;
     }
@@ -67,8 +74,9 @@ class TaskDatasource {
 
   Future<List<TaskModel>> getPendingSyncTasks() async {
     final snapshot = await _tasksRef.get();
-    final tasks = snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList()
-      ..sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
+    final tasks =
+        snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList()
+          ..sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
     return tasks
         .where(
           (task) =>

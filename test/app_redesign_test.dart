@@ -12,6 +12,7 @@ import 'package:app/presentation/blocs/course/course.dart';
 import 'package:app/presentation/blocs/streaks/streaks_bloc.dart';
 import 'package:app/presentation/blocs/task/task_bloc.dart';
 import 'package:app/presentation/screens/courses/courses_screen.dart';
+import 'package:app/presentation/screens/courses/widgets/course_detail_sheet.dart';
 import 'package:app/presentation/screens/profile/profile_screen.dart';
 import 'package:app/presentation/screens/streaks/streaks_screen.dart';
 import 'package:app/presentation/widgets/dialogs/create_task_dialog.dart';

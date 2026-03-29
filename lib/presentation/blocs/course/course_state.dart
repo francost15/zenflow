@@ -16,10 +16,7 @@ class CourseLoaded extends CourseState {
   final List<CourseOverview> courses;
   final UpcomingCourseClass? nextUpcomingClass;
 
-  const CourseLoaded({
-    required this.courses,
-    this.nextUpcomingClass,
-  });
+  const CourseLoaded({required this.courses, this.nextUpcomingClass});
 
   @override
   List<Object?> get props => [courses, nextUpcomingClass];

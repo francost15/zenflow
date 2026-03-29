@@ -209,8 +209,9 @@ class TaskRepositorySyncDelegate {
   }
 
   String calendarSummaryFor(Task task) {
-    final baseTitle =
-        task.title.startsWith('✓ ') ? task.title.substring(2) : task.title;
+    final baseTitle = task.title.startsWith('✓ ')
+        ? task.title.substring(2)
+        : task.title;
     return task.status == TaskStatus.completed ? '✓ $baseTitle' : baseTitle;
   }
 }

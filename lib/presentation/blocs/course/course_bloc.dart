@@ -61,6 +61,14 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
     Emitter<CourseState> emit,
   ) async {
     try {
+      final relatedTasks = await _taskRepository.getTasksByCourse(
+        event.courseId,
+      );
+      for (final task in relatedTasks) {
+        await _taskRepository.updateTask(
+          task.copyWith(courseId: null, updatedAt: DateTime.now()),
+        );
+      }
       await _courseRepository.deleteCourse(event.courseId);
       add(CoursesLoadRequested());
     } catch (e) {
@@ -96,10 +104,9 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
   ) {
     final now = DateTime.now();
     return courses.map((course) {
-      final courseTasks = tasks
-          .where((task) => task.courseId == course.id)
-          .toList()
-        ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+      final courseTasks =
+          tasks.where((task) => task.courseId == course.id).toList()
+            ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
       final completedTasks = courseTasks
           .where((task) => task.status == TaskStatus.completed)
           .length;
@@ -116,15 +123,14 @@ class CourseBloc extends Bloc<CourseEvent, CourseState> {
         derivedProgress: progress,
         nextClass: _findNextClass(course, now),
       );
-    }).toList()
-      ..sort((a, b) {
-        final aDate = a.nextClass?.startAt;
-        final bDate = b.nextClass?.startAt;
-        if (aDate == null && bDate == null) return 0;
-        if (aDate == null) return 1;
-        if (bDate == null) return -1;
-        return aDate.compareTo(bDate);
-      });
+    }).toList()..sort((a, b) {
+      final aDate = a.nextClass?.startAt;
+      final bDate = b.nextClass?.startAt;
+      if (aDate == null && bDate == null) return 0;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return aDate.compareTo(bDate);
+    });
   }
 
   UpcomingCourseClass? _findNextUpcomingClass(List<CourseOverview> overviews) {

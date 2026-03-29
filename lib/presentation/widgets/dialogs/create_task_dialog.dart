@@ -100,7 +100,9 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
       },
       child: FocusSheetShell(
         title: _isEditMode ? 'Editar tarea' : 'Nueva tarea',
-        monospaceLabel: _isEditMode ? 'focus_protocol_edit' : 'focus_protocol_01',
+        monospaceLabel: _isEditMode
+            ? 'focus_protocol_edit'
+            : 'focus_protocol_01',
         actions: [
           if (_isEditMode)
             TextButton(
@@ -238,7 +240,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
     });
 
     context.read<TaskBloc>().add(
-          initialTask == null ? TaskCreated(task) : TaskUpdated(task),
-        );
+      initialTask == null ? TaskCreated(task) : TaskUpdated(task),
+    );
   }
 }

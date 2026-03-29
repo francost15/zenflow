@@ -2,6 +2,7 @@ import 'package:app/core/constants/app_colors.dart';
 import 'package:app/presentation/blocs/auth/auth_bloc.dart';
 import 'package:app/presentation/blocs/auth/auth_event.dart';
 import 'package:app/presentation/blocs/auth/auth_state.dart';
+import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,9 +18,7 @@ class LoginScreen extends StatelessWidget {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            AppSnackbars.showError(context, state.message);
           }
         },
         child: SafeArea(

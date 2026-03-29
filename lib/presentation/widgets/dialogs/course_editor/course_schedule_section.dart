@@ -4,10 +4,7 @@ import 'package:app/presentation/widgets/dialogs/course_editor/course_time_butto
 import 'package:flutter/material.dart';
 
 class ScheduleUpdate {
-  const ScheduleUpdate({
-    required this.index,
-    required this.schedule,
-  });
+  const ScheduleUpdate({required this.index, required this.schedule});
 
   final int index;
   final Schedule schedule;
@@ -59,8 +56,9 @@ class CourseScheduleSection extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color:
-                  isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+              color: isDark
+                  ? AppColors.darkSurfaceElevated
+                  : AppColors.lightSurfaceElevated,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
@@ -108,8 +106,9 @@ class _ScheduleEditorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color:
-            isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+        color: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.lightSurfaceElevated,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,

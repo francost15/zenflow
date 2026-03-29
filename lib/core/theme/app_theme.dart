@@ -22,11 +22,13 @@ class AppTheme {
         error: AppColors.error,
         onError: Colors.white,
         surface: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        onSurface:
-            isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+        onSurface: isDark
+            ? AppColors.darkTextPrimary
+            : AppColors.lightTextPrimary,
       ),
-      scaffoldBackgroundColor:
-          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      scaffoldBackgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       textTheme: buildAppTextTheme(isDark: isDark),
     );
 

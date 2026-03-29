@@ -56,7 +56,9 @@ class FakeTaskDatasource implements TaskDatasource {
   @override
   Future<List<TaskModel>> getTasks({bool includeDeleted = false}) async {
     final tasks = _storage.values.toList();
-    return includeDeleted ? tasks : tasks.where((task) => !task.isDeleted).toList();
+    return includeDeleted
+        ? tasks
+        : tasks.where((task) => !task.isDeleted).toList();
   }
 
   @override
@@ -64,9 +66,12 @@ class FakeTaskDatasource implements TaskDatasource {
     String courseId, {
     bool includeDeleted = false,
   }) async {
-    final tasks =
-        _storage.values.where((task) => task.courseId == courseId).toList();
-    return includeDeleted ? tasks : tasks.where((task) => !task.isDeleted).toList();
+    final tasks = _storage.values
+        .where((task) => task.courseId == courseId)
+        .toList();
+    return includeDeleted
+        ? tasks
+        : tasks.where((task) => !task.isDeleted).toList();
   }
 
   @override
@@ -79,7 +84,9 @@ class FakeTaskDatasource implements TaskDatasource {
           task.dueDate.month == date.month &&
           task.dueDate.day == date.day;
     }).toList();
-    return includeDeleted ? tasks : tasks.where((task) => !task.isDeleted).toList();
+    return includeDeleted
+        ? tasks
+        : tasks.where((task) => !task.isDeleted).toList();
   }
 
   @override

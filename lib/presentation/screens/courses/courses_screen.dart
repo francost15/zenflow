@@ -1,10 +1,10 @@
-import 'package:app/core/constants/app_colors.dart';
 import 'package:app/domain/entities/course.dart';
 import 'package:app/presentation/blocs/course/course.dart';
 import 'package:app/presentation/screens/courses/widgets/course_detail_sheet.dart';
 import 'package:app/presentation/screens/courses/widgets/courses_header.dart';
 import 'package:app/presentation/screens/courses/widgets/empty_courses_state.dart';
 import 'package:app/presentation/screens/courses/widgets/next_class_hero.dart';
+import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:app/presentation/widgets/confirm_delete_dialog.dart';
 import 'package:app/presentation/widgets/course_card.dart';
 import 'package:app/presentation/widgets/dialogs/create_course_dialog.dart';
@@ -29,7 +29,6 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
 
     return Scaffold(
       body: SafeArea(
@@ -51,6 +50,14 @@ class _CoursesScreenState extends State<CoursesScreen> {
               return const LoadingIndicator();
             }
 
+            if (state.courses.isEmpty) {
+              return Center(
+                child: EmptyCoursesState(
+                  onCreate: _showCreateCourseDialog,
+                ),
+              );
+            }
+
             return RefreshIndicator(
               onRefresh: () async => _reloadCourses(),
               child: ListView(
@@ -61,44 +68,23 @@ class _CoursesScreenState extends State<CoursesScreen> {
                   const SizedBox(height: 20),
                   NextClassHero(nextClass: state.nextUpcomingClass),
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'MATERIAS ACTIVAS',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.4,
-                          color: AppColors.accent,
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: _showCreateCourseDialog,
-                        icon: const Icon(Icons.add_rounded, size: 18),
-                        label: const Text('Nueva materia'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (state.courses.isEmpty)
-                    EmptyCoursesState(onCreate: _showCreateCourseDialog)
-                  else
-                    Column(
-                      children: state.courses.map((overview) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: CourseCard(
-                            overview: overview,
-                            onTap: () => _showCourseDetails(overview),
-                            onEdit: () => _showEditCourseDialog(overview.course),
-                            onDelete: () => _confirmDelete(
-                              overview.course.id,
-                              overview.course.name,
-                            ),
+                  Column(
+                    children: state.courses.map((overview) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: CourseCard(
+                          overview: overview,
+                          onTap: () => _showCourseDetails(overview),
+                          onEdit: () =>
+                              _showEditCourseDialog(overview.course),
+                          onDelete: () => _confirmDelete(
+                            overview.course.id,
+                            overview.course.name,
                           ),
-                        );
-                      }).toList(),
-                    ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ],
               ),
             );
@@ -132,6 +118,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
             Navigator.pop(sheetContext);
             _showEditCourseDialog(overview.course);
           },
+          onDelete: () {
+            Navigator.pop(sheetContext);
+            _confirmDelete(overview.course.id, overview.course.name);
+          },
         );
       },
     );
@@ -148,5 +138,6 @@ class _CoursesScreenState extends State<CoursesScreen> {
     }
 
     context.read<CourseBloc>().add(CourseDeleted(courseId));
+    AppSnackbars.showNotice(context, 'Materia eliminada');
   }
 }

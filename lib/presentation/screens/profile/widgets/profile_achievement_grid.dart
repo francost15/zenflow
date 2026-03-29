@@ -3,10 +3,7 @@ import 'package:app/presentation/screens/profile/profile_achievement_data.dart';
 import 'package:flutter/material.dart';
 
 class ProfileAchievementGrid extends StatelessWidget {
-  const ProfileAchievementGrid({
-    super.key,
-    required this.achievements,
-  });
+  const ProfileAchievementGrid({super.key, required this.achievements});
 
   final List<ProfileAchievementData> achievements;
 
@@ -35,10 +32,7 @@ class ProfileAchievementGrid extends StatelessWidget {
 }
 
 class _AchievementCard extends StatelessWidget {
-  const _AchievementCard({
-    required this.achievement,
-    required this.isDark,
-  });
+  const _AchievementCard({required this.achievement, required this.isDark});
 
   final ProfileAchievementData achievement;
   final bool isDark;
@@ -49,40 +43,57 @@ class _AchievementCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: achievement.unlocked
-            ? AppColors.accent.withValues(alpha: 0.12)
-            : (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurface),
-        borderRadius: BorderRadius.circular(20),
+            ? AppColors.accent.withAlpha(20)
+            : (isDark ? AppColors.obsidian : Colors.white),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: achievement.unlocked
-              ? AppColors.accent.withValues(alpha: 0.25)
-              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+              ? AppColors.accent.withAlpha(60)
+              : (isDark ? AppColors.monolithBorder : Colors.black12),
+          width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            achievement.emoji,
-            style: TextStyle(
-              fontSize: 28,
-              color: achievement.unlocked
-                  ? null
-                  : (isDark
-                      ? AppColors.darkTextTertiary
-                      : AppColors.lightTextTertiary),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                achievement.emoji,
+                style: TextStyle(
+                  fontSize: 24,
+                  color: achievement.unlocked
+                      ? null
+                      : (isDark
+                            ? AppColors.darkTextTertiary
+                            : AppColors.lightTextTertiary),
+                ),
+              ),
+              if (achievement.unlocked)
+                const Icon(
+                  Icons.verified_outlined,
+                  size: 14,
+                  color: AppColors.accent,
+                ),
+            ],
           ),
           const Spacer(),
           Text(
-            achievement.title,
+            achievement.title.toUpperCase(),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
+                  fontFamily: 'Space Grotesk',
+                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  letterSpacing: 0.8,
+                  color: isDark ? AppColors.stone : Colors.black87,
                 ),
           ),
           const SizedBox(height: 4),
           Text(
             achievement.subtitle,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 10,
                   color: isDark
                       ? AppColors.darkTextSecondary
                       : AppColors.lightTextSecondary,

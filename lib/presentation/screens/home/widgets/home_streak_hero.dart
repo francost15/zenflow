@@ -2,10 +2,7 @@ import 'package:app/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class HomeStreakHero extends StatelessWidget {
-  const HomeStreakHero({
-    super.key,
-    required this.streak,
-  });
+  const HomeStreakHero({super.key, required this.streak});
 
   final int streak;
 

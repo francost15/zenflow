@@ -33,8 +33,12 @@ ThemeData applyAppComponentThemes(ThemeData theme, {required bool isDark}) {
 
 AppBarTheme _buildAppBarTheme({required bool isDark}) {
   return AppBarTheme(
-    backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-    foregroundColor: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+    backgroundColor: isDark
+        ? AppColors.darkBackground
+        : AppColors.lightBackground,
+    foregroundColor: isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.lightTextPrimary,
     elevation: 0,
     scrolledUnderElevation: 0,
     centerTitle: false,
@@ -67,8 +71,9 @@ FloatingActionButtonThemeData _buildFabTheme({required bool isDark}) {
 }
 
 NavigationBarThemeData _buildNavigationBarTheme({required bool isDark}) {
-  final inactiveColor =
-      isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary;
+  final inactiveColor = isDark
+      ? AppColors.darkTextTertiary
+      : AppColors.lightTextTertiary;
 
   return NavigationBarThemeData(
     backgroundColor: isDark ? AppColors.darkNavBar : AppColors.lightNavBar,
@@ -124,8 +129,9 @@ ElevatedButtonThemeData _buildElevatedButtonTheme() {
 OutlinedButtonThemeData _buildOutlinedButtonTheme({required bool isDark}) {
   return OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
-      foregroundColor:
-          isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+      foregroundColor: isDark
+          ? AppColors.darkTextPrimary
+          : AppColors.lightTextPrimary,
       side: BorderSide(
         color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
       ),
@@ -155,8 +161,9 @@ TextButtonThemeData _buildTextButtonTheme() {
 
 InputDecorationTheme _buildInputDecorationTheme({required bool isDark}) {
   final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-  final fillColor =
-      isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated;
+  final fillColor = isDark
+      ? AppColors.darkSurfaceElevated
+      : AppColors.lightSurfaceElevated;
 
   return InputDecorationTheme(
     filled: true,
@@ -168,8 +175,9 @@ InputDecorationTheme _buildInputDecorationTheme({required bool isDark}) {
       color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
     ),
     labelStyle: TextStyle(
-      color:
-          isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+      color: isDark
+          ? AppColors.darkTextSecondary
+          : AppColors.lightTextSecondary,
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
   );
@@ -196,8 +204,7 @@ CheckboxThemeData _buildCheckboxTheme({required bool isDark}) {
           : Colors.transparent;
     }),
     side: BorderSide(
-      color:
-          isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
+      color: isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary,
       width: 1.5,
     ),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
@@ -206,8 +213,9 @@ CheckboxThemeData _buildCheckboxTheme({required bool isDark}) {
 
 SnackBarThemeData _buildSnackBarTheme({required bool isDark}) {
   return SnackBarThemeData(
-    backgroundColor:
-        isDark ? AppColors.darkSurfaceElevated : AppColors.lightTextPrimary,
+    backgroundColor: isDark
+        ? AppColors.darkSurfaceElevated
+        : AppColors.lightTextPrimary,
     contentTextStyle: TextStyle(
       fontFamily: 'PlusJakartaSans',
       color: isDark ? AppColors.darkTextPrimary : Colors.white,

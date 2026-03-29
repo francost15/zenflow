@@ -58,28 +58,31 @@ class _StreaksScreenState extends State<StreaksScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const StreaksHeader(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: StreakCounter(
                         currentStreak: state.totalCurrentStreak,
                         longestStreak: state.longestStreak,
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: StreaksActivityCard(heatmapData: state.heatmapData),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: StreaksActivityCard(
+                        heatmapData: state.heatmapData,
+                      ),
                     ),
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 32),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Text(
-                        'HÁBITOS DE PROTOCOLO',
+                        'RUTINAS & HÁBITOS',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.5,
-                            ),
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2.5,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -92,7 +95,9 @@ class _StreaksScreenState extends State<StreaksScreen> {
                               padding: EdgeInsets.all(20),
                             )
                           : Column(
-                              children: state.habits.map(_buildHabitCard).toList(),
+                              children: state.habits
+                                  .map(_buildHabitCard)
+                                  .toList(),
                             ),
                     ),
                   ],

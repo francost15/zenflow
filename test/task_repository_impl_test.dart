@@ -292,10 +292,23 @@ class FakeTaskDatasource implements TaskDatasource {
   }
 
   @override
-  Future<List<TaskModel>> getTasks() async => const [];
+  Future<List<TaskModel>> getTasks({bool includeDeleted = false}) async =>
+      const [];
 
   @override
-  Future<List<TaskModel>> getTasksByDate(DateTime date) async => const [];
+  Future<List<TaskModel>> getTasksByDate(
+    DateTime date, {
+    bool includeDeleted = false,
+  }) async => const [];
+
+  @override
+  Future<List<TaskModel>> getTasksByCourse(
+    String courseId, {
+    bool includeDeleted = false,
+  }) async => const [];
+
+  @override
+  Future<List<TaskModel>> getPendingSyncTasks() async => const [];
 
   @override
   Future<void> toggleTaskStatus(String taskId, bool completed) async {}

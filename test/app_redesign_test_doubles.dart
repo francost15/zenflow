@@ -82,19 +82,19 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<List<Task>> getTasksByCourse(String courseId) async => List<Task>.from(
-        _tasks.where((task) => task.courseId == courseId && !task.isDeleted),
-      );
+    _tasks.where((task) => task.courseId == courseId && !task.isDeleted),
+  );
 
   @override
   Future<List<Task>> getTasksByDate(DateTime date) async => List<Task>.from(
-        _tasks.where(
-          (task) =>
-              !task.isDeleted &&
-              task.dueDate.year == date.year &&
-              task.dueDate.month == date.month &&
-              task.dueDate.day == date.day,
-        ),
-      );
+    _tasks.where(
+      (task) =>
+          !task.isDeleted &&
+          task.dueDate.year == date.year &&
+          task.dueDate.month == date.month &&
+          task.dueDate.day == date.day,
+    ),
+  );
 
   @override
   Future<void> syncPendingTasks() async {}

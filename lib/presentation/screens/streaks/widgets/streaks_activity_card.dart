@@ -1,12 +1,9 @@
 import 'package:app/core/constants/app_colors.dart';
-import 'package:app/presentation/widgets/heatmap_chart.dart';
+import 'package:app/presentation/screens/streaks/widgets/weekly_consistency_tracker.dart';
 import 'package:flutter/material.dart';
 
 class StreaksActivityCard extends StatelessWidget {
-  const StreaksActivityCard({
-    super.key,
-    required this.heatmapData,
-  });
+  const StreaksActivityCard({super.key, required this.heatmapData});
 
   final Map<DateTime, int> heatmapData;
 
@@ -16,34 +13,44 @@ class StreaksActivityCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color:
-            isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+        color: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.lightSurfaceElevated,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: (isDark ? AppColors.darkBorder : AppColors.lightBorder)
+              .withValues(alpha: 0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'ACTIVIDAD RECIENTE',
-            style: theme.textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.4,
-              color: AppColors.accent,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'CONSTANCIA SEMANAL',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2,
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary,
+                ),
+              ),
+              Icon(
+                Icons.calendar_today_rounded,
+                size: 14,
+                color: isDark
+                    ? AppColors.darkTextTertiary
+                    : AppColors.lightTextTertiary,
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Tu constancia semanal, de un vistazo.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.lightTextSecondary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          HeatmapChart(data: heatmapData, weeksToShow: 20),
+          const SizedBox(height: 24),
+          WeeklyConsistencyTracker(data: heatmapData),
         ],
       ),
     );

@@ -26,8 +26,9 @@ class TaskSelectionAction extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color:
-              isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+          color: isDark
+              ? AppColors.darkSurfaceElevated
+              : AppColors.lightSurfaceElevated,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -97,8 +98,9 @@ class TaskCourseSelector extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color:
-                isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+            color: isDark
+                ? AppColors.darkSurfaceElevated
+                : AppColors.lightSurfaceElevated,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,

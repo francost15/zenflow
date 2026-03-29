@@ -7,11 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailSheet extends StatelessWidget {
-  const EventDetailSheet({
-    super.key,
-    required this.event,
-    this.onStartZenMode,
-  });
+  const EventDetailSheet({super.key, required this.event, this.onStartZenMode});
 
   final Event event;
   final VoidCallback? onStartZenMode;

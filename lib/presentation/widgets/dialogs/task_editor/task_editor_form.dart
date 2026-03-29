@@ -104,19 +104,20 @@ class TaskEditorForm extends StatelessWidget {
               backgroundColor: isDark
                   ? AppColors.darkSurfaceElevated
                   : AppColors.lightSurfaceElevated,
-              selectedColor:
-                  priorityColor(taskPriority).withValues(alpha: 0.2),
+              selectedColor: priorityColor(taskPriority).withValues(alpha: 0.2),
               labelStyle: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: isSelected
                     ? priorityColor(taskPriority)
                     : (isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary),
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary),
               ),
               side: BorderSide(
-                color: isSelected ? priorityColor(taskPriority) : Colors.transparent,
+                color: isSelected
+                    ? priorityColor(taskPriority)
+                    : Colors.transparent,
               ),
               showCheckmark: false,
             );

@@ -3,10 +3,7 @@ import 'package:app/domain/entities/task.dart';
 import 'package:flutter/material.dart';
 
 class TaskPriorityChip extends StatelessWidget {
-  const TaskPriorityChip({
-    super.key,
-    required this.priority,
-  });
+  const TaskPriorityChip({super.key, required this.priority});
 
   final TaskPriority priority;
 

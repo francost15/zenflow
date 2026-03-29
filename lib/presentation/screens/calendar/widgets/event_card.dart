@@ -47,9 +47,9 @@ class EventCard extends StatelessWidget {
                 if (event.end?.dateTime != null || event.end?.date != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    DateFormat('HH:mm').format(
-                      event.end?.dateTime ?? event.end!.date!,
-                    ),
+                    DateFormat(
+                      'HH:mm',
+                    ).format(event.end?.dateTime ?? event.end!.date!),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -102,10 +102,12 @@ class EventCard extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 24),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.darkSurfaceElevated
-                      : AppColors.lightSurfaceElevated,
-                  borderRadius: BorderRadius.circular(16),
+                  color: isDark ? AppColors.obsidian : Colors.white,
+                  border: Border.all(
+                    color: isDark ? AppColors.monolithBorder : Colors.black12,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,10 +117,13 @@ class EventCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            event.summary ?? 'Sin título',
+                            (event.summary ?? 'Sin título').toUpperCase(),
                             style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.3,
+                              fontFamily: 'Space Grotesk',
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 1.0,
+                              color: isDark ? AppColors.stone : Colors.black87,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -141,7 +146,7 @@ class EventCard extends StatelessWidget {
                           Icon(
                             Icons.location_on_outlined,
                             size: 14,
-                            color: AppColors.accent.withValues(alpha: 0.7),
+                            color: AppColors.accent.withAlpha(180),
                           ),
                           const SizedBox(width: 4),
                           Expanded(

@@ -20,37 +20,53 @@ class ProfileUserCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(24),
+        color: isDark ? AppColors.obsidian : Colors.white,
         border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          color: isDark ? AppColors.monolithBorder : Colors.black12,
+          width: 1,
         ),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundImage:
-                    user.photoURL != null ? NetworkImage(user.photoURL!) : null,
-                backgroundColor: AppColors.accent.withValues(alpha: 0.15),
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: isDark ? AppColors.monolithBorder : Colors.black12,
+                    width: 1,
+                  ),
+                  image: user.photoURL != null
+                      ? DecorationImage(
+                          image: NetworkImage(user.photoURL!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
                 child: user.photoURL == null
-                    ? const Icon(Icons.person_outline_rounded)
+                    ? const Icon(Icons.person_outline_rounded, size: 32)
                     : null,
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.displayName ?? 'Usuario',
+                      (user.displayName ?? 'Usuario').toUpperCase(),
                       style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Space Grotesk',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 20,
+                        letterSpacing: 0.5,
+                        color: isDark ? AppColors.stone : Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -58,8 +74,9 @@ class ProfileUserCard extends StatelessWidget {
                       user.email ?? '',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary,
+                            ? AppColors.darkTextTertiary
+                            : AppColors.lightTextTertiary,
+                        letterSpacing: 0.2,
                       ),
                     ),
                   ],
@@ -67,7 +84,7 @@ class ProfileUserCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
@@ -92,10 +109,7 @@ class ProfileUserCard extends StatelessWidget {
 }
 
 class _StatPill extends StatelessWidget {
-  const _StatPill({
-    required this.label,
-    required this.value,
-  });
+  const _StatPill({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -106,10 +120,14 @@ class _StatPill extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurfaceElevated,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? const Color(0xFF18181B) : Colors.black12,
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(
+          color: isDark ? AppColors.monolithBorder : Colors.transparent,
+          width: 0.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,16 +135,20 @@ class _StatPill extends StatelessWidget {
           Text(
             label.toUpperCase(),
             style: theme.textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.1,
+              fontFamily: 'Space Grotesk',
+              fontWeight: FontWeight.w900,
+              fontSize: 9,
+              letterSpacing: 1.5,
               color: AppColors.accent,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             value,
             style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+              color: isDark ? AppColors.stone : Colors.black87,
             ),
           ),
         ],
