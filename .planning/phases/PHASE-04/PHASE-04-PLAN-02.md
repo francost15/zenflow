@@ -1,35 +1,25 @@
 # PHASE-04-PLAN-02
 
-## Phase ID
-PHASE-04
+phase_id: PHASE-04
+plan_id: PHASE-04-PLAN-02
 
-## Plan ID
-PHASE-04-PLAN-02
+## Task Scores
 
-## Task IDs
-- PHASE-04-PLAN-02-T01
-- PHASE-04-PLAN-02-T02
+| Task ID | Plan ID | Phase ID | Impact | Risk Closed | Effort | Verifiability | Dependency Unlock | Estimated | Validation Factor | Required |
+|---------|---------|---------|--------|-------------|--------|---------------|------------------|-----------|------------------|----------|
+| PHASE-04-PLAN-02-T01 | PHASE-04-PLAN-02 | PHASE-04 | 3 | 4 | 3 | 5 | 8 | 23 | 1.0 | true |
 
-## Tasks
+## Verify
 
-### PHASE-04-PLAN-02-T01
-- **Task:** Document long-term reusable operating model
-- **required:** true
-- **verify:**
-  - `flutter analyze lib/`
-- **files_modified:**
-  - docs/
+```bash
+dart test test/tool/planning/
+dart run tool/planning/check_gates.dart --phase PHASE-04
+```
 
-### PHASE-04-PLAN-02-T02
-- **Task:** Finalize agent governance for future projects
-- **required:** true
-- **verify:**
-  - `dart run lib/tool/planning/check_gates.dart --phase PHASE-04`
-- **files_modified:**
-  - .planning/AGENT_POLICY.md
+## Files Modified
+
+- TBD
 
 ## Dependencies
-PHASE-04-PLAN-01
 
-## Estimated Score
-12
+- PHASE-00, PHASE-01, PHASE-02, PHASE-03

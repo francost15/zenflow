@@ -1,15 +1,35 @@
-# VERIFICATION
+# {{PHASE_ID}} Verification
 
-## Phase
-- id: {{PHASE_ID}}
+## Task: {{PLAN_ID}}-T01 - {{TASK_TITLE}}
 
-## Commands
-- command: dart run lib/tool/planning/check_gates.dart --phase {{PHASE_ID}}
-- result: {{PASS|FAIL}}
+## Date: {{DATE}}
 
-## Open Issues
-{{OPEN_ISSUES|- none}}
+## Objective
 
-## Closure
-- recommendation: {{do_close|do_not_close}}
-- reason: {{REASON}}
+{{What this task accomplishes}}
+
+## Tests Written
+
+### {{TEST_FILE}}
+
+| Test | Status | Description |
+|------|--------|-------------|
+| `{{TEST_NAME}}` | PASS | {{Description}} |
+
+## Files Modified
+
+### {{FILE_PATH}}
+- {{Change description}}
+
+## Test Results
+
+```
+{{TEST_COMMAND}}
+{{TEST_OUTPUT}}
+```
+
+## Verification Checklist
+
+- [ ] {{Verification item}}
+- [ ] {{Verification item}}
+- [ ] {{Verification item}}

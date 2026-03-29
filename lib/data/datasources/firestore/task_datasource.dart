@@ -118,4 +118,11 @@ class TaskDatasource {
       'updatedAt': Timestamp.now(),
     });
   }
+
+  Future<List<TaskModel>> getTasksWithoutCalendarEvent() async {
+    final snapshot = await _tasksRef
+        .where('calendarEventId', isNull: true)
+        .get();
+    return snapshot.docs.map((doc) => TaskModel.fromFirestore(doc)).toList();
+  }
 }

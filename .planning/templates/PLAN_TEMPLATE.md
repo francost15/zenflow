@@ -1,26 +1,24 @@
-# {{PHASE_ID}}-PLAN-{{PLAN_NUMBER}}
+# {{PLAN_ID}}
 
-## Phase ID
-{{PHASE_ID}}
+phase_id: {{PHASE_ID}}
+plan_id: {{PLAN_ID}}
 
-## Plan ID
-{{PHASE_ID}}-PLAN-{{PLAN_NUMBER}}
+## Task Scores
 
-## Task IDs
-{{TASK_IDS}}
+| Task ID | Plan ID | Phase ID | Impact | Risk Closed | Effort | Verifiability | Dependency Unlock | Estimated | Validation Factor | Required |
+|---------|---------|---------|--------|-------------|--------|---------------|------------------|-----------|------------------|----------|
+| {{PLAN_ID}}-T01 | {{PLAN_ID}} | {{PHASE_ID}} | 3 | 4 | 3 | 5 | 5 | 20 | 1.0 | true |
 
-## Tasks
+## Verify
 
-### {{PHASE_ID}}-PLAN-{{PLAN_NUMBER}}-T01
-- **Task:** {{TASK_DESCRIPTION}}
-- **required:** true
-- **verify:**
-  - `{{VERIFY_COMMAND}}`
-- **files_modified:**
-  - {{FILES_MODIFIED}}
+```bash
+# Verification command(s) to run
+```
+
+## Files Modified
+
+- TBD
 
 ## Dependencies
-{{DEPENDENCIES}}
 
-## Estimated Score
-{{ESTIMATED_SCORE}}
+- {{PREV_PHASE_ID}}

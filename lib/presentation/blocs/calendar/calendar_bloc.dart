@@ -1,12 +1,15 @@
-import 'package:app/domain/repositories/calendar_repository.dart';
-import 'package:app/presentation/blocs/calendar/calendar_event.dart';
-import 'package:app/presentation/blocs/calendar/calendar_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../domain/repositories/calendar_repository.dart';
+import '../../../domain/repositories/task_repository.dart';
+import 'calendar_event.dart';
+import 'calendar_state.dart';
 
 class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
   final CalendarRepository _calendarRepository;
+  final TaskRepository _taskRepository;
 
-  CalendarBloc(this._calendarRepository) : super(CalendarInitial()) {
+  CalendarBloc(this._calendarRepository, this._taskRepository)
+    : super(CalendarInitial()) {
     on<CalendarLoadRequested>(_onLoadRequested);
     on<CalendarGoogleSignInRequested>(_onGoogleSignIn);
     on<CalendarRefreshRequested>(_onRefresh);
@@ -36,9 +39,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       );
       emit(CalendarLoaded(events: events, start: event.start, end: event.end));
     } catch (e) {
-      // If we hit an auth error specifically, then we go back to sign in
-      if (e.toString().contains('401') ||
-          e.toString().contains('unauthorized')) {
+      if (e is CalendarAuthRequiredException) {
         emit(CalendarNeedsSignIn());
       } else {
         emit(CalendarError(e.toString()));
@@ -57,12 +58,35 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
         emit(CalendarNeedsSignIn());
         return;
       }
+
+      String? noticeMessage;
+      try {
+        final result = await _taskRepository.reconcileUnsyncedTasks();
+        if (result.syncedTasks.isNotEmpty) {
+          noticeMessage =
+              '${result.syncedTasks.length} tarea(s) sincronizada(s) con Google Calendar.';
+        } else if (result.failedTasks.isNotEmpty) {
+          noticeMessage =
+              'Calendario conectado, pero ${result.failedTasks.length} tarea(s) no se pudieron sincronizar.';
+        }
+      } catch (_) {
+        noticeMessage =
+            'Calendario conectado. La sincronizacion de tareas pendientes fallo.';
+      }
+
       // After successful sign-in, reload events for current month
       final now = DateTime.now();
       final start = DateTime(now.year, now.month, 1);
       final end = DateTime(now.year, now.month + 1, 0);
       final events = await _calendarRepository.getEvents(start, end);
-      emit(CalendarLoaded(events: events, start: start, end: end));
+      emit(
+        CalendarLoaded(
+          events: events,
+          start: start,
+          end: end,
+          noticeMessage: noticeMessage,
+        ),
+      );
     } catch (e) {
       emit(CalendarError(e.toString()));
     }

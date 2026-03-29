@@ -1,13 +1,15 @@
-import 'package:app/core/error/exceptions.dart';
-import 'package:app/domain/repositories/task_repository.dart';
-import 'package:app/presentation/blocs/task/task_event.dart';
-import 'package:app/presentation/blocs/task/task_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/error/exceptions.dart';
+import '../../../domain/entities/task.dart';
+import '../../../domain/repositories/task_repository.dart';
+import 'task_event.dart';
+import 'task_state.dart';
 
 class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final TaskRepository _taskRepository;
   DateTime? _selectedDate;
-  String? _pendingNoticeMessage;
+  final List<String> _pendingNotices = [];
+  List<Task> _lastLoadedTasks = [];
 
   TaskBloc(this._taskRepository) : super(TaskInitial()) {
     on<TasksLoadRequested>(_onLoadRequested);
@@ -16,21 +18,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<TaskUpdated>(_onUpdated);
     on<TaskDeleted>(_onDeleted);
     on<TaskStatusToggled>(_onStatusToggled);
-    on<TaskSyncRequested>(_onSyncRequested);
-    on<TaskUndoDeletionRequested>(_onUndoDeletionRequested);
-  }
-
-  Future<void> _onUndoDeletionRequested(
-    TaskUndoDeletionRequested event,
-    Emitter<TaskState> emit,
-  ) async {
-    final success = await _runTaskMutation(
-      () => _taskRepository.undoDeleteTask(event.task),
-      emit,
-    );
-    if (success) {
-      _refreshTasks();
-    }
+    on<TaskSyncWarningQueued>(_onSyncWarningQueued);
   }
 
   Future<void> _onLoadRequested(
@@ -40,8 +28,9 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     emit(TaskLoading());
     try {
       final tasks = await _taskRepository.getTasks();
+      _lastLoadedTasks = tasks;
       emit(
-        TaskLoaded(tasks: tasks, noticeMessage: _consumePendingNoticeMessage()),
+        TaskLoaded(tasks: tasks, noticeMessage: _consumeNextPendingNotice()),
       );
     } catch (e) {
       emit(TaskError(e.toString()));
@@ -56,11 +45,12 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     _selectedDate = event.date;
     try {
       final tasks = await _taskRepository.getTasksByDate(event.date);
+      _lastLoadedTasks = tasks;
       emit(
         TaskLoaded(
           tasks: tasks,
           selectedDate: event.date,
-          noticeMessage: _consumePendingNoticeMessage(),
+          noticeMessage: _consumeNextPendingNotice(),
         ),
       );
     } catch (e) {
@@ -111,22 +101,16 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     }
   }
 
-  Future<void> _onSyncRequested(
-    TaskSyncRequested event,
+  void _onSyncWarningQueued(
+    TaskSyncWarningQueued event,
     Emitter<TaskState> emit,
-  ) async {
-    try {
-      await _taskRepository.syncPendingTasks();
-      if (event.refresh) {
-        _refreshTasks();
-      }
-    } catch (_) {}
+  ) {
+    _pendingNotices.add(event.message);
   }
 
-  String? _consumePendingNoticeMessage() {
-    final message = _pendingNoticeMessage;
-    _pendingNoticeMessage = null;
-    return message;
+  String? _consumeNextPendingNotice() {
+    if (_pendingNotices.isEmpty) return null;
+    return _pendingNotices.removeAt(0);
   }
 
   Future<bool> _runTaskMutation(
@@ -137,7 +121,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
       await action();
       return true;
     } on CalendarSyncWarningException catch (e) {
-      _pendingNoticeMessage = e.message;
+      emit(TaskLoaded(tasks: _lastLoadedTasks, noticeMessage: e.message));
       return true;
     } catch (e) {
       emit(TaskError(e.toString()));

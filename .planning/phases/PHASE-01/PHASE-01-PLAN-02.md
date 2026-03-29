@@ -1,37 +1,25 @@
 # PHASE-01-PLAN-02
 
-## Phase ID
-PHASE-01
+phase_id: PHASE-01
+plan_id: PHASE-01-PLAN-02
 
-## Plan ID
-PHASE-01-PLAN-02
+## Task Scores
 
-## Task IDs
-- PHASE-01-PLAN-02-T01
-- PHASE-01-PLAN-02-T02
+| Task ID | Plan ID | Phase ID | Impact | Risk Closed | Effort | Verifiability | Dependency Unlock | Estimated | Validation Factor | Required |
+|---------|---------|---------|--------|-------------|--------|---------------|------------------|-----------|------------------|----------|
+| PHASE-01-PLAN-02-T01 | PHASE-01-PLAN-02 | PHASE-01 | 3 | 4 | 3 | 5 | 4 | 19 | 1.0 | true |
 
-## Tasks
+## Verify
 
-### PHASE-01-PLAN-02-T01
-- **Task:** Implement persistent login relink flow
-- **required:** true
-- **verify:**
-  - `flutter test test/auth/`
-- **files_modified:**
-  - lib/auth/
-  - lib/sync/
+```bash
+dart test test/tool/planning/
+dart run tool/planning/check_gates.dart --phase PHASE-01
+```
 
-### PHASE-01-PLAN-02-T02
-- **Task:** Implement truthful auth/link outcomes reporting
-- **required:** true
-- **verify:**
-  - `flutter analyze lib/`
-  - `flutter test test/auth/link_outcomes_test.dart`
-- **files_modified:**
-  - lib/auth/
+## Files Modified
+
+- TBD
 
 ## Dependencies
-PHASE-01-PLAN-01
 
-## Estimated Score
-10
+- PHASE-00

@@ -30,9 +30,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil y estadísticas')),
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      appBar: AppBar(
+        title: Text(
+          'PROTOCOL: PROFILE',
+          style: TextStyle(
+            fontFamily: 'Space Grotesk',
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2.5,
+            color: isDark ? AppColors.stone : Colors.black87,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+      ),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, authState) {
           if (authState is! AuthAuthenticated) {
@@ -52,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   : 0;
 
               return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 48),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -61,16 +79,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       currentStreak: currentStreak,
                       longestStreak: longestStreak,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     Text(
                       'LOGROS Y ESTADÍSTICAS',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.6,
-                        color: AppColors.accent,
+                        fontFamily: 'Space Grotesk',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                        letterSpacing: 2.0,
+                        color: isDark
+                            ? AppColors.darkTextTertiary
+                            : Colors.black45,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     if (streakState is StreaksLoading)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
@@ -84,16 +106,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       )
                     else
                       ProfileAchievementGrid(achievements: achievements),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          context.read<AuthBloc>().add(AuthSignOutRequested());
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.logout_rounded),
-                        label: const Text('Cerrar sesión'),
+                    const SizedBox(height: 48),
+                    GestureDetector(
+                      onTap: () {
+                        context.read<AuthBloc>().add(AuthSignOutRequested());
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(
+                            color: isDark
+                                ? AppColors.monolithBorder
+                                : Colors.black12,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'TERMINAR SESIÓN',
+                            style: TextStyle(
+                              fontFamily: 'Space Grotesk',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2.0,
+                              color: isDark ? AppColors.stone : Colors.black87,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],

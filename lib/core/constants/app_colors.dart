@@ -18,6 +18,11 @@ class AppColors {
   static const error = Color(0xFFEF4444);
   static const warning = Color(0xFFF59E0B);
 
+  // ─── Digital Atelier: Monolithic Palette ───
+  static const obsidian = Color(0xFF0C0F14);
+  static const stone = Color(0xFFFAFAF9);
+  static const monolithBorder = Color(0xFF27272A);
+
   // ─── Dark Mode Palette ───
   static const darkBackground = Color(0xFF0A0A0A);
   static const darkSurface = Color(0xFF1A1A1A);

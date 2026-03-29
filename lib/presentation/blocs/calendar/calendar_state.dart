@@ -16,15 +16,17 @@ class CalendarLoaded extends CalendarState {
   final List<Event> events;
   final DateTime start;
   final DateTime end;
+  final String? noticeMessage;
 
   const CalendarLoaded({
     required this.events,
     required this.start,
     required this.end,
+    this.noticeMessage,
   });
 
   @override
-  List<Object?> get props => [events, start, end];
+  List<Object?> get props => [events, start, end, noticeMessage];
 }
 
 class CalendarNeedsSignIn extends CalendarState {}

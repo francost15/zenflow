@@ -1,5 +1,10 @@
 import 'package:googleapis/calendar/v3.dart';
 
+class CalendarAuthRequiredException implements Exception {
+  @override
+  String toString() => 'CalendarAuthRequiredException';
+}
+
 abstract class CalendarRepository {
   Future<void> initialize();
   Future<List<Event>> getEvents(DateTime start, DateTime end);

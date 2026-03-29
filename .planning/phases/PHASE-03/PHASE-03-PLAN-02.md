@@ -1,36 +1,25 @@
 # PHASE-03-PLAN-02
 
-## Phase ID
-PHASE-03
+phase_id: PHASE-03
+plan_id: PHASE-03-PLAN-02
 
-## Plan ID
-PHASE-03-PLAN-02
+## Task Scores
 
-## Task IDs
-- PHASE-03-PLAN-02-T01
-- PHASE-03-PLAN-02-T02
+| Task ID | Plan ID | Phase ID | Impact | Risk Closed | Effort | Verifiability | Dependency Unlock | Estimated | Validation Factor | Required |
+|---------|---------|---------|--------|-------------|--------|---------------|------------------|-----------|------------------|----------|
+| PHASE-03-PLAN-02-T01 | PHASE-03-PLAN-02 | PHASE-03 | 3 | 3 | 2 | 4 | 3 | 15 | 1.0 | true |
 
-## Tasks
+## Verify
 
-### PHASE-03-PLAN-02-T01
-- **Task:** Remove misleading "active sync" messaging
-- **required:** true
-- **verify:**
-  - `flutter analyze lib/presentation/`
-  - `flutter test test/presentation/`
-- **files_modified:**
-  - lib/presentation/
+```bash
+dart test test/tool/planning/
+dart run tool/planning/check_gates.dart --phase PHASE-03
+```
 
-### PHASE-03-PLAN-02-T02
-- **Task:** Add observability for sync state transitions
-- **required:** true
-- **verify:**
-  - `flutter test test/sync/observability_test.dart`
-- **files_modified:**
-  - lib/sync/
+## Files Modified
+
+- TBD
 
 ## Dependencies
-PHASE-03-PLAN-01
 
-## Estimated Score
-12
+- PHASE-00, PHASE-01, PHASE-02

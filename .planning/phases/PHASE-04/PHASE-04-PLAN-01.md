@@ -1,35 +1,25 @@
 # PHASE-04-PLAN-01
 
-## Phase ID
-PHASE-04
+phase_id: PHASE-04
+plan_id: PHASE-04-PLAN-01
 
-## Plan ID
-PHASE-04-PLAN-01
+## Task Scores
 
-## Task IDs
-- PHASE-04-PLAN-01-T01
-- PHASE-04-PLAN-01-T02
+| Task ID | Plan ID | Phase ID | Impact | Risk Closed | Effort | Verifiability | Dependency Unlock | Estimated | Validation Factor | Required |
+|---------|---------|---------|--------|-------------|--------|---------------|------------------|-----------|------------------|----------|
+| PHASE-04-PLAN-01-T01 | PHASE-04-PLAN-01 | PHASE-04 | 3 | 4 | 3 | 5 | 5 | 20 | 1.0 | true |
 
-## Tasks
+## Verify
 
-### PHASE-04-PLAN-01-T01
-- **Task:** Create reusable phase plan templates
-- **required:** true
-- **verify:**
-  - `flutter analyze lib/tool/planning/`
-- **files_modified:**
-  - .planning/templates/
+```bash
+dart test test/tool/planning/
+dart run tool/planning/check_gates.dart --phase PHASE-04
+```
 
-### PHASE-04-PLAN-01-T02
-- **Task:** Add score/gate automation scripts
-- **required:** true
-- **verify:**
-  - `dart run lib/tool/planning/check_gates.dart --all`
-- **files_modified:**
-  - lib/tool/planning/
+## Files Modified
+
+- TBD
 
 ## Dependencies
-PHASE-03-PLAN-02
 
-## Estimated Score
-12
+- PHASE-00, PHASE-01, PHASE-02, PHASE-03

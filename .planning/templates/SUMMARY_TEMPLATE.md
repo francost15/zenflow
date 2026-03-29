@@ -1,20 +1,37 @@
-# SUMMARY
+# {{PHASE_ID}} Summary
 
-## Phase
-- id: {{PHASE_ID}}
-- name: {{PHASE_NAME}}
+## Task: {{PLAN_ID}}-T01 - {{TASK_TITLE}}
 
-## Scope
-{{SCOPE}}
+## Problem Statement
 
-## Artifacts Created
-{{ARTIFACTS_CREATED}}
+{{What problem was being solved}}
 
-## Gate Status
-- Target score: {{TARGET_SCORE}}
-- Closure score: {{CLOSURE_SCORE}}
-- Current validated: {{VALIDATED}}
-- Gate result: {{GATE_RESULT}} ({{EXPECTED}})
+## Solution Implemented
 
-## Next Steps
-{{NEXT_STEPS}}
+### 1. {{Solution Component}}
+{{Description}}
+
+### 2. {{Solution Component}}
+{{Description}}
+
+## Key Behavioral Changes
+
+| Scenario | Before | After |
+|----------|--------|-------|
+| {{Scenario}} | {{Before}} | {{After}} |
+
+## Test Coverage Added
+
+{{New tests added}}
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `{{FILE_PATH}}` | {{Change description}} |
+| `{{VERIFICATION_DOC}}` | Verification document |
+| `{{SUMMARY_DOC}}` | This summary |
+
+## Status: {{STATUS}}
+
+{{Completion notes}}

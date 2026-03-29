@@ -25,7 +25,7 @@ void main(List<String> args) async {
   }
 
   if (targetPhase != null) {
-    final result = await checkPhaseGate(targetPhase);
+    final result = checkPhaseGate(targetPhase);
     if (result.passed) {
       print('PASS: phase $targetPhase gate passed');
     } else {
@@ -38,7 +38,7 @@ void main(List<String> args) async {
   }
 
   if (targetPlan != null) {
-    final result = await checkPlanGate(targetPlan);
+    final result = checkPlanGate(targetPlan);
     if (result.passed) {
       print('PASS: plan $targetPlan gate passed');
     } else {
@@ -54,7 +54,7 @@ void main(List<String> args) async {
     final phases = ['PHASE-00', 'PHASE-01', 'PHASE-02', 'PHASE-03', 'PHASE-04'];
     bool allPassed = true;
     for (final phase in phases) {
-      final result = await checkPhaseGate(phase);
+      final result = checkPhaseGate(phase);
       if (result.passed) {
         print('PASS: $phase');
       } else {
@@ -72,7 +72,7 @@ void main(List<String> args) async {
   exit(1);
 }
 
-Future<GateResult> checkPhaseGate(String phaseId) async {
+GateResult checkPhaseGate(String phaseId) {
   final scorecardFile = File('.planning/SCORECARD.md');
   if (!scorecardFile.existsSync()) {
     return GateResult(
@@ -97,7 +97,7 @@ Future<GateResult> checkPhaseGate(String phaseId) async {
   return evaluatePhaseGate(phase);
 }
 
-Future<GateResult> checkPlanGate(String planId) async {
+GateResult checkPlanGate(String planId) {
   final parts = planId.split('-');
   if (parts.length < 2) {
     return const GateResult(
