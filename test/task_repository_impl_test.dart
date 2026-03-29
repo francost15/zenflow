@@ -5,10 +5,22 @@ import 'package:googleapis/calendar/v3.dart';
 import 'package:app/data/datasources/firestore/task_datasource.dart';
 import 'package:app/data/models/task_model.dart';
 import 'package:app/data/repositories/task_repository_impl.dart';
+import 'package:app/data/services/task_calendar_sync_service.dart';
 import 'package:app/domain/entities/task.dart';
 import 'package:app/domain/repositories/calendar_repository.dart';
 
 void main() {
+  TaskRepositoryImpl createRepository(
+    FakeTaskDatasource taskDatasource,
+    FakeCalendarRepository calendarRepository,
+  ) {
+    final syncService = TaskCalendarSyncService(
+      taskDatasource,
+      calendarRepository,
+    );
+    return TaskRepositoryImpl(taskDatasource, syncService);
+  }
+
   test(
     'createTask syncs a Google Calendar event when calendar is authorized',
     () async {
@@ -16,7 +28,7 @@ void main() {
       final calendarRepository = FakeCalendarRepository(
         isAuthorizedResult: true,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: '',
@@ -46,7 +58,7 @@ void main() {
   test('deleteTask removes the linked Google Calendar event', () async {
     final taskDatasource = FakeTaskDatasource();
     final calendarRepository = FakeCalendarRepository(isAuthorizedResult: true);
-    final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+    final repository = createRepository(taskDatasource, calendarRepository);
 
     final task = Task(
       id: 'task-1',
@@ -71,7 +83,7 @@ void main() {
       final calendarRepository = FakeCalendarRepository(
         isAuthorizedResult: true,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: 'task-1',
@@ -98,7 +110,7 @@ void main() {
   test('toggleTaskStatus syncs the linked Google Calendar event', () async {
     final taskDatasource = FakeTaskDatasource();
     final calendarRepository = FakeCalendarRepository(isAuthorizedResult: true);
-    final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+    final repository = createRepository(taskDatasource, calendarRepository);
 
     final task = Task(
       id: 'task-1',
@@ -125,7 +137,7 @@ void main() {
       final calendarRepository = FakeCalendarRepository(
         isAuthorizedResult: true,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: 'task-1',
@@ -151,7 +163,7 @@ void main() {
       final calendarRepository = FakeCalendarRepository(
         isAuthorizedResult: true,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: '',
@@ -176,7 +188,7 @@ void main() {
         isAuthorizedResult: true,
         throwOnDelete: true,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: 'task-1',
@@ -202,7 +214,7 @@ void main() {
         isAuthorizedResult: true,
         deleteErrorStatus: 404,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: 'task-1',
@@ -217,6 +229,34 @@ void main() {
       await repository.deleteTask(task);
 
       expect(taskDatasource.deletedTaskId, 'task-1');
+    },
+  );
+
+  test(
+    'updateTask self-heals by recreating the linked event when it returns 404',
+    () async {
+      final taskDatasource = FakeTaskDatasource();
+      final calendarRepository = FakeCalendarRepository(
+        isAuthorizedResult: true,
+        updateErrorStatus: 404,
+      );
+      final repository = createRepository(taskDatasource, calendarRepository);
+
+      final task = Task(
+        id: 'task-1',
+        title: 'Repasar algebra',
+        dueDate: DateTime(2026, 3, 30),
+        dueTime: const TimeOfDay(hour: 18, minute: 0),
+        calendarEventId: 'missing-event-id',
+        createdAt: DateTime(2026, 3, 28, 10),
+        updatedAt: DateTime(2026, 3, 28, 12),
+      );
+
+      final updatedTask = await repository.updateTask(task);
+
+      expect(calendarRepository.createEventCallCount, 1);
+      expect(taskDatasource.updatedTask?.calendarEventId, 'calendar-event-1');
+      expect(updatedTask.calendarEventId, 'calendar-event-1');
     },
   );
 }
@@ -275,11 +315,13 @@ class FakeCalendarRepository implements CalendarRepository {
     required this.isAuthorizedResult,
     this.throwOnDelete = false,
     this.deleteErrorStatus,
+    this.updateErrorStatus,
   });
 
   final bool isAuthorizedResult;
   final bool throwOnDelete;
   final int? deleteErrorStatus;
+  final int? updateErrorStatus;
   int createEventCallCount = 0;
   int updateEventCallCount = 0;
   Event? lastCreatedEvent;
@@ -318,6 +360,9 @@ class FakeCalendarRepository implements CalendarRepository {
 
   @override
   Future<Event> updateEvent(Event event) async {
+    if (updateErrorStatus != null) {
+      throw DetailedApiRequestError(updateErrorStatus!, 'update failed');
+    }
     updateEventCallCount += 1;
     lastUpdatedEvent = event;
     return event;

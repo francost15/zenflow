@@ -9,6 +9,7 @@ import '../../data/repositories/task_repository_impl.dart';
 import '../../data/repositories/habit_repository_impl.dart';
 import '../../data/repositories/course_repository_impl.dart';
 import '../../data/repositories/calendar_repository_impl.dart';
+import '../../data/services/task_calendar_sync_service.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/task_repository.dart';
 import '../../domain/repositories/habit_repository.dart';
@@ -42,7 +43,7 @@ Future<void> initDependencies() async {
   getIt.registerLazySingleton<TaskRepository>(
     () => TaskRepositoryImpl(
       getIt<TaskDatasource>(),
-      getIt<CalendarRepository>(),
+      getIt<TaskCalendarSyncService>(),
     ),
   );
   getIt.registerLazySingleton<HabitRepository>(
@@ -53,6 +54,12 @@ Future<void> initDependencies() async {
   );
   getIt.registerLazySingleton<CalendarRepository>(
     () => CalendarRepositoryImpl(getIt<GoogleCalendarDatasource>()),
+  );
+  getIt.registerLazySingleton<TaskCalendarSyncService>(
+    () => TaskCalendarSyncService(
+      getIt<TaskDatasource>(),
+      getIt<CalendarRepository>(),
+    ),
   );
 
   // ─── BLoCs ────────────────────────────────────────────────────────────────
