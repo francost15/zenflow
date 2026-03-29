@@ -39,15 +39,9 @@ class BottomNavBar extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: NavigationBar(
-              selectedIndex: currentIndex,
-              onDestinationSelected: onTap,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              indicatorColor: AppColors.accent.withValues(alpha: 0.1),
-              labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-              height: 64,
-              destinations: [
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
                 _buildDestination(
                   context,
                   Icons.track_changes_outlined,
@@ -84,7 +78,7 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  NavigationDestination _buildDestination(
+  Widget _buildDestination(
     BuildContext context,
     IconData icon,
     IconData selectedIcon,
@@ -94,14 +88,19 @@ class BottomNavBar extends StatelessWidget {
     final isSelected = currentIndex == index;
     final theme = Theme.of(context);
 
-    return NavigationDestination(
-      icon: Icon(
-        icon,
-        color: isSelected ? AppColors.accent : theme.hintColor,
-        size: 22,
+    return GestureDetector(
+      onTap: () => onTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 64,
+        height: 64,
+        alignment: Alignment.center,
+        child: Icon(
+          isSelected ? selectedIcon : icon,
+          color: isSelected ? AppColors.accent : theme.hintColor,
+          size: 26,
+        ),
       ),
-      selectedIcon: Icon(selectedIcon, color: AppColors.accent, size: 22),
-      label: label,
     );
   }
 }
