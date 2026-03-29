@@ -19,8 +19,8 @@ class BottomNavBar extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      height: 88,
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: const BoxDecoration(color: Colors.transparent),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
