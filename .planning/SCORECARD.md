@@ -4,8 +4,8 @@
 
 | Task ID | Plan ID | Phase ID | Impact | Risk Closed | Effort | Verifiability | Dependency Unlock | Estimated | Validation Factor |
 |---------|---------|---------|--------|-------------|--------|---------------|------------------|-----------|------------------|
-| PHASE-00-PLAN-01-T01 | PHASE-00-PLAN-01 | PHASE-00 | 3 | 4 | 3 | 5 | 8 | 23 | 0.0 |
-| PHASE-00-PLAN-01-T02 | PHASE-00-PLAN-01 | PHASE-00 | 3 | 4 | 3 | 5 | 6 | 21 | 0.0 |
+| PHASE-00-PLAN-01-T01 | PHASE-00-PLAN-01 | PHASE-00 | 5 | 5 | 3 | 5 | 5 | 23 | 0.0 |
+| PHASE-00-PLAN-01-T02 | PHASE-00-PLAN-01 | PHASE-00 | 4 | 4 | 3 | 5 | 5 | 21 | 0.0 |
 | PHASE-01-PLAN-01-T01 | PHASE-01-PLAN-01 | PHASE-01 | 3 | 4 | 3 | 5 | 6 | 21 | 1.0 |
 | PHASE-01-PLAN-02-T01 | PHASE-01-PLAN-02 | PHASE-01 | 3 | 4 | 3 | 5 | 4 | 19 | 1.0 |
 | PHASE-02-PLAN-01-T01 | PHASE-02-PLAN-01 | PHASE-02 | 3 | 4 | 3 | 5 | 8 | 23 | 1.0 |

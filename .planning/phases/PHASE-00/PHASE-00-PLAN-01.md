@@ -7,8 +7,8 @@ plan_id: PHASE-00-PLAN-01
 
 | Task ID | Plan ID | Phase ID | Impact | Risk Closed | Effort | Verifiability | Dependency Unlock | Estimated | Validation Factor | Required |
 |---------|---------|---------|--------|-------------|--------|---------------|------------------|-----------|------------------|----------|
-| PHASE-00-PLAN-01-T01 | PHASE-00-PLAN-01 | PHASE-00 | 3 | 4 | 3 | 5 | 8 | 23 | 0.0 | true |
-| PHASE-00-PLAN-01-T02 | PHASE-00-PLAN-01 | PHASE-00 | 3 | 4 | 3 | 5 | 6 | 21 | 0.0 | true |
+| PHASE-00-PLAN-01-T01 | PHASE-00-PLAN-01 | PHASE-00 | 5 | 5 | 3 | 5 | 5 | 23 | 0.0 | true |
+| PHASE-00-PLAN-01-T02 | PHASE-00-PLAN-01 | PHASE-00 | 4 | 4 | 3 | 5 | 5 | 21 | 0.0 | true |
 
 ## Verify
 
