@@ -40,6 +40,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
   late TaskPriority _priority;
   String? _selectedCourseId;
   String? _titleError;
+  String? _collisionError;
   var _isSubmitting = false;
   var _isDeleting = false;
 
@@ -57,11 +58,31 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
     _priority = initialTask?.priority ?? TaskPriority.medium;
     _selectedCourseId = initialTask?.courseId;
 
+    _checkForCollisions();
+
     final courseBloc = context.read<CourseBloc>();
     if (courseBloc.state is! CourseLoaded &&
         courseBloc.state is! CourseLoading) {
       courseBloc.add(CoursesLoadRequested());
     }
+  }
+
+  void _checkForCollisions() {
+    final taskState = context.read<TaskBloc>().state;
+    if (taskState is! TaskLoaded) return;
+
+    final collidingTask = findCollision(
+      existingTasks: taskState.tasks,
+      date: _selectedDate,
+      time: _selectedTime,
+      excludeTaskId: widget.initialTask?.id,
+    );
+
+    setState(() {
+      _collisionError = collidingTask != null
+          ? formatCollisionError(collidingTask)
+          : null;
+    });
   }
 
   @override
@@ -120,7 +141,9 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                   : const Text('Eliminar'),
             ),
           ElevatedButton(
-            onPressed: _awaitingMutation ? null : _submitTask,
+            onPressed: (_awaitingMutation || _collisionError != null)
+                ? null
+                : _submitTask,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.accent,
               foregroundColor: Colors.white,
@@ -146,6 +169,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
           priority: _priority,
           selectedCourseId: _selectedCourseId,
           titleError: _titleError,
+          collisionError: _collisionError,
           isEditMode: _isEditMode,
           onTitleChanged: (_) {
             if (_titleError != null) {
@@ -170,6 +194,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
     );
     if (date != null) {
       setState(() => _selectedDate = date);
+      _checkForCollisions();
     }
   }
 
@@ -180,6 +205,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
     );
     if (time != null) {
       setState(() => _selectedTime = time);
+      _checkForCollisions();
     }
   }
 

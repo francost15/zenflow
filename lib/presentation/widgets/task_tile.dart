@@ -4,6 +4,7 @@ import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:app/presentation/widgets/task_tile_content.dart';
 import 'package:app/presentation/widgets/task_tile_helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 class TaskTile extends StatefulWidget {
   final Task task;
@@ -60,7 +61,9 @@ class _TaskTileState extends State<TaskTile> {
               onAction: () => widget.onUndoDelete?.call(),
             ).closed.then((reason) {
               if (reason != SnackBarClosedReason.action) {
-                widget.onDelete?.call();
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  widget.onDelete?.call();
+                });
               }
             });
           }

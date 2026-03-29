@@ -29,3 +29,41 @@ Color priorityColor(TaskPriority priority) {
       return AppColors.darkTextTertiary;
   }
 }
+
+Task? findCollision({
+  required List<Task> existingTasks,
+  required DateTime date,
+  required TimeOfDay? time,
+  String? excludeTaskId,
+}) {
+  if (time == null) {
+    return null;
+  }
+
+  for (final task in existingTasks) {
+    if (task.id == excludeTaskId) {
+      continue;
+    }
+
+    final isSameDay = task.dueDate.year == date.year &&
+        task.dueDate.month == date.month &&
+        task.dueDate.day == date.day;
+
+    final isSameTime = task.dueTime?.hour == time.hour &&
+        task.dueTime?.minute == time.minute;
+
+    if (isSameDay && isSameTime) {
+      return task;
+    }
+  }
+
+  return null;
+}
+
+String formatCollisionError(Task collidingTask) {
+  final timeStr = collidingTask.dueTime != null
+      ? '${collidingTask.dueTime!.hour.toString().padLeft(2, '0')}:${collidingTask.dueTime!.minute.toString().padLeft(2, '0')}'
+      : 'TIME_UNKNOWN';
+
+  return 'CONFLICT: $timeStr - ${collidingTask.title.toUpperCase()}';
+}

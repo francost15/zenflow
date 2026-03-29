@@ -1,8 +1,11 @@
 import 'package:app/core/constants/app_colors.dart';
 import 'package:app/domain/entities/task.dart';
+import 'package:app/presentation/blocs/task/task_bloc.dart';
+import 'package:app/presentation/blocs/task/task_state.dart';
 import 'package:app/presentation/widgets/dialogs/task_editor/task_editor_fields.dart';
 import 'package:app/presentation/widgets/dialogs/task_editor/task_editor_helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TaskEditorForm extends StatelessWidget {
   const TaskEditorForm({
@@ -14,6 +17,7 @@ class TaskEditorForm extends StatelessWidget {
     required this.priority,
     required this.selectedCourseId,
     required this.titleError,
+    this.collisionError,
     required this.isEditMode,
     required this.onTitleChanged,
     required this.onPriorityChanged,
@@ -29,6 +33,7 @@ class TaskEditorForm extends StatelessWidget {
   final TaskPriority priority;
   final String? selectedCourseId;
   final String? titleError;
+  final String? collisionError;
   final bool isEditMode;
   final ValueChanged<String> onTitleChanged;
   final ValueChanged<TaskPriority> onPriorityChanged;
@@ -44,6 +49,37 @@ class TaskEditorForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (collisionError != null) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded,
+                    size: 16, color: AppColors.error),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    collisionError!,
+                    style: const TextStyle(
+                      fontFamily: 'Space Grotesk',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.error,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         TextField(
           controller: titleController,
           style: theme.textTheme.headlineSmall?.copyWith(
@@ -142,6 +178,8 @@ class TaskEditorForm extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        _DailyLoadIndicator(selectedDate: selectedDate),
         const SizedBox(height: 20),
         TaskCourseSelector(
           selectedCourseId: selectedCourseId,
@@ -155,4 +193,56 @@ class TaskEditorForm extends StatelessWidget {
 
 Color _hintColor(bool isDark) {
   return isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary;
+}
+
+class _DailyLoadIndicator extends StatelessWidget {
+  const _DailyLoadIndicator({required this.selectedDate});
+
+  final DateTime selectedDate;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TaskBloc, TaskState>(
+      builder: (context, state) {
+        if (state is! TaskLoaded) return const SizedBox.shrink();
+
+        final tasks = state.tasks.where((t) {
+          return t.dueDate.year == selectedDate.year &&
+              t.dueDate.month == selectedDate.month &&
+              t.dueDate.day == selectedDate.day;
+        }).toList();
+
+        if (tasks.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.darkSurfaceElevated.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: AppColors.monolithBorder.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.analytics_outlined,
+                  size: 10, color: AppColors.darkTextTertiary),
+              const SizedBox(width: 6),
+              Text(
+                'PROTOCOL: ${tasks.length} SEC_TASKS_DETEKTED',
+                style: const TextStyle(
+                  fontFamily: 'Space Grotesk',
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: AppColors.darkTextTertiary,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
