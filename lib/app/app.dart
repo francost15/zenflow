@@ -167,75 +167,44 @@ class _MainShellState extends State<_MainShell> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    ConnectivityService.instance.addListener(_handleConnectivityChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _syncPendingTasks();
-    });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    ConnectivityService.instance.removeListener(_handleConnectivityChanged);
     super.dispose();
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _syncPendingTasks();
-    }
-  }
-
-  void _handleConnectivityChanged() {
-    if (ConnectivityService.instance.isOnline) {
-      _syncPendingTasks();
-    }
-  }
-
-  void _syncPendingTasks() {
-    if (!mounted) {
-      return;
-    }
-    context.read<TaskBloc>().add(const TaskSyncRequested());
-  }
+  void didChangeAppLifecycleState(AppLifecycleState state) {}
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CalendarBloc, CalendarState>(
-      listener: (context, state) {
-        if (state is CalendarLoaded) {
-          _syncPendingTasks();
-        }
-      },
-      child: Scaffold(
-        body: Column(
-          children: [
-            const ConnectionIndicator(),
-            Expanded(
-              child: IndexedStack(
-                index: _currentIndex,
-                children: [
-                  HomeScreen(
-                    onThemeToggle: widget.onThemeToggle,
-                    isDarkMode: widget.isDarkMode,
-                  ),
-                  CalendarScreen(
-                    onStartZenMode: (taskName) =>
-                        widget.onZenModeToggle(taskName: taskName),
-                  ),
-                  const CoursesScreen(),
-                  const StreaksScreen(),
-                ],
-              ),
+    return Scaffold(
+      body: Column(
+        children: [
+          const ConnectionIndicator(),
+          Expanded(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: [
+                HomeScreen(
+                  onThemeToggle: widget.onThemeToggle,
+                  isDarkMode: widget.isDarkMode,
+                ),
+                CalendarScreen(
+                  onStartZenMode: (taskName) =>
+                      widget.onZenModeToggle(taskName: taskName),
+                ),
+                const CoursesScreen(),
+                const StreaksScreen(),
+              ],
             ),
-          ],
-        ),
-        bottomNavigationBar: BottomNavBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-        ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
       ),
     );
   }

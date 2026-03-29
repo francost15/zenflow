@@ -51,4 +51,10 @@ class TaskRepositoryImpl implements TaskRepository {
     final tasks = models.map((m) => m.toEntity()).toList();
     return _syncService.reconcileUnsyncedTasks(tasks);
   }
+
+  @override
+  Future<List<Task>> getTasksByCourse(String courseId) async {
+    final models = await _datasource.getTasksByCourse(courseId);
+    return models.map((m) => m.toEntity()).toList();
+  }
 }

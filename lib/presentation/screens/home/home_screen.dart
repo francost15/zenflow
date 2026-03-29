@@ -534,7 +534,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _showCreateDialog(BuildContext context) {
-    CreateTaskSheet.show(context);
+    TaskEditorSheet.show(context);
   }
 
   void _showTaskDetails(Task task) {

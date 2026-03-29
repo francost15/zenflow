@@ -9,4 +9,5 @@ abstract class TaskRepository {
   Future<void> deleteTask(Task task);
   Future<void> toggleTaskStatus(Task task, bool completed);
   Future<ReconciliationResult> reconcileUnsyncedTasks();
+  Future<List<Task>> getTasksByCourse(String courseId);
 }

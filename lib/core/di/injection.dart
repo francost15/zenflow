@@ -76,7 +76,7 @@ Future<void> initDependencies() async {
     () => StreaksBloc(getIt<HabitRepository>()),
   );
   getIt.registerFactory<CourseBloc>(
-    () => CourseBloc(getIt<CourseRepository>()),
+    () => CourseBloc(getIt<CourseRepository>(), getIt<TaskRepository>()),
   );
   getIt.registerFactory<CalendarBloc>(
     () => CalendarBloc(getIt<CalendarRepository>(), getIt<TaskRepository>()),

@@ -69,10 +69,7 @@ class HomeProtocolHeader extends StatelessWidget {
             builder: (context, authState) {
               return BlocBuilder<CalendarBloc, CalendarState>(
                 builder: (context, calendarState) {
-                  return SyncStatusBadge(
-                    authState: authState,
-                    calendarState: calendarState,
-                  );
+                  return const SyncStatusBadgeWithLogic();
                 },
               );
             },

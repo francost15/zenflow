@@ -71,8 +71,9 @@ class HomeTaskSliver extends StatelessWidget {
                     'DÍA DESPEJADO',
                     style: TextStyle(
                       fontSize: 13,
-                      color:
-                          isDark ? AppColors.darkTextTertiary : Colors.black45,
+                      color: isDark
+                          ? AppColors.darkTextTertiary
+                          : Colors.black45,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -109,17 +110,12 @@ class HomeTaskSliver extends StatelessWidget {
                     task: task,
                     onToggle: (completed) {
                       context.read<TaskBloc>().add(
-                            TaskStatusToggled(task: task, completed: completed),
-                          );
+                        TaskStatusToggled(task: task, completed: completed),
+                      );
                     },
                     onTap: () => onEditTask(task),
                     onDelete: () {
                       context.read<TaskBloc>().add(TaskDeleted(task));
-                    },
-                    onUndoDelete: () {
-                      context
-                          .read<TaskBloc>()
-                          .add(TaskUndoDeletionRequested(task));
                     },
                   );
                 },
