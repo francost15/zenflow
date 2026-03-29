@@ -470,6 +470,56 @@ void main() {
     });
   });
 
+  group('Missing root planning files are rejected', () {
+    test('ROADMAP.md missing required columns is rejected', () async {
+      final tmpDir = io.Directory.systemTemp.createTempSync(
+        'gate_checker_test_',
+      );
+      final roadmapFile = io.File('${tmpDir.path}/ROADMAP.md');
+      roadmapFile.writeAsStringSync(
+        '# ROADMAP\n\n## Phases\n| Phase ID | Objective | Dependencies |',
+      );
+      final result = validateRootPlanningFiles(tmpDir.path);
+      expect(result.any((r) => r.contains('ROADMAP.md')), true);
+      tmpDir.deleteSync(recursive: true);
+    });
+
+    test('STATE.md missing required sections is rejected', () async {
+      final tmpDir = io.Directory.systemTemp.createTempSync(
+        'gate_checker_test_',
+      );
+      final stateFile = io.File('${tmpDir.path}/STATE.md');
+      stateFile.writeAsStringSync('# STATE\n\nno required sections');
+      final result = validateRootPlanningFiles(tmpDir.path);
+      expect(result.any((r) => r.contains('STATE.md')), true);
+      tmpDir.deleteSync(recursive: true);
+    });
+
+    test('SCORECARD.md missing required columns is rejected', () async {
+      final tmpDir = io.Directory.systemTemp.createTempSync(
+        'gate_checker_test_',
+      );
+      final scorecardFile = io.File('${tmpDir.path}/SCORECARD.md');
+      scorecardFile.writeAsStringSync(
+        '# SCORECARD\n\n## Task Scores\n| Task ID |',
+      );
+      final result = validateRootPlanningFiles(tmpDir.path);
+      expect(result.any((r) => r.contains('SCORECARD.md')), true);
+      tmpDir.deleteSync(recursive: true);
+    });
+
+    test('AGENT_POLICY.md missing required sections is rejected', () async {
+      final tmpDir = io.Directory.systemTemp.createTempSync(
+        'gate_checker_test_',
+      );
+      final policyFile = io.File('${tmpDir.path}/AGENT_POLICY.md');
+      policyFile.writeAsStringSync('# AGENT POLICY\n\nno required sections');
+      final result = validateRootPlanningFiles(tmpDir.path);
+      expect(result.any((r) => r.contains('AGENT_POLICY.md')), true);
+      tmpDir.deleteSync(recursive: true);
+    });
+  });
+
   group('closure_score computation', () {
     test('closure_score = ceil(target_score * 0.90)', () {
       expect(computeClosureScore(100), 90);
