@@ -1,8 +1,8 @@
+import 'package:app/core/error/exceptions.dart';
+import 'package:app/domain/repositories/task_repository.dart';
+import 'package:app/presentation/blocs/task/task_event.dart';
+import 'package:app/presentation/blocs/task/task_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/error/exceptions.dart';
-import '../../../domain/repositories/task_repository.dart';
-import 'task_event.dart';
-import 'task_state.dart';
 
 class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final TaskRepository _taskRepository;
@@ -16,6 +16,21 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     on<TaskUpdated>(_onUpdated);
     on<TaskDeleted>(_onDeleted);
     on<TaskStatusToggled>(_onStatusToggled);
+    on<TaskSyncRequested>(_onSyncRequested);
+    on<TaskUndoDeletionRequested>(_onUndoDeletionRequested);
+  }
+
+  Future<void> _onUndoDeletionRequested(
+    TaskUndoDeletionRequested event,
+    Emitter<TaskState> emit,
+  ) async {
+    final success = await _runTaskMutation(
+      () => _taskRepository.undoDeleteTask(event.task),
+      emit,
+    );
+    if (success) {
+      _refreshTasks();
+    }
   }
 
   Future<void> _onLoadRequested(
@@ -94,6 +109,18 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     if (success) {
       _refreshTasks();
     }
+  }
+
+  Future<void> _onSyncRequested(
+    TaskSyncRequested event,
+    Emitter<TaskState> emit,
+  ) async {
+    try {
+      await _taskRepository.syncPendingTasks();
+      if (event.refresh) {
+        _refreshTasks();
+      }
+    } catch (_) {}
   }
 
   String? _consumePendingNoticeMessage() {

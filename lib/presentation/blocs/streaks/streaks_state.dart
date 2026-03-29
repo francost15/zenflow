@@ -1,5 +1,5 @@
+import 'package:app/domain/entities/habit.dart';
 import 'package:equatable/equatable.dart';
-import '../../../domain/entities/habit.dart';
 
 abstract class StreaksState extends Equatable {
   const StreaksState();

@@ -1,9 +1,9 @@
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/presentation/blocs/calendar/calendar_bloc.dart';
+import 'package:app/presentation/blocs/calendar/calendar_event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../blocs/calendar/calendar_bloc.dart';
-import '../../../blocs/calendar/calendar_event.dart';
 
 /// Google Sign-In button widget for Google Calendar.
 ///

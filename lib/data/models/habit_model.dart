@@ -1,5 +1,5 @@
+import 'package:app/domain/entities/habit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../domain/entities/habit.dart';
 
 class HabitModel {
   final String id;

@@ -1,24 +1,24 @@
+import 'package:app/data/datasources/firebase/auth_datasource.dart';
+import 'package:app/data/datasources/firestore/course_datasource.dart';
+import 'package:app/data/datasources/firestore/habit_datasource.dart';
+import 'package:app/data/datasources/firestore/task_datasource.dart';
+import 'package:app/data/datasources/google/google_calendar_datasource.dart';
+import 'package:app/data/repositories/auth_repository_impl.dart';
+import 'package:app/data/repositories/calendar_repository_impl.dart';
+import 'package:app/data/repositories/course_repository_impl.dart';
+import 'package:app/data/repositories/habit_repository_impl.dart';
+import 'package:app/data/repositories/task_repository_impl.dart';
+import 'package:app/domain/repositories/auth_repository.dart';
+import 'package:app/domain/repositories/calendar_repository.dart';
+import 'package:app/domain/repositories/course_repository.dart';
+import 'package:app/domain/repositories/habit_repository.dart';
+import 'package:app/domain/repositories/task_repository.dart';
+import 'package:app/presentation/blocs/auth/auth_bloc.dart';
+import 'package:app/presentation/blocs/calendar/calendar_bloc.dart';
+import 'package:app/presentation/blocs/course/course_bloc.dart';
+import 'package:app/presentation/blocs/streaks/streaks_bloc.dart';
+import 'package:app/presentation/blocs/task/task_bloc.dart';
 import 'package:get_it/get_it.dart';
-import '../../data/datasources/firebase/auth_datasource.dart';
-import '../../data/datasources/firestore/task_datasource.dart';
-import '../../data/datasources/firestore/habit_datasource.dart';
-import '../../data/datasources/firestore/course_datasource.dart';
-import '../../data/datasources/google/google_calendar_datasource.dart';
-import '../../data/repositories/auth_repository_impl.dart';
-import '../../data/repositories/task_repository_impl.dart';
-import '../../data/repositories/habit_repository_impl.dart';
-import '../../data/repositories/course_repository_impl.dart';
-import '../../data/repositories/calendar_repository_impl.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../../domain/repositories/task_repository.dart';
-import '../../domain/repositories/habit_repository.dart';
-import '../../domain/repositories/course_repository.dart';
-import '../../domain/repositories/calendar_repository.dart';
-import '../../presentation/blocs/auth/auth_bloc.dart';
-import '../../presentation/blocs/task/task_bloc.dart';
-import '../../presentation/blocs/streaks/streaks_bloc.dart';
-import '../../presentation/blocs/course/course_bloc.dart';
-import '../../presentation/blocs/calendar/calendar_bloc.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -65,7 +65,7 @@ Future<void> initDependencies() async {
     () => StreaksBloc(getIt<HabitRepository>()),
   );
   getIt.registerFactory<CourseBloc>(
-    () => CourseBloc(getIt<CourseRepository>()),
+    () => CourseBloc(getIt<CourseRepository>(), getIt<TaskRepository>()),
   );
   getIt.registerFactory<CalendarBloc>(
     () => CalendarBloc(getIt<CalendarRepository>()),

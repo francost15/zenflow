@@ -1,6 +1,6 @@
+import 'package:app/domain/entities/course.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../domain/entities/course.dart';
 
 class CourseModel {
   final String id;

@@ -1,13 +1,12 @@
 import 'dart:async';
 
+import 'package:app/data/datasources/firebase/auth_datasource.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
-
-import 'package:app/data/datasources/firebase/auth_datasource.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

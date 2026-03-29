@@ -1,20 +1,22 @@
+import 'package:app/core/di/injection.dart';
+import 'package:app/core/theme/app_theme.dart';
+import 'package:app/core/utils/connectivity_service.dart';
+import 'package:app/presentation/blocs/auth/auth.dart';
+import 'package:app/presentation/blocs/calendar/calendar.dart';
+import 'package:app/presentation/blocs/course/course.dart';
+import 'package:app/presentation/blocs/streaks/streaks.dart';
+import 'package:app/presentation/blocs/task/task.dart';
+import 'package:app/presentation/screens/auth/login_screen.dart';
+import 'package:app/presentation/screens/calendar/calendar_screen.dart';
+import 'package:app/presentation/screens/courses/courses_screen.dart';
+import 'package:app/presentation/screens/home/home_screen.dart';
+import 'package:app/presentation/screens/streaks/streaks_screen.dart';
+import 'package:app/presentation/screens/zen/zen_mode_screen.dart';
+import 'package:app/presentation/widgets/bottom_nav_bar.dart';
+import 'package:app/presentation/widgets/connection_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/di/injection.dart';
-import '../core/theme/app_theme.dart';
-import '../presentation/blocs/auth/auth.dart';
-import '../presentation/blocs/task/task.dart';
-import '../presentation/blocs/streaks/streaks.dart';
-import '../presentation/blocs/course/course.dart';
-import '../presentation/blocs/calendar/calendar.dart';
-import '../presentation/screens/auth/login_screen.dart';
-import '../presentation/screens/home/home_screen.dart';
-import '../presentation/screens/calendar/calendar_screen.dart';
-import '../presentation/screens/streaks/streaks_screen.dart';
-import '../presentation/screens/courses/courses_screen.dart';
-import '../presentation/screens/zen/zen_mode_screen.dart';
-import '../presentation/widgets/bottom_nav_bar.dart';
 
 class ZenFlowApp extends StatefulWidget {
   const ZenFlowApp({super.key});
@@ -160,30 +162,81 @@ class _MainShell extends StatefulWidget {
   State<_MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<_MainShell> {
+class _MainShellState extends State<_MainShell> with WidgetsBindingObserver {
   int _currentIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    ConnectivityService.instance.addListener(_handleConnectivityChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncPendingTasks();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    ConnectivityService.instance.removeListener(_handleConnectivityChanged);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _syncPendingTasks();
+    }
+  }
+
+  void _handleConnectivityChanged() {
+    if (ConnectivityService.instance.isOnline) {
+      _syncPendingTasks();
+    }
+  }
+
+  void _syncPendingTasks() {
+    if (!mounted) {
+      return;
+    }
+    context.read<TaskBloc>().add(const TaskSyncRequested());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          HomeScreen(
-            onThemeToggle: widget.onThemeToggle,
-            isDarkMode: widget.isDarkMode,
-          ),
-          CalendarScreen(
-            onStartZenMode: (taskName) =>
-                widget.onZenModeToggle(taskName: taskName),
-          ),
-          const CoursesScreen(),
-          const StreaksScreen(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+    return BlocListener<CalendarBloc, CalendarState>(
+      listener: (context, state) {
+        if (state is CalendarLoaded) {
+          _syncPendingTasks();
+        }
+      },
+      child: Scaffold(
+        body: Column(
+          children: [
+            const ConnectionIndicator(),
+            Expanded(
+              child: IndexedStack(
+                index: _currentIndex,
+                children: [
+                  HomeScreen(
+                    onThemeToggle: widget.onThemeToggle,
+                    isDarkMode: widget.isDarkMode,
+                  ),
+                  CalendarScreen(
+                    onStartZenMode: (taskName) =>
+                        widget.onZenModeToggle(taskName: taskName),
+                  ),
+                  const CoursesScreen(),
+                  const StreaksScreen(),
+                ],
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: BottomNavBar(
+          currentIndex: _currentIndex,
+          onTap: (index) => setState(() => _currentIndex = index),
+        ),
       ),
     );
   }

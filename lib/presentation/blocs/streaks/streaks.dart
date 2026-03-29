@@ -1,4 +1,4 @@
 // Barrel export for Streaks BLoC module
-export 'streaks_bloc.dart';
-export 'streaks_event.dart';
-export 'streaks_state.dart';
+export 'package:app/presentation/blocs/streaks/streaks_bloc.dart';
+export 'package:app/presentation/blocs/streaks/streaks_event.dart';
+export 'package:app/presentation/blocs/streaks/streaks_state.dart';

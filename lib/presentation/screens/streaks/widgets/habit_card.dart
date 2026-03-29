@@ -1,6 +1,6 @@
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/domain/entities/habit.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../domain/entities/habit.dart';
 
 class HabitCard extends StatelessWidget {
   final Habit habit;
@@ -54,14 +54,43 @@ class HabitCard extends StatelessWidget {
                         ]
                       : null,
                 ),
-                child: Icon(
-                  checkedToday
-                      ? Icons.check_rounded
-                      : Icons.local_fire_department_rounded,
-                  color: checkedToday
-                      ? Colors.white
-                      : AppColors.accent,
-                  size: 24,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (habit.icon != null)
+                      Text(
+                        habit.icon!,
+                        style: const TextStyle(fontSize: 24),
+                      )
+                    else
+                      Icon(
+                        checkedToday
+                            ? Icons.check_rounded
+                            : Icons.local_fire_department_rounded,
+                        color: checkedToday
+                            ? Colors.white
+                            : AppColors.accent,
+                        size: 24,
+                      ),
+                    if (checkedToday && habit.icon != null)
+                      Positioned(
+                        right: 4,
+                        bottom: 4,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            size: 12,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(width: 16),

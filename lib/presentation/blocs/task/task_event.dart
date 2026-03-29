@@ -1,5 +1,5 @@
+import 'package:app/domain/entities/task.dart';
 import 'package:equatable/equatable.dart';
-import '../../../domain/entities/task.dart';
 
 abstract class TaskEvent extends Equatable {
   const TaskEvent();
@@ -46,6 +46,15 @@ class TaskDeleted extends TaskEvent {
   List<Object?> get props => [task];
 }
 
+class TaskUndoDeletionRequested extends TaskEvent {
+  final Task task;
+
+  const TaskUndoDeletionRequested(this.task);
+
+  @override
+  List<Object?> get props => [task];
+}
+
 class TaskStatusToggled extends TaskEvent {
   final Task task;
   final bool completed;
@@ -54,4 +63,13 @@ class TaskStatusToggled extends TaskEvent {
 
   @override
   List<Object?> get props => [task, completed];
+}
+
+class TaskSyncRequested extends TaskEvent {
+  final bool refresh;
+
+  const TaskSyncRequested({this.refresh = false});
+
+  @override
+  List<Object?> get props => [refresh];
 }

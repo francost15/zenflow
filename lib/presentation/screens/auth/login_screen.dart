@@ -1,9 +1,9 @@
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/presentation/blocs/auth/auth_bloc.dart';
+import 'package:app/presentation/blocs/auth/auth_event.dart';
+import 'package:app/presentation/blocs/auth/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/auth/auth_event.dart';
-import '../../blocs/auth/auth_state.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

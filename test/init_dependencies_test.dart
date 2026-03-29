@@ -1,9 +1,8 @@
 import 'dart:async';
 
+import 'package:app/core/di/injection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
-
-import 'package:app/core/di/injection.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -5,6 +5,12 @@ enum TaskPriority { low, medium, high }
 
 enum TaskStatus { pending, inProgress, completed }
 
+enum CalendarSyncAction { create, update, delete }
+
+enum CalendarSyncStatus { synced, pending, failed }
+
+const Object _taskUnset = Object();
+
 class Task extends Equatable {
   final String id;
   final String title;
@@ -16,6 +22,10 @@ class Task extends Equatable {
   final String? courseId;
   final List<String> subtasks;
   final String? calendarEventId;
+  final bool isDeleted;
+  final CalendarSyncAction? pendingCalendarSyncAction;
+  final CalendarSyncStatus calendarSyncStatus;
+  final String? lastCalendarSyncError;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -30,6 +40,10 @@ class Task extends Equatable {
     this.courseId,
     this.subtasks = const [],
     this.calendarEventId,
+    this.isDeleted = false,
+    this.pendingCalendarSyncAction,
+    this.calendarSyncStatus = CalendarSyncStatus.synced,
+    this.lastCalendarSyncError,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -37,28 +51,45 @@ class Task extends Equatable {
   Task copyWith({
     String? id,
     String? title,
-    String? description,
+    Object? description = _taskUnset,
     DateTime? dueDate,
-    TimeOfDay? dueTime,
+    Object? dueTime = _taskUnset,
     TaskPriority? priority,
     TaskStatus? status,
-    String? courseId,
+    Object? courseId = _taskUnset,
     List<String>? subtasks,
-    String? calendarEventId,
+    Object? calendarEventId = _taskUnset,
+    bool? isDeleted,
+    Object? pendingCalendarSyncAction = _taskUnset,
+    CalendarSyncStatus? calendarSyncStatus,
+    Object? lastCalendarSyncError = _taskUnset,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return Task(
       id: id ?? this.id,
       title: title ?? this.title,
-      description: description ?? this.description,
+      description: identical(description, _taskUnset)
+          ? this.description
+          : description as String?,
       dueDate: dueDate ?? this.dueDate,
-      dueTime: dueTime ?? this.dueTime,
+      dueTime: identical(dueTime, _taskUnset) ? this.dueTime : dueTime as TimeOfDay?,
       priority: priority ?? this.priority,
       status: status ?? this.status,
-      courseId: courseId ?? this.courseId,
+      courseId: identical(courseId, _taskUnset) ? this.courseId : courseId as String?,
       subtasks: subtasks ?? this.subtasks,
-      calendarEventId: calendarEventId ?? this.calendarEventId,
+      calendarEventId: identical(calendarEventId, _taskUnset)
+          ? this.calendarEventId
+          : calendarEventId as String?,
+      isDeleted: isDeleted ?? this.isDeleted,
+      pendingCalendarSyncAction:
+          identical(pendingCalendarSyncAction, _taskUnset)
+              ? this.pendingCalendarSyncAction
+              : pendingCalendarSyncAction as CalendarSyncAction?,
+      calendarSyncStatus: calendarSyncStatus ?? this.calendarSyncStatus,
+      lastCalendarSyncError: identical(lastCalendarSyncError, _taskUnset)
+          ? this.lastCalendarSyncError
+          : lastCalendarSyncError as String?,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -76,6 +107,10 @@ class Task extends Equatable {
     courseId,
     subtasks,
     calendarEventId,
+    isDeleted,
+    pendingCalendarSyncAction,
+    calendarSyncStatus,
+    lastCalendarSyncError,
     createdAt,
     updatedAt,
   ];

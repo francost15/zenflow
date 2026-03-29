@@ -1,6 +1,6 @@
+import 'package:app/domain/entities/task.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../domain/entities/task.dart';
 
 class TaskModel {
   final String id;
@@ -13,6 +13,10 @@ class TaskModel {
   final String? courseId;
   final List<String> subtasks;
   final String? calendarEventId;
+  final bool isDeleted;
+  final String? pendingCalendarSyncAction;
+  final String calendarSyncStatus;
+  final String? lastCalendarSyncError;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -27,6 +31,10 @@ class TaskModel {
     this.courseId,
     required this.subtasks,
     this.calendarEventId,
+    this.isDeleted = false,
+    this.pendingCalendarSyncAction,
+    this.calendarSyncStatus = 'synced',
+    this.lastCalendarSyncError,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -44,6 +52,10 @@ class TaskModel {
       courseId: data['courseId'],
       subtasks: List<String>.from(data['subtasks'] ?? []),
       calendarEventId: data['calendarEventId'],
+      isDeleted: data['isDeleted'] ?? false,
+      pendingCalendarSyncAction: data['pendingCalendarSyncAction'],
+      calendarSyncStatus: data['calendarSyncStatus'] ?? 'synced',
+      lastCalendarSyncError: data['lastCalendarSyncError'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -60,6 +72,10 @@ class TaskModel {
       'courseId': courseId,
       'subtasks': subtasks,
       'calendarEventId': calendarEventId,
+      'isDeleted': isDeleted,
+      'pendingCalendarSyncAction': pendingCalendarSyncAction,
+      'calendarSyncStatus': calendarSyncStatus,
+      'lastCalendarSyncError': lastCalendarSyncError,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
@@ -89,6 +105,18 @@ class TaskModel {
       courseId: courseId,
       subtasks: subtasks,
       calendarEventId: calendarEventId,
+      isDeleted: isDeleted,
+      pendingCalendarSyncAction: pendingCalendarSyncAction != null
+          ? CalendarSyncAction.values.firstWhere(
+              (e) => e.name == pendingCalendarSyncAction,
+              orElse: () => CalendarSyncAction.update,
+            )
+          : null,
+      calendarSyncStatus: CalendarSyncStatus.values.firstWhere(
+        (e) => e.name == calendarSyncStatus,
+        orElse: () => CalendarSyncStatus.synced,
+      ),
+      lastCalendarSyncError: lastCalendarSyncError,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -108,6 +136,10 @@ class TaskModel {
       courseId: entity.courseId,
       subtasks: entity.subtasks,
       calendarEventId: entity.calendarEventId,
+      isDeleted: entity.isDeleted,
+      pendingCalendarSyncAction: entity.pendingCalendarSyncAction?.name,
+      calendarSyncStatus: entity.calendarSyncStatus.name,
+      lastCalendarSyncError: entity.lastCalendarSyncError,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );

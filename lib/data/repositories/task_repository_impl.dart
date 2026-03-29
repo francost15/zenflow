@@ -1,198 +1,133 @@
-import 'package:googleapis/calendar/v3.dart' as calendar;
-
-import '../../core/error/exceptions.dart';
-import '../../domain/entities/task.dart';
-import '../../domain/repositories/calendar_repository.dart';
-import '../../domain/repositories/task_repository.dart';
-import '../datasources/firestore/task_datasource.dart';
-import '../models/task_model.dart';
+import 'package:app/core/error/exceptions.dart';
+import 'package:app/data/datasources/firestore/task_datasource.dart';
+import 'package:app/data/models/task_model.dart';
+import 'package:app/data/repositories/task_repository_sync.dart';
+import 'package:app/domain/entities/task.dart';
+import 'package:app/domain/repositories/calendar_repository.dart';
+import 'package:app/domain/repositories/task_repository.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
+  TaskRepositoryImpl(this._datasource, CalendarRepository calendarRepository)
+      : _calendarRepository = calendarRepository,
+        _syncDelegate = TaskRepositorySyncDelegate(
+          _datasource,
+          calendarRepository,
+        );
+
   final TaskDatasource _datasource;
   final CalendarRepository _calendarRepository;
-
-  TaskRepositoryImpl(this._datasource, this._calendarRepository);
-
-  @override
-  Future<List<Task>> getTasks() async {
-    final models = await _datasource.getTasks();
-    return models.map((m) => m.toEntity()).toList();
-  }
+  final TaskRepositorySyncDelegate _syncDelegate;
 
   @override
-  Future<List<Task>> getTasksByDate(DateTime date) async {
-    final models = await _datasource.getTasksByDate(date);
-    return models.map((m) => m.toEntity()).toList();
-  }
+  Future<List<Task>> getTasks() async => _toEntities(await _datasource.getTasks());
+
+  @override
+  Future<List<Task>> getTasksByDate(DateTime date) async =>
+      _toEntities(await _datasource.getTasksByDate(date));
+
+  @override
+  Future<List<Task>> getTasksByCourse(String courseId) async =>
+      _toEntities(await _datasource.getTasksByCourse(courseId));
 
   @override
   Future<Task> createTask(Task task) async {
-    final model = TaskModel.fromEntity(task);
-    final created = await _datasource.createTask(model);
-    final createdTask = created.toEntity();
-    String? createdEventId;
+    final now = DateTime.now();
+    final localTask = task.copyWith(
+      updatedAt: now,
+      isDeleted: false,
+      pendingCalendarSyncAction: null,
+      calendarSyncStatus: CalendarSyncStatus.synced,
+      lastCalendarSyncError: null,
+    );
+    final created = await _datasource.createTask(TaskModel.fromEntity(localTask));
 
-    try {
-      final isAuthorized = await _calendarRepository.isAuthorized();
-      if (!isAuthorized) {
-        throw const CalendarSyncWarningException(
+    return _syncDelegate.syncTaskImmediately(
+      created.toEntity(),
+      preferredAction: CalendarSyncAction.create,
+      unauthorizedMessage:
           'La tarea se guardo, pero Google Calendar no esta conectado.',
-        );
-      }
-
-      final createdEvent = await _calendarRepository.createEvent(
-        _toCalendarEvent(createdTask),
-      );
-      createdEventId = createdEvent.id;
-      final syncedTask = createdTask.copyWith(calendarEventId: createdEvent.id);
-      final syncedModel = await _datasource.updateTask(
-        TaskModel.fromEntity(syncedTask),
-      );
-      return syncedModel.toEntity();
-    } on CalendarSyncWarningException {
-      rethrow;
-    } catch (_) {
-      if (createdEventId != null) {
-        try {
-          await _calendarRepository.deleteEvent(createdEventId);
-        } catch (_) {}
-      }
-      throw const CalendarSyncWarningException(
-        'La tarea se guardo, pero no se pudo sincronizar con Google Calendar.',
-      );
-    }
+      failureMessage:
+          'La tarea se guardo, pero no se pudo sincronizar con Google Calendar.',
+    );
   }
 
   @override
   Future<Task> updateTask(Task task) async {
-    final model = TaskModel.fromEntity(task);
-    final updated = await _datasource.updateTask(model);
-    final updatedTask = updated.toEntity();
+    final localTask = task.copyWith(
+      isDeleted: false,
+      pendingCalendarSyncAction:
+          task.pendingCalendarSyncAction == CalendarSyncAction.create
+              ? CalendarSyncAction.create
+              : null,
+      calendarSyncStatus:
+          task.pendingCalendarSyncAction == CalendarSyncAction.create
+              ? CalendarSyncStatus.pending
+              : CalendarSyncStatus.synced,
+      lastCalendarSyncError: null,
+    );
+    final updated = await _datasource.updateTask(TaskModel.fromEntity(localTask));
+
+    return _syncDelegate.syncTaskImmediately(
+      updated.toEntity(),
+      preferredAction: _syncDelegate.effectiveUpsertAction(task),
+      unauthorizedMessage:
+          'La tarea se actualizo localmente. La sincronizacion con Google Calendar queda pendiente.',
+      failureMessage:
+          'La tarea se actualizo localmente, pero no se pudo sincronizar con Google Calendar.',
+    );
+  }
+
+  @override
+  Future<void> deleteTask(Task task) async {
+    if (task.calendarEventId == null ||
+        task.pendingCalendarSyncAction == CalendarSyncAction.create) {
+      await _datasource.deleteTask(task.id);
+      return;
+    }
+
+    final deletedTask = await _syncDelegate.markPendingSync(
+      task.copyWith(
+        isDeleted: true,
+        updatedAt: DateTime.now(),
+      ),
+      action: CalendarSyncAction.delete,
+      status: CalendarSyncStatus.pending,
+    );
 
     try {
-      final isAuthorized = await _calendarRepository.isAuthorized();
-      if (!isAuthorized) {
-        if (updatedTask.calendarEventId == null) {
-          return updatedTask;
-        }
+      if (!await _safeIsAuthorized()) {
         throw const CalendarSyncWarningException(
-          'La tarea se actualizo, pero Google Calendar no esta conectado.',
+          'La tarea se elimino localmente. La sincronizacion con Google Calendar queda pendiente.',
         );
       }
 
-      if (updatedTask.calendarEventId == null) {
-        final createdEvent = await _calendarRepository.createEvent(
-          _toCalendarEvent(updatedTask),
-        );
-        try {
-          final syncedTask = updatedTask.copyWith(
-            calendarEventId: createdEvent.id,
-          );
-          final syncedModel = await _datasource.updateTask(
-            TaskModel.fromEntity(syncedTask),
-          );
-          return syncedModel.toEntity();
-        } catch (_) {
-          if (createdEvent.id != null) {
-            try {
-              await _calendarRepository.deleteEvent(createdEvent.id!);
-            } catch (_) {}
-          }
-          rethrow;
-        }
-      }
-
-      final event = _toCalendarEvent(updatedTask)
-        ..id = updatedTask.calendarEventId;
-      await _calendarRepository.updateEvent(event);
-      return updatedTask;
+      await _syncDelegate.deleteRemoteTask(deletedTask);
+      await _datasource.deleteTask(task.id);
     } on CalendarSyncWarningException {
       rethrow;
-    } catch (_) {
+    } catch (error) {
+      await _syncDelegate.markPendingSync(
+        deletedTask,
+        action: CalendarSyncAction.delete,
+        status: CalendarSyncStatus.failed,
+        errorMessage: error.toString(),
+      );
       throw const CalendarSyncWarningException(
-        'La tarea se actualizo, pero no se pudo sincronizar con Google Calendar.',
+        'La tarea se elimino localmente, pero no se pudo sincronizar con Google Calendar.',
       );
     }
   }
 
   @override
-  Future<void> deleteTask(Task task) async {
-    if (task.calendarEventId == null) {
-      await _datasource.deleteTask(task.id);
-      return;
-    }
-
-    try {
-      final isAuthorized = await _calendarRepository.isAuthorized();
-      if (!isAuthorized) {
-        throw const CalendarSyncWarningException(
-          'No se pudo eliminar la tarea porque Google Calendar no esta conectado.',
-        );
-      }
-
-      await _calendarRepository.deleteEvent(task.calendarEventId!);
-      await _datasource.deleteTask(task.id);
-    } on calendar.DetailedApiRequestError catch (error) {
-      if (error.status == 404) {
-        await _datasource.deleteTask(task.id);
-        return;
-      }
-      throw const CalendarSyncWarningException(
-        'No se pudo eliminar la tarea porque no se pudo sincronizar con Google Calendar.',
-      );
-    } on CalendarSyncWarningException {
-      rethrow;
-    } catch (_) {
-      throw const CalendarSyncWarningException(
-        'No se pudo eliminar la tarea porque no se pudo sincronizar con Google Calendar.',
-      );
-    }
-  }
-
-  calendar.Event _toCalendarEvent(Task task) {
-    final event = calendar.Event()
-      ..summary = _calendarSummaryFor(task)
-      ..description = task.description;
-
-    if (task.dueTime == null) {
-      final startDate = DateTime(
-        task.dueDate.year,
-        task.dueDate.month,
-        task.dueDate.day,
-      );
-      event.start = calendar.EventDateTime(date: startDate);
-      event.end = calendar.EventDateTime(
-        date: startDate.add(const Duration(days: 1)),
-      );
-      return event;
-    }
-
-    final startDateTime = DateTime(
-      task.dueDate.year,
-      task.dueDate.month,
-      task.dueDate.day,
-      task.dueTime!.hour,
-      task.dueTime!.minute,
+  Future<void> undoDeleteTask(Task task) async {
+    final restoredTask = task.copyWith(
+      isDeleted: false,
+      pendingCalendarSyncAction: null,
+      calendarSyncStatus: CalendarSyncStatus.synced,
+      lastCalendarSyncError: null,
+      updatedAt: DateTime.now(),
     );
-    final endDateTime = startDateTime.add(const Duration(hours: 1));
-
-    event.start = calendar.EventDateTime(
-      dateTime: startDateTime.toUtc(),
-      timeZone: 'UTC',
-    );
-    event.end = calendar.EventDateTime(
-      dateTime: endDateTime.toUtc(),
-      timeZone: 'UTC',
-    );
-
-    return event;
-  }
-
-  String _calendarSummaryFor(Task task) {
-    final baseTitle = task.title.startsWith('✓ ')
-        ? task.title.substring(2)
-        : task.title;
-    return task.status == TaskStatus.completed ? '✓ $baseTitle' : baseTitle;
+    await _datasource.updateTask(TaskModel.fromEntity(restoredTask));
   }
 
   @override
@@ -202,5 +137,62 @@ class TaskRepositoryImpl implements TaskRepository {
       updatedAt: DateTime.now(),
     );
     await updateTask(updatedTask);
+  }
+
+  @override
+  Future<void> syncPendingTasks() async {
+    final pendingTasks = await _datasource.getPendingSyncTasks();
+    if (pendingTasks.isEmpty) {
+      return;
+    }
+
+    final isAuthorized = await _safeIsAuthorized();
+    for (final model in pendingTasks) {
+      final task = model.toEntity();
+
+      if (task.isDeleted) {
+        await _syncDelegate.syncPendingDelete(task, isAuthorized);
+        continue;
+      }
+
+      final action = task.pendingCalendarSyncAction;
+      if (action == null) {
+        continue;
+      }
+
+      if (!isAuthorized) {
+        if (task.calendarSyncStatus == CalendarSyncStatus.failed) {
+          await _syncDelegate.markPendingSync(
+            task,
+            action: action,
+            status: CalendarSyncStatus.pending,
+          );
+        }
+        continue;
+      }
+
+      try {
+        await _syncDelegate.performCalendarUpsert(task, action);
+      } catch (error) {
+        await _syncDelegate.markPendingSync(
+          task,
+          action: action,
+          status: CalendarSyncStatus.failed,
+          errorMessage: error.toString(),
+        );
+      }
+    }
+  }
+
+  Future<bool> _safeIsAuthorized() async {
+    try {
+      return await _calendarRepository.isAuthorized();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  List<Task> _toEntities(List<TaskModel> models) {
+    return models.map((model) => model.toEntity()).toList();
   }
 }

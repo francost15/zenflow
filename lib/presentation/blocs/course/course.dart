@@ -1,4 +1,5 @@
 // Barrel export for Course BLoC module
-export 'course_bloc.dart';
-export 'course_event.dart';
-export 'course_state.dart';
+export 'package:app/presentation/blocs/course/course_bloc.dart';
+export 'package:app/presentation/blocs/course/course_event.dart';
+export 'package:app/presentation/blocs/course/course_overview.dart';
+export 'package:app/presentation/blocs/course/course_state.dart';

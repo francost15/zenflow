@@ -1,6 +1,6 @@
+import 'package:app/data/datasources/google/google_calendar_datasource.dart';
+import 'package:app/domain/repositories/calendar_repository.dart';
 import 'package:googleapis/calendar/v3.dart';
-import '../../domain/repositories/calendar_repository.dart';
-import '../datasources/google/google_calendar_datasource.dart';
 
 class CalendarRepositoryImpl implements CalendarRepository {
   final GoogleCalendarDatasource _datasource;

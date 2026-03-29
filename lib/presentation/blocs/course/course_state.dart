@@ -1,5 +1,5 @@
+import 'package:app/presentation/blocs/course/course_overview.dart';
 import 'package:equatable/equatable.dart';
-import '../../../domain/entities/course.dart';
 
 abstract class CourseState extends Equatable {
   const CourseState();
@@ -13,12 +13,16 @@ class CourseInitial extends CourseState {}
 class CourseLoading extends CourseState {}
 
 class CourseLoaded extends CourseState {
-  final List<Course> courses;
+  final List<CourseOverview> courses;
+  final UpcomingCourseClass? nextUpcomingClass;
 
-  const CourseLoaded(this.courses);
+  const CourseLoaded({
+    required this.courses,
+    this.nextUpcomingClass,
+  });
 
   @override
-  List<Object?> get props => [courses];
+  List<Object?> get props => [courses, nextUpcomingClass];
 }
 
 class CourseError extends CourseState {

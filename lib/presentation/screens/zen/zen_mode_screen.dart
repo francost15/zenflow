@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:math' as math;
+
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/presentation/screens/zen/widgets/zen_progress_ring_painter.dart';
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
 
 class ZenModeScreen extends StatefulWidget {
   final VoidCallback onExit;
@@ -159,7 +160,7 @@ class _ZenModeScreenState extends State<ZenModeScreen>
                             duration: const Duration(milliseconds: 500),
                             builder: (context, value, child) {
                               return CustomPaint(
-                                painter: _ProgressRingPainter(
+                                painter: ZenProgressRingPainter(
                                   progress: value,
                                   color: AppColors.accent,
                                   strokeWidth: 10,
@@ -234,43 +235,5 @@ class _ZenModeScreenState extends State<ZenModeScreen>
         ),
       ),
     );
-  }
-}
-
-class _ProgressRingPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-  final double strokeWidth;
-
-  _ProgressRingPainter({
-    required this.progress,
-    required this.color,
-    required this.strokeWidth,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
-
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    // Draw arc from top (270°) clockwise
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2, // Start from top
-      2 * math.pi * progress, // Sweep angle
-      false,
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _ProgressRingPainter oldDelegate) {
-    return oldDelegate.progress != progress;
   }
 }

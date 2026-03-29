@@ -1,7 +1,7 @@
+import 'package:app/core/error/exceptions.dart';
+import 'package:app/data/models/course_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../core/error/exceptions.dart';
-import '../../models/course_model.dart';
 
 class CourseDatasource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

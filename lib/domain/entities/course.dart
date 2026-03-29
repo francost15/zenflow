@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+const Object _courseUnset = Object();
+
 class Schedule extends Equatable {
   final int dayOfWeek; // 1 = Monday, 7 = Sunday
   final TimeOfDay startTime;
@@ -41,9 +43,9 @@ class Course extends Equatable {
     String? id,
     String? name,
     Color? color,
-    String? professor,
+    Object? professor = _courseUnset,
     List<Schedule>? schedule,
-    String? notes,
+    Object? notes = _courseUnset,
     double? progress,
     DateTime? createdAt,
   }) {
@@ -51,9 +53,11 @@ class Course extends Equatable {
       id: id ?? this.id,
       name: name ?? this.name,
       color: color ?? this.color,
-      professor: professor ?? this.professor,
+      professor: identical(professor, _courseUnset)
+          ? this.professor
+          : professor as String?,
       schedule: schedule ?? this.schedule,
-      notes: notes ?? this.notes,
+      notes: identical(notes, _courseUnset) ? this.notes : notes as String?,
       progress: progress ?? this.progress,
       createdAt: createdAt ?? this.createdAt,
     );

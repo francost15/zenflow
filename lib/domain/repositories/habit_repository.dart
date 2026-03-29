@@ -1,4 +1,4 @@
-import '../entities/habit.dart';
+import 'package:app/domain/entities/habit.dart';
 
 abstract class HabitRepository {
   Future<List<Habit>> getHabits();

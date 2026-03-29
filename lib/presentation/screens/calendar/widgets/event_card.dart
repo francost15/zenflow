@@ -1,8 +1,8 @@
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/presentation/screens/calendar/widgets/event_detail_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' hide Colors;
 import 'package:intl/intl.dart';
-import '../../../../core/constants/app_colors.dart';
-import 'event_detail_sheet.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;

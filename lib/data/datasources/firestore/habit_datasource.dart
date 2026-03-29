@@ -1,7 +1,7 @@
+import 'package:app/core/error/exceptions.dart';
+import 'package:app/data/models/habit_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../core/error/exceptions.dart';
-import '../../models/habit_model.dart';
 
 class HabitDatasource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

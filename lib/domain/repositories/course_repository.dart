@@ -1,4 +1,4 @@
-import '../entities/course.dart';
+import 'package:app/domain/entities/course.dart';
 
 abstract class CourseRepository {
   Future<List<Course>> getCourses();

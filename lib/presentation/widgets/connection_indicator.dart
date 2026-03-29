@@ -1,6 +1,6 @@
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/core/utils/connectivity_service.dart';
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/utils/connectivity_service.dart';
 
 class ConnectionIndicator extends StatelessWidget {
   const ConnectionIndicator({super.key});

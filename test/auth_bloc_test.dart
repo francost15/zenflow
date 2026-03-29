@@ -1,12 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:googleapis/calendar/v3.dart';
-
 import 'package:app/domain/repositories/auth_repository.dart';
 import 'package:app/domain/repositories/calendar_repository.dart';
 import 'package:app/presentation/blocs/auth/auth_bloc.dart';
 import 'package:app/presentation/blocs/auth/auth_event.dart';
 import 'package:app/presentation/blocs/auth/auth_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:googleapis/calendar/v3.dart';
 
 void main() {
   test(

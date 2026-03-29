@@ -1,36 +1,68 @@
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/domain/entities/task.dart';
+import 'package:app/presentation/blocs/course/course.dart';
+import 'package:app/presentation/blocs/task/task_bloc.dart';
+import 'package:app/presentation/blocs/task/task_event.dart';
+import 'package:app/presentation/blocs/task/task_state.dart';
+import 'package:app/presentation/widgets/app_snackbars.dart';
+import 'package:app/presentation/widgets/confirm_delete_dialog.dart';
+import 'package:app/presentation/widgets/date_picker_sheet_theme.dart';
+import 'package:app/presentation/widgets/dialogs/task_editor/task_editor_form.dart';
+import 'package:app/presentation/widgets/dialogs/task_editor/task_editor_helpers.dart';
+import 'package:app/presentation/widgets/focus_sheet_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../domain/entities/task.dart';
-import '../../blocs/task/task_bloc.dart';
-import '../../blocs/task/task_event.dart';
-import '../../blocs/task/task_state.dart';
-import '../focus_sheet_shell.dart';
 
-class CreateTaskSheet extends StatefulWidget {
-  const CreateTaskSheet({super.key});
+class TaskEditorSheet extends StatefulWidget {
+  const TaskEditorSheet({super.key, this.initialTask});
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
+  final Task? initialTask;
+
+  static Future<void> show(BuildContext context, {Task? initialTask}) {
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const CreateTaskSheet(),
+      builder: (context) => TaskEditorSheet(initialTask: initialTask),
     );
   }
 
   @override
-  State<CreateTaskSheet> createState() => _CreateTaskSheetState();
+  State<TaskEditorSheet> createState() => _TaskEditorSheetState();
 }
 
-class _CreateTaskSheetState extends State<CreateTaskSheet> {
+class _TaskEditorSheetState extends State<TaskEditorSheet> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+
+  late DateTime _selectedDate;
   TimeOfDay? _selectedTime;
-  TaskPriority _priority = TaskPriority.medium;
-  bool _isSubmitting = false;
+  late TaskPriority _priority;
+  String? _selectedCourseId;
   String? _titleError;
+  var _isSubmitting = false;
+  var _isDeleting = false;
+
+  bool get _isEditMode => widget.initialTask != null;
+  bool get _awaitingMutation => _isSubmitting || _isDeleting;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialTask = widget.initialTask;
+    _titleController.text = initialTask?.title ?? '';
+    _descriptionController.text = initialTask?.description ?? '';
+    _selectedDate = initialTask?.dueDate ?? DateTime.now();
+    _selectedTime = initialTask?.dueTime;
+    _priority = initialTask?.priority ?? TaskPriority.medium;
+    _selectedCourseId = initialTask?.courseId;
+
+    final courseBloc = context.read<CourseBloc>();
+    if (courseBloc.state is! CourseLoaded &&
+        courseBloc.state is! CourseLoading) {
+      courseBloc.add(CoursesLoadRequested());
+    }
+  }
 
   @override
   void dispose() {
@@ -41,35 +73,56 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return BlocListener<TaskBloc, TaskState>(
       listener: (context, state) {
+        if (!_awaitingMutation) {
+          return;
+        }
+
         if (state is TaskLoaded) {
           Navigator.pop(context);
-        } else if (state is TaskError) {
-          setState(() => _isSubmitting = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Error al crear tarea: ${_getUserFriendlyError(state.message)}',
-              ),
-              backgroundColor: AppColors.error,
+          return;
+        }
+
+        if (state is TaskError) {
+          setState(() {
+            _isSubmitting = false;
+            _isDeleting = false;
+          });
+          AppSnackbars.showError(
+            context,
+            buildTaskMutationErrorMessage(
+              isDeleting: _isDeleting,
+              error: state.message,
             ),
           );
         }
       },
       child: FocusSheetShell(
-        title: 'Nueva Tarea',
-        monospaceLabel: 'focus_protocol_01',
+        title: _isEditMode ? 'Editar tarea' : 'Nueva tarea',
+        monospaceLabel: _isEditMode ? 'focus_protocol_edit' : 'focus_protocol_01',
         actions: [
+          if (_isEditMode)
+            TextButton(
+              onPressed: _awaitingMutation ? null : _deleteTask,
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              child: _isDeleting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.error,
+                      ),
+                    )
+                  : const Text('Eliminar'),
+            ),
           ElevatedButton(
-            onPressed: _isSubmitting ? null : _createTask,
+            onPressed: _awaitingMutation ? null : _submitTask,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.accent,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
             ),
             child: _isSubmitting
                 ? const SizedBox(
@@ -80,241 +133,112 @@ class _CreateTaskSheetState extends State<CreateTaskSheet> {
                       color: Colors.white,
                     ),
                   )
-                : const Text('INGRESAR TAREA'),
+                : Text(_isEditMode ? 'GUARDAR CAMBIOS' : 'INGRESAR TAREA'),
           ),
         ],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title field with error
-            TextField(
-              controller: _titleController,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              decoration: InputDecoration(
-                hintText: '¿En qué vas a enfocarte?',
-                hintStyle: TextStyle(
-                  color:
-                      (isDark
-                              ? AppColors.darkTextTertiary
-                              : AppColors.lightTextTertiary)
-                          .withValues(alpha: 0.5),
-                ),
-                border: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                errorText: _titleError,
-                errorBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.error),
-                ),
-              ),
-              onChanged: (_) {
-                if (_titleError != null) {
-                  setState(() => _titleError = null);
-                }
-              },
-              autofocus: true,
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 2,
-              style: theme.textTheme.bodyMedium,
-              decoration: InputDecoration(
-                hintText: 'Notas adicionales (opcional)...',
-                hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark
-                      ? AppColors.darkTextTertiary
-                      : AppColors.lightTextTertiary,
-                ),
-                border: InputBorder.none,
-              ),
-            ),
-            const Divider(height: 32),
-
-            // Selection Row
-            const Text(
-              'PARÁMETROS DE ENFOQUE',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Priority
-            Wrap(
-              spacing: 8,
-              children: TaskPriority.values.map((p) {
-                final isSelected = _priority == p;
-                return ChoiceChip(
-                  label: Text(p.name.toUpperCase()),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) setState(() => _priority = p);
-                  },
-                  backgroundColor: isDark
-                      ? AppColors.darkSurfaceElevated
-                      : AppColors.lightSurfaceElevated,
-                  selectedColor: _getPriorityColor(p).withValues(alpha: 0.2),
-                  labelStyle: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected
-                        ? _getPriorityColor(p)
-                        : (isDark
-                              ? AppColors.darkTextSecondary
-                              : AppColors.lightTextSecondary),
-                  ),
-                  side: BorderSide(
-                    color: isSelected
-                        ? _getPriorityColor(p)
-                        : Colors.transparent,
-                  ),
-                  showCheckmark: false,
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-
-            // Date/Time
-            Row(
-              children: [
-                _SelectionAction(
-                  icon: Icons.calendar_today_outlined,
-                  label:
-                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
-                    );
-                    if (date != null) setState(() => _selectedDate = date);
-                  },
-                ),
-                const SizedBox(width: 12),
-                _SelectionAction(
-                  icon: Icons.access_time,
-                  label: _selectedTime != null
-                      ? _selectedTime!.format(context)
-                      : 'Sin hora',
-                  onTap: () async {
-                    final time = await showTimePicker(
-                      context: context,
-                      initialTime: _selectedTime ?? TimeOfDay.now(),
-                    );
-                    if (time != null) setState(() => _selectedTime = time);
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-          ],
+        child: TaskEditorForm(
+          titleController: _titleController,
+          descriptionController: _descriptionController,
+          selectedDate: _selectedDate,
+          selectedTime: _selectedTime,
+          priority: _priority,
+          selectedCourseId: _selectedCourseId,
+          titleError: _titleError,
+          isEditMode: _isEditMode,
+          onTitleChanged: (_) {
+            if (_titleError != null) {
+              setState(() => _titleError = null);
+            }
+          },
+          onPriorityChanged: (value) => setState(() => _priority = value),
+          onPickDate: _pickDate,
+          onPickTime: _pickTime,
+          onCourseChanged: (value) => setState(() => _selectedCourseId = value),
         ),
       ),
     );
   }
 
-  String _getUserFriendlyError(String error) {
-    if (error.contains('ALREADY_EXISTS') || error.contains('already-exists')) {
-      return 'Esta tarea ya existe';
-    }
-    if (error.contains('PERMISSION_DENIED') ||
-        error.contains('permission-denied')) {
-      return 'No tienes permiso para crear tareas';
-    }
-    if (error.contains('network') || error.contains('NETWORK')) {
-      return 'Error de conexión. Verifica tu internet';
-    }
-    return 'Ocurrió un error. Intenta de nuevo';
-  }
-
-  Color _getPriorityColor(TaskPriority priority) {
-    switch (priority) {
-      case TaskPriority.high:
-        return AppColors.error;
-      case TaskPriority.medium:
-        return AppColors.courseAmber;
-      case TaskPriority.low:
-        return AppColors.darkTextTertiary;
+  Future<void> _pickDate() async {
+    final date = await showAppDatePicker(
+      context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date != null) {
+      setState(() => _selectedDate = date);
     }
   }
 
-  void _createTask() {
+  Future<void> _pickTime() async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+    );
+    if (time != null) {
+      setState(() => _selectedTime = time);
+    }
+  }
+
+  Future<void> _deleteTask() async {
+    final task = widget.initialTask;
+    if (task == null) {
+      return;
+    }
+
+    final confirmed = await showConfirmDeleteDialog(
+      context: context,
+      title: 'Eliminar tarea',
+      itemName: task.title,
+    );
+    if (!confirmed || !mounted) {
+      return;
+    }
+
+    setState(() => _isDeleting = true);
+    context.read<TaskBloc>().add(TaskDeleted(task));
+  }
+
+  void _submitTask() {
     if (_titleController.text.trim().isEmpty) {
       setState(() => _titleError = 'Ingresa un título para la tarea');
       return;
     }
+
+    final now = DateTime.now();
+    final description = _descriptionController.text.trim();
+    final initialTask = widget.initialTask;
+    final task = initialTask == null
+        ? Task(
+            id: '',
+            title: _titleController.text.trim(),
+            description: description.isEmpty ? null : description,
+            dueDate: _selectedDate,
+            dueTime: _selectedTime,
+            priority: _priority,
+            status: TaskStatus.pending,
+            courseId: _selectedCourseId,
+            createdAt: now,
+            updatedAt: now,
+          )
+        : initialTask.copyWith(
+            title: _titleController.text.trim(),
+            description: description.isEmpty ? null : description,
+            dueDate: _selectedDate,
+            dueTime: _selectedTime,
+            priority: _priority,
+            courseId: _selectedCourseId,
+            updatedAt: now,
+          );
+
     setState(() {
       _isSubmitting = true;
       _titleError = null;
     });
-    final now = DateTime.now();
-    final task = Task(
-      id: '',
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
-      dueDate: _selectedDate,
-      dueTime: _selectedTime,
-      priority: _priority,
-      status: TaskStatus.pending,
-      createdAt: now,
-      updatedAt: now,
-    );
-    context.read<TaskBloc>().add(TaskCreated(task));
-  }
-}
 
-class _SelectionAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _SelectionAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isDark
-              ? AppColors.darkSurfaceElevated
-              : AppColors.lightSurfaceElevated,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: AppColors.darkTextTertiary),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    context.read<TaskBloc>().add(
+          initialTask == null ? TaskCreated(task) : TaskUpdated(task),
+        );
   }
 }

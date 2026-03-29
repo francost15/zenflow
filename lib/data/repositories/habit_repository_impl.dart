@@ -1,7 +1,7 @@
-import '../../domain/entities/habit.dart';
-import '../../domain/repositories/habit_repository.dart';
-import '../datasources/firestore/habit_datasource.dart';
-import '../models/habit_model.dart';
+import 'package:app/data/datasources/firestore/habit_datasource.dart';
+import 'package:app/data/models/habit_model.dart';
+import 'package:app/domain/entities/habit.dart';
+import 'package:app/domain/repositories/habit_repository.dart';
 
 class HabitRepositoryImpl implements HabitRepository {
   final HabitDatasource _datasource;

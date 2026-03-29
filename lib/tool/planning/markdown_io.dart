@@ -1,4 +1,4 @@
-import 'models.dart';
+import 'package:app/tool/planning/models.dart';
 
 class MarkdownReader {
   static String extractSection(String content, String sectionName) {

@@ -1,65 +1,44 @@
 import 'dart:io';
-import 'models.dart';
+
+import 'package:app/tool/planning/models.dart';
 
 void main(List<String> args) async {
-  if (args.isEmpty || args.contains('--help') || args.contains('-h')) {
-    print('Usage: dart run tool/planning/check_gates.dart --phase PHASE-XX');
-    print('       dart run tool/planning/check_gates.dart --plan PLAN-ID');
-    print('       dart run tool/planning/check_gates.dart --all');
+  final options = _parseOptions(args);
+
+  if (options.showHelp) {
+    stdout.writeln('Usage: dart run tool/planning/check_gates.dart --phase PHASE-XX');
+    stdout.writeln('       dart run tool/planning/check_gates.dart --plan PLAN-ID');
+    stdout.writeln('       dart run tool/planning/check_gates.dart --all');
     exit(0);
   }
 
-  String? targetPhase;
-  String? targetPlan;
-  bool checkAll = false;
-
-  for (int i = 0; i < args.length; i++) {
-    if (args[i] == '--phase' && i + 1 < args.length) {
-      targetPhase = args[i + 1];
-    } else if (args[i] == '--plan' && i + 1 < args.length) {
-      targetPlan = args[i + 1];
-    } else if (args[i] == '--all') {
-      checkAll = true;
-    }
+  if (options.targetPhase != null) {
+    _emitGateResult(
+      checkPhaseGate(options.targetPhase!),
+      successMessage: 'PASS: phase ${options.targetPhase} gate passed',
+      failureMessage: 'FAIL: phase ${options.targetPhase} gate failed',
+    );
   }
 
-  if (targetPhase != null) {
-    final result = checkPhaseGate(targetPhase);
-    if (result.passed) {
-      print('PASS: phase $targetPhase gate passed');
-    } else {
-      print('FAIL: phase $targetPhase gate failed');
-      for (final blocker in result.blockers) {
-        print('  BLOCKER: $blocker');
-      }
-    }
-    exit(result.passed ? 0 : 1);
+  if (options.targetPlan != null) {
+    _emitGateResult(
+      checkPlanGate(options.targetPlan!),
+      successMessage: 'PASS: plan ${options.targetPlan} gate passed',
+      failureMessage: 'FAIL: plan ${options.targetPlan} gate failed',
+    );
   }
 
-  if (targetPlan != null) {
-    final result = checkPlanGate(targetPlan);
-    if (result.passed) {
-      print('PASS: plan $targetPlan gate passed');
-    } else {
-      print('FAIL: plan $targetPlan gate failed');
-      for (final blocker in result.blockers) {
-        print('  BLOCKER: $blocker');
-      }
-    }
-    exit(result.passed ? 0 : 1);
-  }
-
-  if (checkAll) {
+  if (options.checkAll) {
     final phases = ['PHASE-00', 'PHASE-01', 'PHASE-02', 'PHASE-03', 'PHASE-04'];
     bool allPassed = true;
     for (final phase in phases) {
       final result = checkPhaseGate(phase);
       if (result.passed) {
-        print('PASS: $phase');
+        stdout.writeln('PASS: $phase');
       } else {
-        print('FAIL: $phase');
+        stderr.writeln('FAIL: $phase');
         for (final blocker in result.blockers) {
-          print('  BLOCKER: $blocker');
+          stderr.writeln('  BLOCKER: $blocker');
         }
         allPassed = false;
       }
@@ -67,8 +46,51 @@ void main(List<String> args) async {
     exit(allPassed ? 0 : 1);
   }
 
-  print('ERROR: must specify --phase, --plan, or --all');
+  stderr.writeln('ERROR: must specify --phase, --plan, or --all');
   exit(1);
+}
+
+_CheckGatesOptions _parseOptions(List<String> args) {
+  if (args.isEmpty || args.contains('--help') || args.contains('-h')) {
+    return const _CheckGatesOptions(showHelp: true);
+  }
+
+  String? targetPhase;
+  String? targetPlan;
+  var checkAll = false;
+
+  for (var index = 0; index < args.length; index += 1) {
+    if (args[index] == '--phase' && index + 1 < args.length) {
+      targetPhase = args[index + 1];
+    } else if (args[index] == '--plan' && index + 1 < args.length) {
+      targetPlan = args[index + 1];
+    } else if (args[index] == '--all') {
+      checkAll = true;
+    }
+  }
+
+  return _CheckGatesOptions(
+    targetPhase: targetPhase,
+    targetPlan: targetPlan,
+    checkAll: checkAll,
+  );
+}
+
+Never _emitGateResult(
+  GateResult result, {
+  required String successMessage,
+  required String failureMessage,
+}) {
+  if (result.passed) {
+    stdout.writeln(successMessage);
+  } else {
+    stderr.writeln(failureMessage);
+    for (final blocker in result.blockers) {
+      stderr.writeln('  BLOCKER: $blocker');
+    }
+  }
+
+  exit(result.passed ? 0 : 1);
 }
 
 GateResult checkPhaseGate(String phaseId) {
@@ -139,4 +161,18 @@ GateResult checkPlanGate(String planId) {
   final plan = PlanEntry(planId: planId, phaseId: phaseId, tasks: [task]);
 
   return evaluatePlanGate(plan);
+}
+
+class _CheckGatesOptions {
+  const _CheckGatesOptions({
+    this.targetPhase,
+    this.targetPlan,
+    this.checkAll = false,
+    this.showHelp = false,
+  });
+
+  final String? targetPhase;
+  final String? targetPlan;
+  final bool checkAll;
+  final bool showHelp;
 }

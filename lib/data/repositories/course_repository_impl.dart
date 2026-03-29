@@ -1,7 +1,7 @@
-import '../../domain/entities/course.dart';
-import '../../domain/repositories/course_repository.dart';
-import '../datasources/firestore/course_datasource.dart';
-import '../models/course_model.dart';
+import 'package:app/data/datasources/firestore/course_datasource.dart';
+import 'package:app/data/models/course_model.dart';
+import 'package:app/domain/entities/course.dart';
+import 'package:app/domain/repositories/course_repository.dart';
 
 class CourseRepositoryImpl implements CourseRepository {
   final CourseDatasource _datasource;

@@ -1,16 +1,20 @@
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/presentation/screens/calendar/widgets/event_detail_components.dart';
+import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' hide Colors;
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/constants/app_colors.dart';
 
-/// Bottom sheet showing full event details.
-/// Provides actions like opening in Google Calendar and starting Zen Mode.
 class EventDetailSheet extends StatelessWidget {
+  const EventDetailSheet({
+    super.key,
+    required this.event,
+    this.onStartZenMode,
+  });
+
   final Event event;
   final VoidCallback? onStartZenMode;
-
-  const EventDetailSheet({super.key, required this.event, this.onStartZenMode});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +31,6 @@ class EventDetailSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
           Container(
             margin: const EdgeInsets.only(top: 12),
             width: 40,
@@ -43,7 +46,6 @@ class EventDetailSheet extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
                   Text(
                     event.summary ?? 'Sin título',
                     style: theme.textTheme.headlineSmall?.copyWith(
@@ -51,10 +53,8 @@ class EventDetailSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Time
                   if (start != null) ...[
-                    _DetailRow(
+                    EventDetailRow(
                       icon: Icons.access_time,
                       label: DateFormat('EEEE, d MMMM').format(start),
                       value:
@@ -63,10 +63,8 @@ class EventDetailSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                   ],
-
-                  // Location
                   if (event.location != null) ...[
-                    _DetailRow(
+                    EventDetailRow(
                       icon: Icons.place,
                       label: 'Ubicación',
                       value: event.location!,
@@ -74,10 +72,7 @@ class EventDetailSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                   ],
-
-                  // Description
-                  if (event.description != null &&
-                      event.description!.isNotEmpty) ...[
+                  if (event.description?.isNotEmpty == true) ...[
                     const SizedBox(height: 8),
                     Text(
                       'Descripción',
@@ -100,10 +95,8 @@ class EventDetailSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                   ],
-
-                  // Actions
                   const SizedBox(height: 8),
-                  _ActionButton(
+                  EventDetailActionButton(
                     icon: Icons.play_arrow,
                     label: 'Iniciar Modo Zen',
                     isDark: isDark,
@@ -113,7 +106,7 @@ class EventDetailSheet extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 12),
-                  _ActionButton(
+                  EventDetailActionButton(
                     icon: Icons.open_in_new,
                     label: 'Abrir en Google Calendar',
                     isDark: isDark,
@@ -131,11 +124,10 @@ class EventDetailSheet extends StatelessWidget {
 
   Future<void> _openInBrowser(BuildContext context) async {
     final eventId = event.id;
-    if (eventId == null) return;
-
-    // Build Google Calendar URL
     final start = event.start?.dateTime ?? event.start?.date;
-    if (start == null) return;
+    if (eventId == null || start == null) {
+      return;
+    }
 
     final uri = Uri.parse(
       'https://calendar.google.com/calendar/r/eventedit?text=${Uri.encodeComponent(event.summary ?? '')}&dates=${DateFormat("yyyyMMdd'T'HHmmss").format(start)}/${DateFormat("yyyyMMdd'T'HHmmss").format(start.add(const Duration(hours: 1)))}&details=${Uri.encodeComponent(event.description ?? '')}&location=${Uri.encodeComponent(event.location ?? '')}',
@@ -143,129 +135,20 @@ class EventDetailSheet extends StatelessWidget {
 
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (e) {
+    } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo abrir Google Calendar')),
-        );
+        AppSnackbars.showError(context, 'No se pudo abrir Google Calendar');
       }
     }
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool isDark;
-
-  const _DetailRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppColors.accent),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark
-                      ? AppColors.darkTextTertiary
-                      : AppColors.lightTextTertiary,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.darkSurfaceElevated
-                : AppColors.lightSurfaceElevated,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 20, color: AppColors.accent),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: isDark
-                    ? AppColors.darkTextTertiary
-                    : AppColors.lightTextTertiary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Shows the event detail bottom sheet.
 void showEventDetailSheet(
   BuildContext context, {
   required Event event,
   VoidCallback? onStartZenMode,
 }) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

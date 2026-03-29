@@ -1,8 +1,8 @@
+import 'package:app/domain/entities/habit.dart';
+import 'package:app/domain/repositories/habit_repository.dart';
+import 'package:app/presentation/blocs/streaks/streaks_event.dart';
+import 'package:app/presentation/blocs/streaks/streaks_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/entities/habit.dart';
-import '../../../domain/repositories/habit_repository.dart';
-import 'streaks_event.dart';
-import 'streaks_state.dart';
 
 class StreaksBloc extends Bloc<StreaksEvent, StreaksState> {
   final HabitRepository _habitRepository;
