@@ -1,11 +1,10 @@
 import 'package:app/core/constants/app_colors.dart';
 import 'package:app/domain/entities/task.dart';
-import 'package:app/presentation/blocs/task/task_bloc.dart';
-import 'package:app/presentation/blocs/task/task_state.dart';
+import 'package:app/presentation/widgets/dialogs/task_editor/daily_load_indicator.dart';
 import 'package:app/presentation/widgets/dialogs/task_editor/task_editor_fields.dart';
 import 'package:app/presentation/widgets/dialogs/task_editor/task_editor_helpers.dart';
+import 'package:app/presentation/widgets/voice_input_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TaskEditorForm extends StatelessWidget {
   const TaskEditorForm({
@@ -60,8 +59,11 @@ class TaskEditorForm extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded,
-                    size: 16, color: AppColors.error),
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 16,
+                  color: AppColors.error,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -97,6 +99,17 @@ class TaskEditorForm extends StatelessWidget {
             errorBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: AppColors.error),
             ),
+            suffixIcon: VoiceInputButton(
+              onResult: (text) {
+                if (text.isNotEmpty) {
+                  titleController.text = text;
+                  titleController.selection = TextSelection.fromPosition(
+                    TextPosition(offset: text.length),
+                  );
+                  onTitleChanged(text);
+                }
+              },
+            ),
           ),
           onChanged: onTitleChanged,
           autofocus: !isEditMode,
@@ -126,34 +139,29 @@ class TaskEditorForm extends StatelessWidget {
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
-          children: TaskPriority.values.map((taskPriority) {
-            final isSelected = priority == taskPriority;
-
+          children: TaskPriority.values.map((p) {
+            final isSelected = priority == p;
             return ChoiceChip(
-              label: Text(taskPriority.name.toUpperCase()),
+              label: Text(p.name.toUpperCase()),
               selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  onPriorityChanged(taskPriority);
-                }
+              onSelected: (sel) {
+                if (sel) onPriorityChanged(p);
               },
               backgroundColor: isDark
                   ? AppColors.darkSurfaceElevated
                   : AppColors.lightSurfaceElevated,
-              selectedColor: priorityColor(taskPriority).withValues(alpha: 0.2),
+              selectedColor: priorityColor(p).withValues(alpha: 0.2),
               labelStyle: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: isSelected
-                    ? priorityColor(taskPriority)
+                    ? priorityColor(p)
                     : (isDark
                           ? AppColors.darkTextSecondary
                           : AppColors.lightTextSecondary),
               ),
               side: BorderSide(
-                color: isSelected
-                    ? priorityColor(taskPriority)
-                    : Colors.transparent,
+                color: isSelected ? priorityColor(p) : Colors.transparent,
               ),
               showCheckmark: false,
             );
@@ -179,7 +187,7 @@ class TaskEditorForm extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        _DailyLoadIndicator(selectedDate: selectedDate),
+        DailyLoadIndicator(selectedDate: selectedDate),
         const SizedBox(height: 20),
         TaskCourseSelector(
           selectedCourseId: selectedCourseId,
@@ -193,56 +201,4 @@ class TaskEditorForm extends StatelessWidget {
 
 Color _hintColor(bool isDark) {
   return isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary;
-}
-
-class _DailyLoadIndicator extends StatelessWidget {
-  const _DailyLoadIndicator({required this.selectedDate});
-
-  final DateTime selectedDate;
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<TaskBloc, TaskState>(
-      builder: (context, state) {
-        if (state is! TaskLoaded) return const SizedBox.shrink();
-
-        final tasks = state.tasks.where((t) {
-          return t.dueDate.year == selectedDate.year &&
-              t.dueDate.month == selectedDate.month &&
-              t.dueDate.day == selectedDate.day;
-        }).toList();
-
-        if (tasks.isEmpty) return const SizedBox.shrink();
-
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.darkSurfaceElevated.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: AppColors.monolithBorder.withValues(alpha: 0.2),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.analytics_outlined,
-                  size: 10, color: AppColors.darkTextTertiary),
-              const SizedBox(width: 6),
-              Text(
-                'PROTOCOL: ${tasks.length} SEC_TASKS_DETEKTED',
-                style: const TextStyle(
-                  fontFamily: 'Space Grotesk',
-                  fontSize: 8,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                  color: AppColors.darkTextTertiary,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }

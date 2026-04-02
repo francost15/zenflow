@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ZenFlow uses the microphone for voice input to create tasks.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>ZenFlow uses speech recognition to convert your voice to text.</string>
 </dict>
 </plist>

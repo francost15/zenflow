@@ -1,4 +1,5 @@
 import 'package:app/core/constants/app_colors.dart';
+import 'package:app/core/utils/haptic_service.dart';
 import 'package:app/domain/entities/task.dart';
 import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:app/presentation/widgets/task_tile_content.dart';
@@ -58,6 +59,7 @@ class _TaskTileState extends State<TaskTile> {
             _handleDismissConfirm(context, direction, isCompleted),
         onDismissed: (direction) {
           if (direction == DismissDirection.endToStart) {
+            HapticService.heavyImpact();
             setState(() => _isDismissed = true);
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!context.mounted) {
@@ -127,6 +129,7 @@ class _TaskTileState extends State<TaskTile> {
     bool isCompleted,
   ) async {
     if (direction == DismissDirection.startToEnd) {
+      HapticService.success();
       widget.onToggle(!isCompleted);
       return false;
     }
