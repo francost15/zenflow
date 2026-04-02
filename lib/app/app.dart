@@ -1,23 +1,18 @@
 import 'package:app/core/di/injection.dart';
 import 'package:app/core/theme/app_theme.dart';
-import 'package:app/core/utils/connectivity_service.dart';
 import 'package:app/presentation/blocs/auth/auth.dart';
 import 'package:app/presentation/blocs/calendar/calendar.dart';
 import 'package:app/presentation/blocs/course/course.dart';
 import 'package:app/presentation/blocs/streaks/streaks.dart';
 import 'package:app/presentation/blocs/task/task.dart';
 import 'package:app/presentation/screens/auth/login_screen.dart';
-import 'package:app/presentation/screens/calendar/calendar_screen.dart';
-import 'package:app/presentation/screens/courses/courses_screen.dart';
-import 'package:app/presentation/screens/home/home_screen.dart';
-import 'package:app/presentation/screens/streaks/streaks_screen.dart';
 import 'package:app/presentation/screens/zen/zen_mode_screen.dart';
 import 'package:app/presentation/widgets/app_snackbars.dart';
-import 'package:app/presentation/widgets/bottom_nav_bar.dart';
-import 'package:app/presentation/widgets/connection_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:app/app/main_shell.dart';
 
 class ZenFlowApp extends StatefulWidget {
   const ZenFlowApp({super.key});
@@ -134,7 +129,7 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
       },
       builder: (context, state) {
         if (state is AuthAuthenticated) {
-          return _MainShell(
+          return MainShell(
             onZenModeToggle: _enterZenMode,
             onThemeToggle: _toggleTheme,
             isDarkMode: _themeMode == ThemeMode.dark,
@@ -142,70 +137,6 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
         }
         return const LoginScreen();
       },
-    );
-  }
-}
-
-class _MainShell extends StatefulWidget {
-  final void Function({String? taskName}) onZenModeToggle;
-  final VoidCallback onThemeToggle;
-  final bool isDarkMode;
-
-  const _MainShell({
-    required this.onZenModeToggle,
-    required this.onThemeToggle,
-    required this.isDarkMode,
-  });
-
-  @override
-  State<_MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<_MainShell> with WidgetsBindingObserver {
-  int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {}
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          const ConnectionIndicator(),
-          Expanded(
-            child: IndexedStack(
-              index: _currentIndex,
-              children: [
-                HomeScreen(
-                  onThemeToggle: widget.onThemeToggle,
-                  isDarkMode: widget.isDarkMode,
-                ),
-                CalendarScreen(
-                  onStartZenMode: (taskName) =>
-                      widget.onZenModeToggle(taskName: taskName),
-                ),
-                const CoursesScreen(),
-                const StreaksScreen(),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-      ),
     );
   }
 }
