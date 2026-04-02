@@ -1,5 +1,5 @@
 import 'package:app/core/constants/app_colors.dart';
-import 'package:app/presentation/screens/streaks/widgets/weekly_consistency_tracker.dart';
+import 'package:app/presentation/widgets/heatmap_chart.dart';
 import 'package:flutter/material.dart';
 
 class StreaksActivityCard extends StatelessWidget {
@@ -50,7 +50,7 @@ class StreaksActivityCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          WeeklyConsistencyTracker(data: heatmapData),
+          HeatmapChart(data: heatmapData, weeksToShow: 16),
         ],
       ),
     );

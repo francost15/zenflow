@@ -1,8 +1,8 @@
+import 'package:app/domain/repositories/calendar_repository.dart';
+import 'package:app/domain/repositories/task_repository.dart';
+import 'package:app/presentation/blocs/calendar/calendar_event.dart';
+import 'package:app/presentation/blocs/calendar/calendar_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../domain/repositories/calendar_repository.dart';
-import '../../../domain/repositories/task_repository.dart';
-import 'calendar_event.dart';
-import 'calendar_state.dart';
 
 class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
   final CalendarRepository _calendarRepository;

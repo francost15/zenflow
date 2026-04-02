@@ -1,9 +1,9 @@
+import 'package:app/core/error/exceptions.dart';
+import 'package:app/domain/entities/task.dart';
+import 'package:app/domain/repositories/task_repository.dart';
+import 'package:app/presentation/blocs/task/task_event.dart';
+import 'package:app/presentation/blocs/task/task_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/error/exceptions.dart';
-import '../../../domain/entities/task.dart';
-import '../../../domain/repositories/task_repository.dart';
-import 'task_event.dart';
-import 'task_state.dart';
 
 class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final TaskRepository _taskRepository;

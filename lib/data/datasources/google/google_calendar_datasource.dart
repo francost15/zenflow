@@ -1,8 +1,8 @@
+import 'package:app/domain/repositories/calendar_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:http/http.dart' as http;
-import '../../../domain/repositories/calendar_repository.dart';
 
 /// Google Calendar datasource.
 ///

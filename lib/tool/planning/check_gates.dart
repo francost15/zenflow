@@ -1,12 +1,12 @@
 import 'dart:io';
-import 'models.dart';
-import 'markdown_io.dart';
+import 'package:app/tool/planning/markdown_io.dart';
+import 'package:app/tool/planning/models.dart';
 
 void main(List<String> args) async {
   if (args.isEmpty || args.contains('--help') || args.contains('-h')) {
-    print('Usage: dart run tool/planning/check_gates.dart --phase PHASE-XX');
-    print('       dart run tool/planning/check_gates.dart --plan PLAN-ID');
-    print('       dart run tool/planning/check_gates.dart --all');
+    stdout.writeln('Usage: dart run tool/planning/check_gates.dart --phase PHASE-XX');
+    stdout.writeln('       dart run tool/planning/check_gates.dart --plan PLAN-ID');
+    stdout.writeln('       dart run tool/planning/check_gates.dart --all');
     exit(0);
   }
 
@@ -27,11 +27,11 @@ void main(List<String> args) async {
   if (targetPhase != null) {
     final result = await checkPhaseGate(targetPhase);
     if (result.passed) {
-      print('PASS: phase $targetPhase gate passed');
+      stdout.writeln('PASS: phase $targetPhase gate passed');
     } else {
-      print('FAIL: phase $targetPhase gate failed');
+      stderr.writeln('FAIL: phase $targetPhase gate failed');
       for (final blocker in result.blockers) {
-        print('  BLOCKER: $blocker');
+        stderr.writeln('  BLOCKER: $blocker');
       }
     }
     exit(result.passed ? 0 : 1);
@@ -40,11 +40,11 @@ void main(List<String> args) async {
   if (targetPlan != null) {
     final result = await checkPlanGate(targetPlan);
     if (result.passed) {
-      print('PASS: plan $targetPlan gate passed');
+      stdout.writeln('PASS: plan $targetPlan gate passed');
     } else {
-      print('FAIL: plan $targetPlan gate failed');
+      stderr.writeln('FAIL: plan $targetPlan gate failed');
       for (final blocker in result.blockers) {
-        print('  BLOCKER: $blocker');
+        stderr.writeln('  BLOCKER: $blocker');
       }
     }
     exit(result.passed ? 0 : 1);
@@ -56,11 +56,11 @@ void main(List<String> args) async {
     for (final phase in phases) {
       final result = await checkPhaseGate(phase);
       if (result.passed) {
-        print('PASS: $phase');
+        stdout.writeln('PASS: $phase');
       } else {
-        print('FAIL: $phase');
+        stderr.writeln('FAIL: $phase');
         for (final blocker in result.blockers) {
-          print('  BLOCKER: $blocker');
+          stderr.writeln('  BLOCKER: $blocker');
         }
         allPassed = false;
       }
@@ -68,7 +68,7 @@ void main(List<String> args) async {
     exit(allPassed ? 0 : 1);
   }
 
-  print('ERROR: must specify --phase, --plan, or --all');
+  stderr.writeln('ERROR: must specify --phase, --plan, or --all');
   exit(1);
 }
 

@@ -91,14 +91,34 @@ class BottomNavBar extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 64,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        width: isSelected ? 68 : 60,
         height: 64,
         alignment: Alignment.center,
-        child: Icon(
-          isSelected ? selectedIcon : icon,
-          color: isSelected ? AppColors.accent : theme.hintColor,
-          size: 26,
+        child: AnimatedScale(
+          scale: isSelected ? 1.1 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.symmetric(
+              horizontal: isSelected ? 12 : 8,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.accent.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              isSelected ? selectedIcon : icon,
+              color: isSelected ? AppColors.accent : theme.hintColor,
+              size: 26,
+            ),
+          ),
         ),
       ),
     );

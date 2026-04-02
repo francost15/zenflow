@@ -1,6 +1,7 @@
 import 'package:app/domain/entities/course.dart';
 import 'package:app/domain/entities/habit.dart';
 import 'package:app/domain/entities/task.dart';
+import 'package:app/domain/entities/task_sync_snapshot.dart';
 import 'package:app/domain/repositories/auth_repository.dart';
 import 'package:app/domain/repositories/calendar_repository.dart';
 import 'package:app/domain/repositories/course_repository.dart';

@@ -86,6 +86,24 @@ class FakeTaskRepository implements TaskRepository {
   );
 
   @override
+  Future<TaskSyncSnapshot> getTaskSyncSnapshot() async {
+    final pendingTasks = _tasks.where((task) {
+      return task.pendingCalendarSyncAction != null || task.isDeleted;
+    }).toList();
+    return TaskSyncSnapshot(pendingCount: pendingTasks.length);
+  }
+
+  @override
+  Future<Task?> getTaskByCalendarEventId(String calendarEventId) async {
+    for (final task in _tasks) {
+      if (task.calendarEventId == calendarEventId) {
+        return task;
+      }
+    }
+    return null;
+  }
+
+  @override
   Future<List<Task>> getTasksByDate(DateTime date) async => List<Task>.from(
     _tasks.where(
       (task) =>
@@ -97,7 +115,9 @@ class FakeTaskRepository implements TaskRepository {
   );
 
   @override
-  Future<void> syncPendingTasks() async {}
+  Future<ReconciliationResult> reconcileUnsyncedTasks() async {
+    return const ReconciliationResult(syncedTasks: [], failedTasks: []);
+  }
 
   @override
   Future<void> toggleTaskStatus(Task task, bool completed) async {
@@ -109,16 +129,6 @@ class FakeTaskRepository implements TaskRepository {
       status: completed ? TaskStatus.completed : TaskStatus.pending,
       updatedAt: DateTime.now(),
     );
-  }
-
-  @override
-  Future<void> undoDeleteTask(Task task) async {
-    final index = _tasks.indexWhere((item) => item.id == task.id);
-    if (index == -1) {
-      _tasks.add(task.copyWith(isDeleted: false));
-      return;
-    }
-    _tasks[index] = _tasks[index].copyWith(isDeleted: false);
   }
 
   @override

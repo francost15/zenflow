@@ -1,7 +1,8 @@
-import '../../domain/entities/task.dart';
-import '../../domain/repositories/task_repository.dart';
-import '../datasources/firestore/task_datasource.dart';
-import '../services/task_calendar_sync_service.dart';
+import 'package:app/data/datasources/firestore/task_datasource.dart';
+import 'package:app/data/services/task_calendar_sync_service.dart';
+import 'package:app/domain/entities/task.dart';
+import 'package:app/domain/entities/task_sync_snapshot.dart';
+import 'package:app/domain/repositories/task_repository.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
   final TaskDatasource _datasource;
@@ -47,14 +48,50 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<ReconciliationResult> reconcileUnsyncedTasks() async {
-    final models = await _datasource.getTasksWithoutCalendarEvent();
+    final models = await _datasource.getPendingSyncTasks();
     final tasks = models.map((m) => m.toEntity()).toList();
-    return _syncService.reconcileUnsyncedTasks(tasks);
+    final result = await _syncService.reconcileUnsyncedTasks(tasks);
+    return ReconciliationResult(
+      syncedTasks: result.syncedTasks,
+      failedTasks: result.failedTasks,
+    );
   }
 
   @override
   Future<List<Task>> getTasksByCourse(String courseId) async {
     final models = await _datasource.getTasksByCourse(courseId);
     return models.map((m) => m.toEntity()).toList();
+  }
+
+  @override
+  Future<Task?> getTaskByCalendarEventId(String calendarEventId) async {
+    final models = await _datasource.getTasks(includeDeleted: true);
+    final matching = models.where((m) => m.calendarEventId == calendarEventId);
+    if (matching.isEmpty) return null;
+    return matching.first.toEntity();
+  }
+
+  @override
+  Future<TaskSyncSnapshot> getTaskSyncSnapshot() async {
+    final pendingTasks = await _datasource.getPendingSyncTasks();
+    if (pendingTasks.isEmpty) {
+      return const TaskSyncSnapshot();
+    }
+
+    pendingTasks.sort((left, right) => right.updatedAt.compareTo(left.updatedAt));
+    final failedTasks = pendingTasks
+        .where((task) => task.calendarSyncStatus == 'failed')
+        .toList();
+    final latestErrorTask = pendingTasks.firstWhere(
+      (task) => task.lastCalendarSyncError != null,
+      orElse: () => pendingTasks.first,
+    );
+
+    return TaskSyncSnapshot(
+      pendingCount: pendingTasks.length,
+      failedCount: failedTasks.length,
+      lastError: latestErrorTask.lastCalendarSyncError,
+      lastAttemptAt: pendingTasks.first.updatedAt,
+    );
   }
 }

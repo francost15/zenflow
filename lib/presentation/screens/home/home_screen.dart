@@ -11,6 +11,7 @@ import 'package:app/presentation/screens/home/widgets/home_header.dart';
 import 'package:app/presentation/screens/home/widgets/home_protocol_header.dart';
 import 'package:app/presentation/screens/home/widgets/home_streak_hero.dart';
 import 'package:app/presentation/screens/home/widgets/home_task_sliver.dart';
+import 'package:app/presentation/widgets/animated_fab.dart';
 import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:app/presentation/widgets/date_picker_sheet_theme.dart';
 import 'package:app/presentation/widgets/dialogs/create_task_dialog.dart';
@@ -210,13 +211,16 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
-            floatingActionButton: FloatingActionButton.extended(
+            floatingActionButton: AnimatedFAB(
               onPressed: () {
                 HapticService.lightImpact();
                 _openTaskEditor();
               },
+              tooltip: 'Ctrl+N',
+              heroTag: 'add_task_fab',
               backgroundColor: AppColors.accent,
               foregroundColor: Colors.white,
+              icon: const Icon(Icons.add_rounded, size: 20),
               label: const Text(
                 'AÑADIR TAREA',
                 style: TextStyle(
@@ -225,7 +229,6 @@ class _HomeScreenState extends State<HomeScreen>
                   letterSpacing: 1.2,
                 ),
               ),
-              icon: const Icon(Icons.add_rounded, size: 20),
             ),
           ),
         ),

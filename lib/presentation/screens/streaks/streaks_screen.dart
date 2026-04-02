@@ -77,7 +77,7 @@ class _StreaksScreenState extends State<StreaksScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Text(
-                        'RUTINAS & HÁBITOS',
+                        'HÁBITOS DE PROTOCOLO',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           letterSpacing: 2.5,

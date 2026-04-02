@@ -11,10 +11,12 @@ class HomeProtocolHeader extends StatelessWidget {
     super.key,
     required this.selectedDate,
     required this.onTap,
+    this.onSyncTap,
   });
 
   final DateTime selectedDate;
   final VoidCallback onTap;
+  final VoidCallback? onSyncTap;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +71,7 @@ class HomeProtocolHeader extends StatelessWidget {
             builder: (context, authState) {
               return BlocBuilder<CalendarBloc, CalendarState>(
                 builder: (context, calendarState) {
-                  return const SyncStatusBadgeWithLogic();
+                  return SyncStatusBadgeWithLogic(onSyncTap: onSyncTap);
                 },
               );
             },

@@ -90,6 +90,13 @@ class FakeTaskDatasource implements TaskDatasource {
   }
 
   @override
+  Future<List<TaskModel>> getTasksWithoutCalendarEvent() async {
+    return _storage.values
+        .where((task) => task.calendarEventId == null)
+        .toList();
+  }
+
+  @override
   Future<void> toggleTaskStatus(String taskId, bool completed) async {}
 
   @override
@@ -108,11 +115,13 @@ class FakeCalendarRepository implements CalendarRepository {
     required this.isAuthorizedResult,
     this.throwOnDelete = false,
     this.deleteErrorStatus,
+    this.updateErrorStatus,
   });
 
   final bool isAuthorizedResult;
   final bool throwOnDelete;
   final int? deleteErrorStatus;
+  final int? updateErrorStatus;
   int createEventCallCount = 0;
   int updateEventCallCount = 0;
   Event? lastCreatedEvent;
@@ -153,6 +162,9 @@ class FakeCalendarRepository implements CalendarRepository {
   Future<Event> updateEvent(Event event) async {
     updateEventCallCount += 1;
     lastUpdatedEvent = event;
+    if (updateErrorStatus != null) {
+      throw DetailedApiRequestError(updateErrorStatus!, 'update failed');
+    }
     return event;
   }
 

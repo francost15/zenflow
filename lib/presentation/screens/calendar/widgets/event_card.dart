@@ -8,12 +8,14 @@ class EventCard extends StatelessWidget {
   final Event event;
   final VoidCallback? onTap;
   final void Function(String taskName)? onStartZenMode;
+  final void Function(String eventId)? onDelete;
 
   const EventCard({
     super.key,
     required this.event,
     this.onTap,
     this.onStartZenMode,
+    this.onDelete,
   });
 
   @override
@@ -22,10 +24,32 @@ class EventCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final start = event.start?.dateTime ?? event.start?.date;
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Dismissible(
+      key: Key(event.id ?? ''),
+      direction: DismissDirection.horizontal,
+      background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        color: AppColors.success.withValues(alpha: 0.2),
+        child: const Icon(Icons.check, color: AppColors.success),
+      ),
+      secondaryBackground: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        color: AppColors.error.withValues(alpha: 0.2),
+        child: const Icon(Icons.delete, color: AppColors.error),
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart && onDelete != null) {
+          onDelete!(event.id ?? '');
+          return false;
+        }
+        return false;
+      },
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           // Time label
           Container(
             width: 60,
@@ -169,7 +193,8 @@ class EventCard extends StatelessWidget {
               ),
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

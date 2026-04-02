@@ -1,5 +1,6 @@
 import 'package:app/domain/entities/course.dart';
 import 'package:app/domain/entities/task.dart';
+import 'package:app/domain/entities/task_sync_snapshot.dart';
 import 'package:app/domain/repositories/course_repository.dart';
 import 'package:app/domain/repositories/task_repository.dart';
 import 'package:app/presentation/blocs/course/course_bloc.dart';
@@ -91,16 +92,30 @@ class _FakeTaskRepository implements TaskRepository {
   }
 
   @override
+  Future<TaskSyncSnapshot> getTaskSyncSnapshot() async {
+    return const TaskSyncSnapshot();
+  }
+
+  @override
+  Future<Task?> getTaskByCalendarEventId(String calendarEventId) async {
+    for (final task in tasks) {
+      if (task.calendarEventId == calendarEventId) {
+        return task;
+      }
+    }
+    return null;
+  }
+
+  @override
   Future<List<Task>> getTasksByDate(DateTime date) async => const [];
 
   @override
-  Future<void> syncPendingTasks() async {}
+  Future<ReconciliationResult> reconcileUnsyncedTasks() async {
+    return const ReconciliationResult(syncedTasks: [], failedTasks: []);
+  }
 
   @override
   Future<void> toggleTaskStatus(Task task, bool completed) async {}
-
-  @override
-  Future<void> undoDeleteTask(Task task) async {}
 
   @override
   Future<Task> updateTask(Task task) async {

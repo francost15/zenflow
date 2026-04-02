@@ -70,18 +70,13 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
   void _checkForCollisions() {
     final taskState = context.read<TaskBloc>().state;
     if (taskState is! TaskLoaded) return;
-
-    final collidingTask = findCollision(
-      existingTasks: taskState.tasks,
-      date: _selectedDate,
-      time: _selectedTime,
-      excludeTaskId: widget.initialTask?.id,
-    );
-
     setState(() {
-      _collisionError = collidingTask != null
-          ? formatCollisionError(collidingTask)
-          : null;
+      _collisionError = collisionErrorFor(
+        existingTasks: taskState.tasks,
+        date: _selectedDate,
+        time: _selectedTime,
+        excludeTaskId: widget.initialTask?.id,
+      );
     });
   }
 
@@ -96,10 +91,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
   Widget build(BuildContext context) {
     return BlocListener<TaskBloc, TaskState>(
       listener: (context, state) {
-        if (!_awaitingMutation) {
-          return;
-        }
-
+        if (!_awaitingMutation) return;
         if (state is TaskLoaded) {
           Navigator.pop(context);
           return;
@@ -211,19 +203,13 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
 
   Future<void> _deleteTask() async {
     final task = widget.initialTask;
-    if (task == null) {
-      return;
-    }
-
+    if (task == null) return;
     final confirmed = await showConfirmDeleteDialog(
       context: context,
       title: 'Eliminar tarea',
       itemName: task.title,
     );
-    if (!confirmed || !mounted) {
-      return;
-    }
-
+    if (!confirmed || !mounted) return;
     setState(() => _isDeleting = true);
     context.read<TaskBloc>().add(TaskDeleted(task));
   }
@@ -234,39 +220,23 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
       return;
     }
 
-    final now = DateTime.now();
     final description = _descriptionController.text.trim();
-    final initialTask = widget.initialTask;
-    final task = initialTask == null
-        ? Task(
-            id: '',
-            title: _titleController.text.trim(),
-            description: description.isEmpty ? null : description,
-            dueDate: _selectedDate,
-            dueTime: _selectedTime,
-            priority: _priority,
-            status: TaskStatus.pending,
-            courseId: _selectedCourseId,
-            createdAt: now,
-            updatedAt: now,
-          )
-        : initialTask.copyWith(
-            title: _titleController.text.trim(),
-            description: description.isEmpty ? null : description,
-            dueDate: _selectedDate,
-            dueTime: _selectedTime,
-            priority: _priority,
-            courseId: _selectedCourseId,
-            updatedAt: now,
-          );
-
+    final task = buildTaskFromDraft(
+      initialTask: widget.initialTask,
+      title: _titleController.text.trim(),
+      description: description.isEmpty ? null : description,
+      dueDate: _selectedDate,
+      dueTime: _selectedTime,
+      priority: _priority,
+      courseId: _selectedCourseId,
+      now: DateTime.now(),
+    );
     setState(() {
       _isSubmitting = true;
       _titleError = null;
     });
-
     context.read<TaskBloc>().add(
-      initialTask == null ? TaskCreated(task) : TaskUpdated(task),
+      widget.initialTask == null ? TaskCreated(task) : TaskUpdated(task),
     );
   }
 }

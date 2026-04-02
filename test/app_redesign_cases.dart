@@ -49,6 +49,7 @@ void registerAppRedesignTests() {
           ),
         ),
         FakeCalendarRepository(),
+        FakeTaskRepository(tasks: const []),
       )..add(AuthCheckRequested());
 
       final habitRepository = FakeHabitRepository(
@@ -84,7 +85,7 @@ void registerAppRedesignTests() {
 
       expect(find.text('Perfil y estadísticas'), findsOneWidget);
       expect(find.text('LOGROS Y ESTADÍSTICAS'), findsOneWidget);
-      expect(find.text('Encendido'), findsOneWidget);
+      expect(find.text('ENCENDIDO'), findsOneWidget);
       expect(find.text('RACHA ACTUAL'), findsOneWidget);
     },
   );

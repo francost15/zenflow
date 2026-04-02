@@ -1,12 +1,12 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:googleapis/calendar/v3.dart';
-import 'package:app/data/services/task_calendar_sync_service.dart';
 import 'package:app/domain/entities/task.dart';
+import 'package:app/domain/entities/task_sync_snapshot.dart';
 import 'package:app/domain/repositories/calendar_repository.dart';
 import 'package:app/domain/repositories/task_repository.dart';
 import 'package:app/presentation/blocs/calendar/calendar_bloc.dart';
 import 'package:app/presentation/blocs/calendar/calendar_event.dart';
 import 'package:app/presentation/blocs/calendar/calendar_state.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:googleapis/calendar/v3.dart';
 
 class FakeCalendarRepository implements CalendarRepository {
   FakeCalendarRepository({
@@ -69,6 +69,14 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<List<Task>> getTasksByDate(DateTime date) async => [];
+
+  @override
+  Future<TaskSyncSnapshot> getTaskSyncSnapshot() async {
+    return const TaskSyncSnapshot();
+  }
+
+  @override
+  Future<Task?> getTaskByCalendarEventId(String calendarEventId) async => null;
 
   @override
   Future<Task> createTask(Task task) async => task;

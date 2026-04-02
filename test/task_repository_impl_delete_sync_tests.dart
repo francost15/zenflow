@@ -4,7 +4,7 @@ void registerTaskRepositoryDeleteSyncTests() {
   test('deleteTask removes the linked Google Calendar event', () async {
     final taskDatasource = FakeTaskDatasource();
     final calendarRepository = FakeCalendarRepository(isAuthorizedResult: true);
-    final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+    final repository = createRepository(taskDatasource, calendarRepository);
 
     final task = Task(
       id: 'task-1',
@@ -30,7 +30,7 @@ void registerTaskRepositoryDeleteSyncTests() {
         isAuthorizedResult: true,
         throwOnDelete: true,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: 'task-1',
@@ -61,7 +61,7 @@ void registerTaskRepositoryDeleteSyncTests() {
         isAuthorizedResult: true,
         deleteErrorStatus: 404,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: 'task-1',
@@ -86,7 +86,7 @@ void registerTaskRepositoryDeleteSyncTests() {
       final calendarRepository = FakeCalendarRepository(
         isAuthorizedResult: false,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
       final task = Task(
         id: 'task-1',
@@ -108,7 +108,7 @@ void registerTaskRepositoryDeleteSyncTests() {
   );
 
   test(
-    'syncPendingTasks completes a pending delete once Calendar reconnects',
+    'reconcileUnsyncedTasks completes a pending delete once Calendar reconnects',
     () async {
       final task = TaskModel(
         id: 'task-1',
@@ -129,12 +129,13 @@ void registerTaskRepositoryDeleteSyncTests() {
       final calendarRepository = FakeCalendarRepository(
         isAuthorizedResult: true,
       );
-      final repository = TaskRepositoryImpl(taskDatasource, calendarRepository);
+      final repository = createRepository(taskDatasource, calendarRepository);
 
-      await repository.syncPendingTasks();
+      final result = await repository.reconcileUnsyncedTasks();
 
       expect(calendarRepository.deletedEventId, 'calendar-event-1');
       expect(taskDatasource.deletedTaskId, 'task-1');
+      expect(result.failedTasks, isEmpty);
     },
   );
 }

@@ -1,5 +1,8 @@
 import 'package:app/core/constants/app_colors.dart';
+import 'package:app/domain/repositories/task_repository.dart';
 import 'package:app/presentation/blocs/calendar/calendar.dart';
+import 'package:app/presentation/blocs/task/task_bloc.dart';
+import 'package:app/presentation/blocs/task/task_event.dart';
 import 'package:app/presentation/screens/calendar/widgets/event_card.dart';
 import 'package:app/presentation/screens/calendar/widgets/google_sign_in_button_widget.dart';
 import 'package:app/presentation/widgets/empty_state.dart';
@@ -63,6 +66,13 @@ class CalendarStateView extends StatelessWidget {
             return EventCard(
               event: eventsForSelectedDate[index],
               onStartZenMode: onStartZenMode,
+              onDelete: (eventId) async {
+                final taskRepo = context.read<TaskRepository>();
+                final task = await taskRepo.getTaskByCalendarEventId(eventId);
+                if (task != null && context.mounted) {
+                  context.read<TaskBloc>().add(TaskDeleted(task));
+                }
+              },
             );
           },
         );

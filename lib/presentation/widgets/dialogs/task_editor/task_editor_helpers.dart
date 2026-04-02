@@ -60,10 +60,61 @@ Task? findCollision({
   return null;
 }
 
+String? collisionErrorFor({
+  required List<Task> existingTasks,
+  required DateTime date,
+  required TimeOfDay? time,
+  String? excludeTaskId,
+}) {
+  final collidingTask = findCollision(
+    existingTasks: existingTasks,
+    date: date,
+    time: time,
+    excludeTaskId: excludeTaskId,
+  );
+  return collidingTask == null ? null : formatCollisionError(collidingTask);
+}
+
 String formatCollisionError(Task collidingTask) {
   final timeStr = collidingTask.dueTime != null
       ? '${collidingTask.dueTime!.hour.toString().padLeft(2, '0')}:${collidingTask.dueTime!.minute.toString().padLeft(2, '0')}'
       : 'TIME_UNKNOWN';
 
   return 'CONFLICT: $timeStr - ${collidingTask.title.toUpperCase()}';
+}
+
+Task buildTaskFromDraft({
+  required Task? initialTask,
+  required String title,
+  required String? description,
+  required DateTime dueDate,
+  required TimeOfDay? dueTime,
+  required TaskPriority priority,
+  required String? courseId,
+  required DateTime now,
+}) {
+  if (initialTask == null) {
+    return Task(
+      id: '',
+      title: title,
+      description: description,
+      dueDate: dueDate,
+      dueTime: dueTime,
+      priority: priority,
+      status: TaskStatus.pending,
+      courseId: courseId,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  return initialTask.copyWith(
+    title: title,
+    description: description,
+    dueDate: dueDate,
+    dueTime: dueTime,
+    priority: priority,
+    courseId: courseId,
+    updatedAt: now,
+  );
 }

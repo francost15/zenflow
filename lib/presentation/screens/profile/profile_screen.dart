@@ -37,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
         title: Text(
-          'PROTOCOL: PROFILE',
+          'Perfil y estadísticas',
           style: TextStyle(
             fontFamily: 'Space Grotesk',
             fontSize: 14,
