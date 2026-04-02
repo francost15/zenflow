@@ -6,7 +6,7 @@
 
 | Phase | Status | Validated Score | Closure Score | Blocker |
 |-------|--------|-----------------|---------------|---------|
-| PHASE-00 | OPEN | 0.0 | 40.0 | Verification not completed |
+| PHASE-00 | CLOSED | 44.0 | 40.0 | None |
 | PHASE-01 | CLOSED | 40.0 | 36.0 | None |
 | PHASE-02 | CLOSED | 23.0 | 21.0 | None |
 | PHASE-03 | CLOSED | 33.0 | 30.0 | None |
