@@ -1,6 +1,9 @@
 import 'package:app/presentation/blocs/calendar/calendar.dart';
+import 'package:app/presentation/screens/calendar/widgets/calendar_grid.dart';
 import 'package:app/presentation/screens/calendar/widgets/calendar_state_view.dart';
 import 'package:app/presentation/screens/calendar/widgets/calendar_week_strip.dart';
+import 'package:app/presentation/screens/calendar/widgets/quick_date_chips.dart';
+import 'package:app/presentation/screens/calendar/widgets/view_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,6 +19,7 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _selectedDate = DateTime.now();
   late DateTime _focusedWeekStart;
+  bool _isMonthlyView = false;
 
   @override
   void initState() {
@@ -35,27 +39,84 @@ class _CalendarScreenState extends State<CalendarScreen> {
               focusedWeekStart: _focusedWeekStart,
               onMoveWeek: _moveWeek,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: CalendarWeekStrip(
-                focusedWeekStart: _focusedWeekStart,
-                selectedDate: _selectedDate,
-                onDateSelected: (date) {
-                  setState(() => _selectedDate = date);
+              child: CalendarViewToggle(
+                isMonthly: _isMonthlyView,
+                onChanged: (isMonthly) {
+                  setState(() => _isMonthlyView = isMonthly);
                 },
               ),
             ),
+            const SizedBox(height: 12),
+            QuickDateChips(
+              selectedDate: _selectedDate,
+              onDateSelected: (date) {
+                setState(() {
+                  _selectedDate = date;
+                  _focusedWeekStart = _startOfSelectedWeek(date);
+                });
+              },
+            ),
             const SizedBox(height: 16),
             Expanded(
-              child: CalendarStateView(
-                selectedDate: _selectedDate,
-                onRetry: _loadEvents,
-                onStartZenMode: widget.onStartZenMode,
-              ),
+              child: _isMonthlyView ? _buildMonthlyView() : _buildWeeklyView(),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildWeeklyView() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: CalendarWeekStrip(
+            focusedWeekStart: _focusedWeekStart,
+            selectedDate: _selectedDate,
+            onDateSelected: (date) {
+              setState(() => _selectedDate = date);
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: CalendarStateView(
+            selectedDate: _selectedDate,
+            onRetry: _loadEvents,
+            onStartZenMode: widget.onStartZenMode,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMonthlyView() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          Expanded(
+            child: CalendarGrid(
+              selectedDate: _selectedDate,
+              focusedMonth: _focusedWeekStart,
+              events: const {},
+              onDateSelected: (date) {
+                setState(() => _selectedDate = date);
+              },
+            ),
+          ),
+          Expanded(
+            child: CalendarStateView(
+              selectedDate: _selectedDate,
+              onRetry: _loadEvents,
+              onStartZenMode: widget.onStartZenMode,
+            ),
+          ),
+        ],
       ),
     );
   }
