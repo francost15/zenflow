@@ -133,7 +133,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final start = DateTime(_focusedWeekStart.year, _focusedWeekStart.month, 1);
     final end = DateTime(
       _focusedWeekStart.year,
-      _focusedWeekStart.month + 2,
+      _focusedWeekStart.month + 1,
       0,
     );
     context.read<CalendarBloc>().add(

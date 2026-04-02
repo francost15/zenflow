@@ -24,6 +24,15 @@ class HomeTaskSliver extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocBuilder<TaskBloc, TaskState>(
+      // Memoization: only rebuild when tasks or selectedDate actually change
+      buildWhen: (previous, current) {
+        if (previous is TaskLoaded && current is TaskLoaded) {
+          return previous.tasks != current.tasks ||
+              previous.selectedDate != current.selectedDate ||
+              previous.noticeMessage != current.noticeMessage;
+        }
+        return true;
+      },
       builder: (context, state) {
         if (state is TaskLoading) {
           return const SliverFillRemaining(child: LoadingIndicator());
@@ -106,17 +115,20 @@ class HomeTaskSliver extends StatelessWidget {
                 itemCount: state.tasks.length,
                 itemBuilder: (context, index) {
                   final task = state.tasks[index];
-                  return TaskTile(
-                    task: task,
-                    onToggle: (completed) {
-                      context.read<TaskBloc>().add(
-                        TaskStatusToggled(task: task, completed: completed),
-                      );
-                    },
-                    onTap: () => onEditTask(task),
-                    onDelete: () {
-                      context.read<TaskBloc>().add(TaskDeleted(task));
-                    },
+                  // RepaintBoundary isolates repaints for each tile
+                  return RepaintBoundary(
+                    child: TaskTile(
+                      task: task,
+                      onToggle: (completed) {
+                        context.read<TaskBloc>().add(
+                          TaskStatusToggled(task: task, completed: completed),
+                        );
+                      },
+                      onTap: () => onEditTask(task),
+                      onDelete: () {
+                        context.read<TaskBloc>().add(TaskDeleted(task));
+                      },
+                    ),
                   );
                 },
               ),
