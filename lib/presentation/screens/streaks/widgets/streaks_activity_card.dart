@@ -60,7 +60,7 @@ class StreaksActivityCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'CONSTANCIA SEMANAL',
+                    'Constancia semanal',
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.5,
@@ -131,7 +131,7 @@ class StreaksActivityCard extends StatelessWidget {
                 const Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.accent),
                 const SizedBox(width: 4),
                 Text(
-                  '$totalPerfectDays DÍAS PERFECTOS (4+)',
+                  '$totalPerfectDays Días perfectos (4+)',
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: AppColors.accent,

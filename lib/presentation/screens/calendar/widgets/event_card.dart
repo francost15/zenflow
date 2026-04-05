@@ -113,14 +113,17 @@ class EventCard extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                onTap?.call();
-                showEventDetailSheet(
-                  context,
-                  event: event,
-                  onStartZenMode: onStartZenMode != null
-                      ? () => onStartZenMode!(event.summary ?? 'Tarea')
-                      : null,
-                );
+                if (onTap != null) {
+                  onTap!();
+                } else {
+                  showEventDetailSheet(
+                    context,
+                    event: event,
+                    onStartZenMode: onStartZenMode != null
+                        ? () => onStartZenMode!(event.summary ?? 'Tarea')
+                        : null,
+                  );
+                }
               },
               child: Container(
                 margin: const EdgeInsets.only(bottom: 12),

@@ -25,7 +25,7 @@ class CalendarHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'AGENDA',
+                'Agenda',
                 style: theme.textTheme.headlineLarge?.copyWith(
                   fontFamily: 'Space Grotesk',
                   fontWeight: FontWeight.w900,
@@ -39,7 +39,7 @@ class CalendarHeader extends StatelessWidget {
                 DateFormat(
                   'MMMM yyyy',
                   'es_ES',
-                ).format(focusedWeekStart).toUpperCase(),
+                ).format(focusedWeekStart),
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: AppColors.accent,
                   fontWeight: FontWeight.w800,

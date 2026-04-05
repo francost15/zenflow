@@ -1,10 +1,14 @@
 import 'package:app/core/constants/app_colors.dart';
+import 'package:app/domain/entities/task.dart';
 import 'package:app/domain/repositories/task_repository.dart';
 import 'package:app/presentation/blocs/calendar/calendar.dart';
 import 'package:app/presentation/blocs/task/task_bloc.dart';
 import 'package:app/presentation/blocs/task/task_event.dart';
 import 'package:app/presentation/screens/calendar/widgets/event_card.dart';
+import 'package:app/presentation/screens/calendar/widgets/event_detail_sheet.dart';
 import 'package:app/presentation/screens/calendar/widgets/google_sign_in_button_widget.dart';
+import 'package:app/presentation/widgets/dialogs/create_task_dialog.dart';
+import 'package:app/presentation/widgets/dialogs/task_checkin_sheet.dart'; // We'll create this file next
 import 'package:app/presentation/widgets/empty_state.dart';
 import 'package:app/presentation/widgets/error_state.dart';
 import 'package:app/presentation/widgets/loading_indicator.dart';
@@ -65,6 +69,11 @@ class CalendarStateView extends StatelessWidget {
           itemBuilder: (context, index) {
             return EventCard(
               event: eventsForSelectedDate[index],
+              onTap: () => _handleEventTap(
+                context,
+                eventsForSelectedDate[index],
+                onStartZenMode,
+              ),
               onStartZenMode: onStartZenMode,
               onDelete: (eventId) async {
                 final taskRepo = context.read<TaskRepository>();
@@ -102,6 +111,40 @@ class CalendarStateView extends StatelessWidget {
     }
 
     return eventsByDate[normalizedDate] ?? const [];
+  }
+
+  Future<void> _handleEventTap(
+    BuildContext context,
+    dynamic event,
+    void Function(String)? onStartZenMode,
+  ) async {
+    final eventId = event.id;
+    if (eventId == null) return;
+
+    final taskRepo = context.read<TaskRepository>();
+    final task = await taskRepo.getTaskByCalendarEventId(eventId);
+
+    if (!context.mounted) return;
+
+    if (task == null) {
+      showEventDetailSheet(
+        context,
+        event: event,
+        onStartZenMode: onStartZenMode != null
+            ? () => onStartZenMode(event.summary ?? 'Tarea')
+            : null,
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+    final isPast = task.dueDate.isBefore(DateTime(now.year, now.month, now.day));
+
+    if (isPast && task.status != TaskStatus.completed) {
+      TaskCheckInSheet.show(context, task: task);
+    } else {
+      TaskEditorSheet.show(context, initialTask: task);
+    }
   }
 }
 

@@ -56,10 +56,12 @@ class CourseEditorForm extends StatelessWidget {
             ),
             border: InputBorder.none,
             errorText: nameError,
+            contentPadding: const EdgeInsets.symmetric(vertical: 8),
           ),
           autofocus: !isEditMode,
           onChanged: onNameChanged,
         ),
+        const SizedBox(height: 12),
         TextField(
           controller: professorController,
           style: theme.textTheme.bodyLarge,
@@ -69,8 +71,10 @@ class CourseEditorForm extends StatelessWidget {
               color: _hintColor(isDark),
             ),
             border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 8),
           ),
         ),
+        const SizedBox(height: 12),
         TextField(
           controller: notesController,
           maxLines: 3,
@@ -81,15 +85,16 @@ class CourseEditorForm extends StatelessWidget {
               color: _hintColor(isDark),
             ),
             border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 8),
           ),
         ),
         const Divider(height: 32),
-        const Text(
-          'ETIQUETA DE COLOR',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
+        Text(
+          'Etiqueta de color',
+          style: theme.textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
+            color: AppColors.accent,
           ),
         ),
         const SizedBox(height: 16),

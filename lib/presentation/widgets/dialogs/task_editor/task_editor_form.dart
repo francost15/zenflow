@@ -79,11 +79,12 @@ class TaskEditorForm extends StatelessWidget {
             errorBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: AppColors.error),
             ),
+            contentPadding: const EdgeInsets.symmetric(vertical: 8),
           ),
           onChanged: onTitleChanged,
           autofocus: !isEditMode,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         TextField(
           controller: descriptionController,
           maxLines: 3,
@@ -94,15 +95,16 @@ class TaskEditorForm extends StatelessWidget {
               color: _hintColor(isDark),
             ),
             border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 8),
           ),
         ),
         const SizedBox(height: 32),
-        const Text(
-          'PARÁMETROS DE ENFOQUE',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
+        Text(
+          'Parámetros de enfoque',
+          style: theme.textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
+            color: AppColors.accent,
           ),
         ),
         const SizedBox(height: 12),

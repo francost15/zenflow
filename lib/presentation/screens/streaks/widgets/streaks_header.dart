@@ -10,7 +10,7 @@ class StreaksHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
       child: Text(
-        'MÉTRICAS DE RENDIMIENTO',
+        'Métricas de rendimiento',
         style: theme.textTheme.labelSmall?.copyWith(
           fontWeight: FontWeight.w700,
           letterSpacing: 2.5,

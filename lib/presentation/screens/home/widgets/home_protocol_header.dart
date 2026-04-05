@@ -34,7 +34,7 @@ class HomeProtocolHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PROTOCOLO DIARIO',
+                  'Protocolo diario',
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     letterSpacing: 2,

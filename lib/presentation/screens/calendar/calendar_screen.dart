@@ -2,7 +2,6 @@ import 'package:app/presentation/blocs/calendar/calendar.dart';
 import 'package:app/presentation/screens/calendar/widgets/calendar_grid.dart';
 import 'package:app/presentation/screens/calendar/widgets/calendar_state_view.dart';
 import 'package:app/presentation/screens/calendar/widgets/calendar_week_strip.dart';
-import 'package:app/presentation/screens/calendar/widgets/quick_date_chips.dart';
 import 'package:app/presentation/screens/calendar/widgets/view_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,16 +47,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   setState(() => _isMonthlyView = isMonthly);
                 },
               ),
-            ),
-            const SizedBox(height: 12),
-            QuickDateChips(
-              selectedDate: _selectedDate,
-              onDateSelected: (date) {
-                setState(() {
-                  _selectedDate = date;
-                  _focusedWeekStart = _startOfSelectedWeek(date);
-                });
-              },
             ),
             const SizedBox(height: 16),
             Expanded(
