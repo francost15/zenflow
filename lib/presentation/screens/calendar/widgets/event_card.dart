@@ -123,12 +123,12 @@ class EventCard extends StatelessWidget {
                 );
               },
               child: Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.obsidian : Colors.white,
+                  color: isDark ? const Color(0xFF131316) : Colors.white,
                   border: Border.all(
-                    color: isDark ? AppColors.monolithBorder : Colors.black12,
+                    color: isDark ? const Color(0xFF27272A) : Colors.black12,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(4),
@@ -144,10 +144,10 @@ class EventCard extends StatelessWidget {
                             (event.summary ?? 'Sin título').toUpperCase(),
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontFamily: 'Space Grotesk',
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              letterSpacing: 1.0,
-                              color: isDark ? AppColors.stone : Colors.black87,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                              letterSpacing: 0.5,
+                              color: isDark ? Colors.white70 : Colors.black87,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -164,12 +164,12 @@ class EventCard extends StatelessWidget {
                       ],
                     ),
                     if (event.location != null) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(
                             Icons.location_on_outlined,
-                            size: 14,
+                            size: 12,
                             color: AppColors.accent.withAlpha(180),
                           ),
                           const SizedBox(width: 4),

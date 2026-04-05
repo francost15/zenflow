@@ -9,11 +9,9 @@ class CreateHabitSheet extends StatefulWidget {
   const CreateHabitSheet({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
+    return FocusSheetShell.show(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const CreateHabitSheet(),
+      child: const CreateHabitSheet(),
     );
   }
 

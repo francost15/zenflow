@@ -10,6 +10,7 @@ import 'package:app/presentation/widgets/course_card.dart';
 import 'package:app/presentation/widgets/dialogs/create_course_dialog.dart';
 import 'package:app/presentation/widgets/error_state.dart';
 import 'package:app/presentation/widgets/loading_indicator.dart';
+import 'package:app/presentation/widgets/focus_sheet_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -107,23 +108,19 @@ class _CoursesScreenState extends State<CoursesScreen> {
   }
 
   void _showCourseDetails(CourseOverview overview) {
-    showModalBottomSheet<void>(
+    FocusSheetShell.show<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return CourseDetailSheet(
-          overview: overview,
-          onEdit: () {
-            Navigator.pop(sheetContext);
-            _showEditCourseDialog(overview.course);
-          },
-          onDelete: () {
-            Navigator.pop(sheetContext);
-            _confirmDelete(overview.course.id, overview.course.name);
-          },
-        );
-      },
+      child: CourseDetailSheet(
+        overview: overview,
+        onEdit: () {
+          Navigator.pop(context);
+          _showEditCourseDialog(overview.course);
+        },
+        onDelete: () {
+          Navigator.pop(context);
+          _confirmDelete(overview.course.id, overview.course.name);
+        },
+      ),
     );
   }
 

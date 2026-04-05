@@ -24,7 +24,7 @@ class HomeProtocolHeader extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [

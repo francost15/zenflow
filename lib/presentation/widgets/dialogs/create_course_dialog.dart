@@ -15,11 +15,9 @@ class CourseEditorSheet extends StatefulWidget {
   final Course? initialCourse;
 
   static Future<void> show(BuildContext context, {Course? initialCourse}) {
-    return showModalBottomSheet<void>(
+    return FocusSheetShell.show<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CourseEditorSheet(initialCourse: initialCourse),
+      child: CourseEditorSheet(initialCourse: initialCourse),
     );
   }
 

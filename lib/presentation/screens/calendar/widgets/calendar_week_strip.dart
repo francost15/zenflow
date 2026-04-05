@@ -18,7 +18,7 @@ class CalendarHeader extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
         children: [
           Column(
@@ -29,12 +29,12 @@ class CalendarHeader extends StatelessWidget {
                 style: theme.textTheme.headlineLarge?.copyWith(
                   fontFamily: 'Space Grotesk',
                   fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  letterSpacing: 2.5,
+                  fontSize: 16,
+                  letterSpacing: 1.5,
                   color: isDark ? AppColors.stone : Colors.black87,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 DateFormat(
                   'MMMM yyyy',
@@ -105,7 +105,7 @@ class CalendarWeekStrip extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOutCubic,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? (isDark ? const Color(0xFF18181B) : Colors.black12)
@@ -127,7 +127,7 @@ class CalendarWeekStrip extends StatelessWidget {
                         letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
                       '${date.day}',
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -143,8 +143,8 @@ class CalendarWeekStrip extends StatelessWidget {
                     ),
                     if (isToday && !isSelected)
                       Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        width: 4,
+                        margin: const EdgeInsets.only(top: 2),
+                        width: 3,
                         height: 4,
                         decoration: const BoxDecoration(
                           color: AppColors.accent,
@@ -183,11 +183,11 @@ class _NavButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: IconButton(
-        icon: Icon(icon, size: 20),
+        icon: Icon(icon, size: 16),
         onPressed: onPressed,
         color: AppColors.accent,
         padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
       ),
     );
   }

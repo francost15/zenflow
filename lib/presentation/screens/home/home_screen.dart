@@ -3,14 +3,11 @@ import 'package:app/core/di/injection.dart';
 import 'package:app/core/utils/haptic_service.dart';
 import 'package:app/domain/entities/task.dart';
 import 'package:app/domain/repositories/task_repository.dart';
-import 'package:app/presentation/blocs/streaks/streaks_bloc.dart';
-import 'package:app/presentation/blocs/streaks/streaks_state.dart';
 import 'package:app/presentation/blocs/task/task_bloc.dart';
 import 'package:app/presentation/blocs/task/task_event.dart';
 import 'package:app/presentation/blocs/task/task_state.dart';
 import 'package:app/presentation/screens/home/widgets/home_header.dart';
 import 'package:app/presentation/screens/home/widgets/home_protocol_header.dart';
-import 'package:app/presentation/screens/home/widgets/home_streak_hero.dart';
 import 'package:app/presentation/screens/home/widgets/home_task_sliver.dart';
 import 'package:app/presentation/widgets/animated_fab.dart';
 import 'package:app/presentation/widgets/app_snackbars.dart';
@@ -183,16 +180,6 @@ class _HomeScreenState extends State<HomeScreen>
                         child: HomeHeader(
                           onThemeToggle: widget.onThemeToggle,
                           isDarkMode: widget.isDarkMode,
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: BlocBuilder<StreaksBloc, StreaksState>(
-                          builder: (context, state) {
-                            final streak = state is StreaksLoaded
-                                ? state.totalCurrentStreak
-                                : 0;
-                            return HomeStreakHero(streak: streak);
-                          },
                         ),
                       ),
                       SliverToBoxAdapter(

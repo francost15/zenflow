@@ -26,15 +26,23 @@ class CourseCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,112 +50,141 @@ class CourseCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Vertical accent bar
-                Container(
-                  width: 4,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: overview.course.color,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        overview.course.name,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: overview.course.color,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              overview.course.name.toUpperCase(),
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.5,
+                                color: isDark
+                                    ? AppColors.darkTextSecondary
+                                    : AppColors.lightTextSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
-                      if (overview.course.professor != null) ...[
-                        const SizedBox(height: 2),
+                      const SizedBox(height: 12),
+                      if (overview.course.professor != null)
                         Text(
                           overview.course.professor!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isDark
-                                ? AppColors.darkTextTertiary
-                                : AppColors.lightTextTertiary,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            color: isDark ? Colors.white : AppColors.obsidian,
+                          ),
+                        )
+                      else
+                        Text(
+                          'Materia',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            color: isDark ? Colors.white : AppColors.obsidian,
                           ),
                         ),
-                      ],
                     ],
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '$progress%',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: overview.course.color,
+                PopupMenuButton<_CourseAction>(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(
+                    Icons.more_horiz_rounded,
+                    size: 20,
+                    color: isDark
+                        ? AppColors.darkTextTertiary
+                        : AppColors.lightTextTertiary,
+                  ),
+                  onSelected: (action) {
+                    switch (action) {
+                      case _CourseAction.edit:
+                        onEdit?.call();
+                        break;
+                      case _CourseAction.delete:
+                        onDelete?.call();
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: _CourseAction.edit,
+                      child: ListTile(
+                        dense: true,
+                        leading: Icon(Icons.edit_outlined, size: 20),
+                        title: Text('Editar'),
                       ),
                     ),
-                    PopupMenuButton<_CourseAction>(
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        Icons.more_horiz_rounded,
-                        size: 20,
-                        color: isDark
-                            ? AppColors.darkTextTertiary
-                            : AppColors.lightTextTertiary,
+                    PopupMenuItem(
+                      value: _CourseAction.delete,
+                      child: ListTile(
+                        dense: true,
+                        leading: Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppColors.error,
+                          size: 20,
+                        ),
+                        title: Text(
+                          'Eliminar',
+                          style: TextStyle(color: AppColors.error),
+                        ),
                       ),
-                      onSelected: (action) {
-                        switch (action) {
-                          case _CourseAction.edit:
-                            onEdit?.call();
-                            break;
-                          case _CourseAction.delete:
-                            onDelete?.call();
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: _CourseAction.edit,
-                          child: ListTile(
-                            dense: true,
-                            leading: Icon(Icons.edit_outlined, size: 20),
-                            title: Text('Editar'),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: _CourseAction.delete,
-                          child: ListTile(
-                            dense: true,
-                            leading: Icon(
-                              Icons.delete_outline_rounded,
-                              color: AppColors.error,
-                              size: 20,
-                            ),
-                            title: Text(
-                              'Eliminar',
-                              style: TextStyle(color: AppColors.error),
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'PROGRESO',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              color: isDark
+                                  ? AppColors.darkTextTertiary
+                                  : AppColors.lightTextTertiary,
+                            ),
+                          ),
+                          Text(
+                            '$progress%',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: overview.course.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: overview.derivedProgress,
-                          minHeight: 4,
+                          minHeight: 6,
                           backgroundColor: isDark
                               ? AppColors.darkBorder
                               : AppColors.lightBorder,
@@ -156,15 +193,23 @@ class CourseCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${overview.pendingTasksCount} pendientes · ${overview.completedTasksCount} completadas',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? AppColors.darkTextTertiary
-                              : AppColors.lightTextTertiary,
-                        ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _buildBadge(
+                            context,
+                            '${overview.pendingTasksCount} pendientes',
+                            isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurfaceElevated,
+                            isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                          ),
+                          const SizedBox(width: 6),
+                          _buildBadge(
+                            context,
+                            '${overview.completedTasksCount} completadas',
+                            overview.course.color.withValues(alpha: 0.1),
+                            overview.course.color,
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -172,29 +217,50 @@ class CourseCard extends StatelessWidget {
               ],
             ),
             if (nextClass != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Icon(
-                    Icons.calendar_today_rounded,
-                    size: 12,
+                    Icons.schedule_rounded,
+                    size: 14,
                     color: isDark
                         ? AppColors.darkTextTertiary
                         : AppColors.lightTextTertiary,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Text(
                     _formatNextClassShort(nextClass.startAt),
-                    style: theme.textTheme.labelSmall?.copyWith(
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                       color: isDark
-                          ? AppColors.darkTextTertiary
-                          : AppColors.lightTextTertiary,
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
                     ),
                   ),
                 ],
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(BuildContext context, String text, Color bgColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: textColor,
         ),
       ),
     );

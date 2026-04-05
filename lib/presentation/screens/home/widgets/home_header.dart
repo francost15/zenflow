@@ -5,6 +5,8 @@ import 'package:app/presentation/blocs/auth/auth_state.dart';
 import 'package:app/presentation/screens/profile/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:app/presentation/blocs/streaks/streaks_bloc.dart';
+import 'package:app/presentation/blocs/streaks/streaks_state.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({
@@ -22,17 +24,18 @@ class HomeHeader extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _BrandChip(isDark: isDark),
-          const Spacer(),
+          Expanded(child: _BrandDensityChip(isDark: isDark)),
+          const SizedBox(width: 8),
           _ThemeToggleButton(
             isDark: isDark,
             isDarkMode: isDarkMode,
             onPressed: onThemeToggle,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           _UserMenu(isDark: isDark),
         ],
       ),
@@ -40,36 +43,61 @@ class HomeHeader extends StatelessWidget {
   }
 }
 
-class _BrandChip extends StatelessWidget {
-  const _BrandChip({required this.isDark});
+class _BrandDensityChip extends StatelessWidget {
+  const _BrandDensityChip({required this.isDark});
 
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0C0F14) : Colors.white,
         border: Border.all(
           color: isDark ? const Color(0xFF27272A) : Colors.black12,
           width: 1,
         ),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.bolt_rounded, size: 18, color: AppColors.accent),
-          const SizedBox(width: 8),
+          const Icon(Icons.bolt_rounded, size: 16, color: AppColors.accent),
+          const SizedBox(width: 6),
           Text(
             'ZENFLOW',
             style: TextStyle(
               fontFamily: 'Space Grotesk',
               fontWeight: FontWeight.w900,
-              fontSize: 13,
-              letterSpacing: 2.5,
+              fontSize: 12,
+              letterSpacing: 1.5,
               color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 4,
+            height: 4,
+            decoration: const BoxDecoration(
+              color: AppColors.accent,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: BlocBuilder<StreaksBloc, StreaksState>(
+              builder: (context, state) {
+                final streak = state is StreaksLoaded ? state.totalCurrentStreak : 0;
+                return Text(
+                  '$streak DÍAS DE FOCO',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.accent,
+                    letterSpacing: 1,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                );
+              },
             ),
           ),
         ],
