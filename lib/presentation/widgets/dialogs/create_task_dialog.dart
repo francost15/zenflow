@@ -47,6 +47,35 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
   bool get _isEditMode => widget.initialTask != null;
   bool get _awaitingMutation => _isSubmitting || _isDeleting;
 
+  List<String> get _warnings {
+    final warnings = <String>[];
+    
+    if (_selectedTime != null) {
+      if (_selectedTime!.hour >= 23 || _selectedTime!.hour < 6) {
+        warnings.add('🌙 Estás agendando fuera de horas habituales. Prioriza tu descanso.');
+      }
+    }
+
+    final taskState = context.read<TaskBloc>().state;
+    if (taskState is TaskLoaded) {
+      final tasksOnDate = taskState.tasks.where((t) {
+        return t.id != widget.initialTask?.id &&
+               t.dueDate.year == _selectedDate.year &&
+               t.dueDate.month == _selectedDate.month &&
+               t.dueDate.day == _selectedDate.day;
+      }).toList();
+      
+      final highPriorityCount = tasksOnDate.where((t) => t.priority == TaskPriority.high).length;
+      final totalTasks = tasksOnDate.length;
+      
+      if (totalTasks >= 6 || highPriorityCount >= 4) {
+        warnings.add('🔥 Día pesado: Tienes mucha carga para este día. Considera organizar mejor tu tiempo.');
+      }
+    }
+    
+    return warnings;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -133,9 +162,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                   : const Text('Eliminar'),
             ),
           ElevatedButton(
-            onPressed: (_awaitingMutation || _collisionError != null)
-                ? null
-                : _submitTask,
+            onPressed: _awaitingMutation ? null : () => _submitTask(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.accent,
               foregroundColor: Colors.white,
@@ -162,6 +189,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
           selectedCourseId: _selectedCourseId,
           titleError: _titleError,
           collisionError: _collisionError,
+          warnings: _warnings,
           isEditMode: _isEditMode,
           onTitleChanged: (_) {
             if (_titleError != null) {
@@ -214,10 +242,64 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
     context.read<TaskBloc>().add(TaskDeleted(task));
   }
 
-  void _submitTask() {
+  Future<void> _submitTask(BuildContext context) async {
     if (_titleController.text.trim().isEmpty) {
       setState(() => _titleError = 'Ingresa un título para la tarea');
       return;
+    }
+
+    if (_collisionError != null) {
+      final shouldOverride = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: Theme.of(ctx).brightness == Brightness.dark 
+              ? AppColors.darkSurfaceElevated 
+              : AppColors.lightSurfaceElevated,
+          title: const Text(
+            'Conflicto de Horario',
+            style: TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w700),
+          ),
+          content: Text(
+            'Ya tienes una tarea programada a esta hora.\n\n¿Quieres guardarla de todos modos y superponerlas?',
+            style: Theme.of(ctx).textTheme.bodyMedium,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              style: TextButton.styleFrom(foregroundColor: AppColors.darkTextSecondary),
+              child: const Text('CANCELAR'),
+            ),
+            TextButton(
+              onPressed: () {
+                 if (_selectedTime != null) {
+                   final newTime = TimeOfDay(
+                     hour: (_selectedTime!.hour + 1) % 24, 
+                     minute: _selectedTime!.minute
+                   );
+                   setState(() => _selectedTime = newTime);
+                   _checkForCollisions();
+                 }
+                 Navigator.pop(ctx, false);
+              },
+              style: TextButton.styleFrom(foregroundColor: AppColors.accent),
+              child: const Text('POSPONER 1 HORA'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error, 
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              child: const Text('SUPERPONER'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldOverride != true) {
+        return;
+      }
     }
 
     final description = _descriptionController.text.trim();

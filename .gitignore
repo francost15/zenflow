@@ -1,6 +1,11 @@
 # Worktrees
 .worktrees/
 
+# Secrets y configuración local (Firebase)
+.env
+**/google-services.json
+!**/google-services.json.example
+
 # Miscellaneous
 *.class
 *.log

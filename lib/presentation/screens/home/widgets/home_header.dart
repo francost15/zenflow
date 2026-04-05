@@ -208,7 +208,7 @@ class _UserMenu extends StatelessWidget {
               ),
             ),
           ],
-          onSelected: (value) {
+          onSelected: (value) async {
             if (value == 'profile') {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
@@ -216,7 +216,43 @@ class _UserMenu extends StatelessWidget {
               return;
             }
 
-            context.read<AuthBloc>().add(AuthSignOutRequested());
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: isDark
+                    ? AppColors.darkSurfaceElevated
+                    : AppColors.lightSurfaceElevated,
+                title: const Text(
+                  '¿Cerrar sesión?',
+                  style: TextStyle(
+                    fontFamily: 'Space Grotesk',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                content: Text(
+                  'Perderás el acceso a tus datos hasta que vuelvas a iniciar sesión.',
+                  style: Theme.of(ctx).textTheme.bodyMedium,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('CANCELAR'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.error,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                    ),
+                    child: const Text('CERRAR SESIÓN'),
+                  ),
+                ],
+              ),
+            );
+            if (confirmed == true && context.mounted) {
+              context.read<AuthBloc>().add(AuthSignOutRequested());
+            }
           },
         );
       },

@@ -100,12 +100,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
       child: Column(
         children: [
           Expanded(
-            child: CalendarGrid(
-              selectedDate: _selectedDate,
-              focusedMonth: _focusedWeekStart,
-              events: const {},
-              onDateSelected: (date) {
-                setState(() => _selectedDate = date);
+            child: BlocBuilder<CalendarBloc, CalendarState>(
+              builder: (context, state) {
+                final eventsMap = <DateTime, List<dynamic>>{};
+                if (state is CalendarLoaded) {
+                  for (final event in state.events) {
+                    final start = event.start?.dateTime ?? event.start?.date;
+                    if (start != null) {
+                      final key = DateTime(start.year, start.month, start.day);
+                      eventsMap.putIfAbsent(key, () => []).add(event);
+                    }
+                  }
+                }
+                return CalendarGrid(
+                  selectedDate: _selectedDate,
+                  focusedMonth: _focusedWeekStart,
+                  events: eventsMap,
+                  onDateSelected: (date) {
+                    setState(() => _selectedDate = date);
+                  },
+                );
               },
             ),
           ),

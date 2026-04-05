@@ -27,12 +27,9 @@ class TaskSelectionAction extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isDark
-              ? AppColors.darkSurfaceElevated
-              : AppColors.lightSurfaceElevated,
+              ? AppColors.darkSurfaceElevated.withValues(alpha: 0.5)
+              : AppColors.lightSurfaceElevated.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -76,8 +73,16 @@ class TaskCourseSelector extends StatelessWidget {
               labelText: 'Curso vinculado',
               filled: true,
               fillColor: isDark
-                  ? AppColors.darkSurfaceElevated
-                  : AppColors.lightSurfaceElevated,
+                  ? AppColors.darkSurfaceElevated.withValues(alpha: 0.5)
+                  : AppColors.lightSurfaceElevated.withValues(alpha: 0.5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
             ),
             items: [
               const DropdownMenuItem<String?>(
@@ -99,12 +104,9 @@ class TaskCourseSelector extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: isDark
-                ? AppColors.darkSurfaceElevated
-                : AppColors.lightSurfaceElevated,
+                ? AppColors.darkSurfaceElevated.withValues(alpha: 0.3)
+                : AppColors.lightSurfaceElevated.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            ),
           ),
           child: Row(
             children: [

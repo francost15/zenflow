@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app/core/constants/app_colors.dart';
+import 'package:app/core/utils/haptic_service.dart';
 import 'package:app/presentation/screens/zen/widgets/zen_progress_ring_painter.dart';
 import 'package:flutter/material.dart';
 
@@ -47,6 +48,8 @@ class _ZenModeScreenState extends State<ZenModeScreen>
       } else {
         _timer?.cancel();
         setState(() => _isRunning = false);
+        HapticService.success();
+        _showCompletionDialog();
       }
     });
   }
@@ -55,9 +58,55 @@ class _ZenModeScreenState extends State<ZenModeScreen>
     if (_isRunning) {
       _timer?.cancel();
       setState(() => _isRunning = false);
+      HapticService.lightImpact();
     } else {
       _startTimer();
+      HapticService.lightImpact();
     }
+  }
+
+  void _showCompletionDialog() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.lightSurface,
+        title: const Text(
+          '🎉 ¡Sesión completada!',
+          style: TextStyle(
+            fontFamily: 'Space Grotesk',
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            color: AppColors.lightTextPrimary,
+          ),
+        ),
+        content: Text(
+          'Has completado 25 minutos de enfoque profundo${widget.taskName != null ? ' en "${widget.taskName}"' : ''}. ¡Excelente disciplina!',
+          style: const TextStyle(color: AppColors.lightTextSecondary, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() => _remainingSeconds = _totalSeconds);
+            },
+            child: const Text('OTRA SESIÓN'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              widget.onExit();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            child: const Text('FINALIZAR'),
+          ),
+        ],
+      ),
+    );
   }
 
   double get _progress => 1.0 - (_remainingSeconds / _totalSeconds);

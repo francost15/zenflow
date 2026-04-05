@@ -45,16 +45,20 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
         children: [
           const ConnectionIndicator(),
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOut,
+            child: IndexedStack(
+              index: _currentIndex,
+              children: [
+                HomeScreen(
+                  onThemeToggle: widget.onThemeToggle,
+                  isDarkMode: widget.isDarkMode,
                 ),
-                child: child,
-              ),
-              child: _buildPage(_currentIndex),
+                CalendarScreen(
+                  onStartZenMode: (taskName) =>
+                      widget.onZenModeToggle(taskName: taskName),
+                ),
+                const CoursesScreen(),
+                const StreaksScreen(),
+              ],
             ),
           ),
         ],
@@ -63,28 +67,6 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
       ),
-    );
-  }
-
-  Widget _buildPage(int index) {
-    return KeyedSubtree(
-      key: ValueKey(index),
-      child: switch (index) {
-        0 => HomeScreen(
-          onThemeToggle: widget.onThemeToggle,
-          isDarkMode: widget.isDarkMode,
-        ),
-        1 => CalendarScreen(
-          onStartZenMode: (taskName) =>
-              widget.onZenModeToggle(taskName: taskName),
-        ),
-        2 => const CoursesScreen(),
-        3 => const StreaksScreen(),
-        _ => HomeScreen(
-          onThemeToggle: widget.onThemeToggle,
-          isDarkMode: widget.isDarkMode,
-        ),
-      },
     );
   }
 }

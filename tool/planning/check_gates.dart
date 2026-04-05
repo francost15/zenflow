@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'models.dart';
+
 import 'markdown_io.dart';
+import 'models.dart';
 
 void main(List<String> args) async {
   if (args.isEmpty || args.contains('--help') || args.contains('-h')) {

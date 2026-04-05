@@ -2,40 +2,46 @@
 
 **Tu agenda personal conectada a Google Calendar con seguimiento de hábitos y rachas**
 
-![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
-![Firebase](https://img.shields.io/badge/Firebase-9.x-orange?logo=firebase)
-![License](https://img.shields.io/badge/license-MIT-green)
+Flutter
+Firebase
+License
 
 ---
 
 ## ✨ Características
 
 ### 📅 Calendario Unificado
+
 - Sincronización bidireccional con Google Calendar
 - Vista mensual y semanal
 - Colores por evento
 
 ### ✅ Gestor de Tareas
+
 - CRUD completo con prioridades (alta, media, baja)
 - Fechas y horas límite
 - Barra de progreso
 
 ### 🔥 Sistema de Rachas
+
 - Gráfico de calor tipo GitHub (365 días)
 - Contador de días consecutivos
 - **Al perder un día, la racha se reinicia a 0** (sin excusas)
 
 ### 📚 Cursos/Materias
+
 - Tarjetas por materia con colores personalizados
 - Horarios de clase
 - Barra de progreso por materia
 
 ### 🧘 Modo Zen
+
 - Interfaz minimalista oscura
 - Solo muestra: hora actual y siguiente evento
 - Elimina distracciones
 
 ### 📴 Modo Offline
+
 - Funciona sin conexión a internet
 - Sincroniza cuando recupera conexión
 
@@ -145,6 +151,7 @@ firebase init
 ```
 
 Selecciona:
+
 - **Authentication** → Google, Email/Password
 - **Firestore** → Create database
 
@@ -153,86 +160,74 @@ Selecciona:
 1. Ve a [Firebase Console](https://console.firebase.google.com/)
 2. Crea un nuevo proyecto
 3. Habilita **Authentication**:
-   - Proveedor: **Google**
-   - Proveedor: **Email/Password**
+  - Proveedor: **Google**
+  - Proveedor: **Email/Password**
 4. Crea **Firestore Database**:
-   - Modo: **Start in test mode** (para desarrollo)
-   - Ubicación: La más cercana a ti
+  - Modo: **Start in test mode** (para desarrollo)
+  - Ubicación: La más cercana a ti
 5. Registra tu app:
-   - Android: Añade app → descarga `google-services.json`
-   - iOS: Añade app → descarga `GoogleService-Info.plist`
+  - Android: Añade app → descarga `google-services.json`
+  - iOS: Añade app → descarga `GoogleService-Info.plist`
 
 #### Configurar Android
 
-1. Coloca `google-services.json` en:
-   ```
-   android/app/google-services.json
-   ```
+1. Descarga `google-services.json` desde Firebase Console y colócalo en `android/app/google-services.json` (no lo subas al repositorio: está en `.gitignore`). Puedes partir de `android/app/google-services.json.example` como referencia de estructura.
 
-2. Edita `android/build.gradle`:
-   ```groovy
-   dependencies {
-       classpath 'com.google.gms:google-services:4.4.0'
-   }
-   ```
+2. **Solo si compilas para Web o escritorio (Linux/Windows/macOS):** copia `.env.example` a `.env`, rellena las variables `FIREBASE_WEB_*` (y las compartidas) y usa `flutter run --dart-define-from-file=.env`. **En Android e iOS no hace falta** el `.env` para arrancar: Firebase toma la config nativa de `google-services.json` / plist.
 
-3. Edita `android/app/build.gradle`:
-   ```groovy
-   plugins {
-       id 'com.google.gms.google-services'
-   }
-   ```
+3. El plugin **Google Services** ya está referenciado en `android/settings.gradle.kts` y `android/app/build.gradle.kts`; no hace falta duplicar la configuración clásica de Groovy salvo que cambies de estructura.
+
+**Seguridad:** si este repositorio alguna vez fue público con claves en el historial, en [Firebase Console](https://console.firebase.google.com/) → Project settings → General, considera **restringir la API key** (HTTP referrers / apps) y revisar clientes OAuth.
 
 #### Configurar iOS
 
 1. Coloca `GoogleService-Info.plist` en:
-   ```
+  ```
    ios/Runner/GoogleService-Info.plist
-   ```
-
+  ```
 2. En Xcode:
-   - Right click Runner → **Add Files to Runner**
-   - Selecciona `GoogleService-Info.plist`
-   - **Copy items if needed** ✓
+  - Right click Runner → **Add Files to Runner**
+  - Selecciona `GoogleService-Info.plist`
+  - **Copy items if needed** ✓
 
 ### 4. Configurar Google Calendar API
 
 1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
 2. Crea un nuevo proyecto (o usa uno existente)
 3. Habilita **Google Calendar API**:
-   - Ve a **APIs & Services** → **Library**
-   - Busca "Google Calendar API"
-   - Click **Enable**
+  - Ve a **APIs & Services** → **Library**
+  - Busca "Google Calendar API"
+  - Click **Enable**
 4. Configura OAuth Consent:
-   - **APIs & Services** → **OAuth consent screen**
-   - User Type: **External**
-   - App name: ZenFlow
+  - **APIs & Services** → **OAuth consent screen**
+  - User Type: **External**
+  - App name: ZenFlow
    -Scopes: `../auth/calendar.readonly` y `../auth/calendar`
 5. Crea OAuth Credentials:
-   - **APIs & Services** → **Credentials**
-   - **Create Credentials** → **OAuth client ID**
-   - Application type: **Web application** (o Android/iOS según tu caso)
-   - Anota el **Client ID**
+  - **APIs & Services** → **Credentials**
+  - **Create Credentials** → **OAuth client ID**
+  - Application type: **Web application** (o Android/iOS según tu caso)
+  - Anota el **Client ID**
 
-### 5. Variables de Entorno (Opcional)
+### 5. Variables de entorno (Firebase en Dart)
 
-Crea `.env` en la raíz si necesitas configuración custom:
-
-```env
-FIREBASE_API_KEY=tu-api-key
-FIREBASE_PROJECT_ID=tu-project-id
-GOOGLE_CLIENT_ID=tu-client-id
-```
+Para **Web y escritorio**, las claves van en `.env` y se inyectan con `--dart-define-from-file=.env` (ver [`.env.example`](.env.example)). Para **Android/iOS**, basta con los archivos nativos de Firebase; `.env` es opcional.
 
 ### 6. Ejecutar
 
 ```bash
-# Desarrollo
+# Android / iOS (usa google-services.json o plist)
 flutter run
 
-# Build release
+# Web o Linux/Windows/macOS (necesitas .env; ver sección 5)
+flutter run -d chrome --dart-define-from-file=.env
+flutter run -d linux --dart-define-from-file=.env
+
+# Build release Android — sin .env en Dart
 flutter build apk --release
-flutter build ios --release
+
+# Build web / escritorio
+flutter build web --dart-define-from-file=.env
 ```
 
 ---
@@ -240,6 +235,12 @@ flutter build ios --release
 ## 📱 Screenshots
 
 soon
+
+---
+
+## 💻 Linux (Flutter vía snap)
+
+Si aparecen avisos como `GLIBC_2.38` o `Failed to load module: ... libgvfsdbus.so`, en muchos casos son solo ruido del entorno: el snap de Flutter enlaza contra una `libc` distinta a la del sistema. Si molestan o bloquean herramientas, instala Flutter con el [paquete oficial (tarball/git)](https://docs.flutter.dev/get-started/install/linux) o [FVM](https://fvm.app/) y prioriza ese `flutter` en tu `PATH` frente al de snap.
 
 ---
 

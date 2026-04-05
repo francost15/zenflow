@@ -1,3 +1,5 @@
+import 'package:app/core/constants/app_colors.dart';
+import 'package:app/core/utils/haptic_service.dart';
 import 'package:app/domain/entities/habit.dart';
 import 'package:app/presentation/blocs/streaks/streaks_bloc.dart';
 import 'package:app/presentation/blocs/streaks/streaks_event.dart';
@@ -5,6 +7,7 @@ import 'package:app/presentation/blocs/streaks/streaks_state.dart';
 import 'package:app/presentation/screens/streaks/widgets/habit_card.dart';
 import 'package:app/presentation/screens/streaks/widgets/streaks_activity_card.dart';
 import 'package:app/presentation/screens/streaks/widgets/streaks_header.dart';
+import 'package:app/presentation/widgets/animated_fab.dart';
 import 'package:app/presentation/widgets/dialogs/create_habit_dialog.dart';
 import 'package:app/presentation/widgets/empty_state.dart';
 import 'package:app/presentation/widgets/error_state.dart';
@@ -107,8 +110,16 @@ class _StreaksScreenState extends State<StreaksScreen> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCreateHabitDialog,
+      floatingActionButton: AnimatedFAB(
+        onPressed: () {
+          HapticService.lightImpact();
+          _showCreateHabitDialog();
+        },
+        tooltip: 'Nuevo Hábito',
+        heroTag: 'add_habit_fab',
+        backgroundColor: AppColors.accent,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_rounded, size: 20),
         label: const Text(
           'NUEVO HÁBITO',
           style: TextStyle(
@@ -117,7 +128,6 @@ class _StreaksScreenState extends State<StreaksScreen> {
             letterSpacing: 1.2,
           ),
         ),
-        icon: const Icon(Icons.add_rounded, size: 20),
       ),
     );
   }
@@ -155,26 +165,44 @@ class _StreaksScreenState extends State<StreaksScreen> {
     CreateHabitSheet.show(context);
   }
 
-  void _confirmDelete(Habit habit) {
-    showDialog<void>(
+  Future<void> _confirmDelete(Habit habit) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminar hábito'),
-        content: Text('¿Seguro que quieres eliminar "${habit.name}"?'),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.lightSurfaceElevated,
+        title: const Text(
+          'Eliminar hábito',
+          style: TextStyle(
+            fontFamily: 'Space Grotesk',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          '¿Seguro que quieres eliminar "${habit.name}"? Perderás tu racha actual.',
+          style: Theme.of(ctx).textTheme.bodyMedium,
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar'),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('CANCELAR'),
           ),
-          TextButton(
-            onPressed: () {
-              context.read<StreaksBloc>().add(HabitDeleted(habit.id));
-              Navigator.pop(dialogContext);
-            },
-            child: const Text('Eliminar'),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            child: const Text('ELIMINAR'),
           ),
         ],
       ),
     );
+    if (confirmed == true && mounted) {
+      context.read<StreaksBloc>().add(HabitDeleted(habit.id));
+    }
   }
 }

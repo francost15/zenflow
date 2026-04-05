@@ -1,5 +1,7 @@
+import 'package:app/app/main_shell.dart';
 import 'package:app/core/di/injection.dart';
 import 'package:app/core/theme/app_theme.dart';
+import 'package:app/domain/repositories/task_repository.dart';
 import 'package:app/presentation/blocs/auth/auth.dart';
 import 'package:app/presentation/blocs/calendar/calendar.dart';
 import 'package:app/presentation/blocs/course/course.dart';
@@ -11,8 +13,6 @@ import 'package:app/presentation/widgets/app_snackbars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:app/app/main_shell.dart';
 
 class ZenFlowApp extends StatefulWidget {
   const ZenFlowApp({super.key});
@@ -88,33 +88,36 @@ class _ZenFlowAppState extends State<ZenFlowApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(value: _authBloc),
-        BlocProvider.value(value: _taskBloc),
-        BlocProvider.value(value: _streaksBloc),
-        BlocProvider.value(value: _courseBloc),
-        BlocProvider.value(value: _calendarBloc),
-      ],
-      child: MaterialApp(
-        title: 'ZenFlow',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: _themeMode,
-        debugShowCheckedModeBanner: false,
-        builder: (context, child) {
-          return AnimatedTheme(
-            data: _themeMode == ThemeMode.dark
-                ? AppTheme.darkTheme
-                : AppTheme.lightTheme,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOutCubic,
-            child: child!,
-          );
-        },
-        home: _showZenMode
-            ? ZenModeScreen(onExit: _exitZenMode, taskName: _zenTaskName)
-            : _buildMainScreen(),
+    return RepositoryProvider<TaskRepository>.value(
+      value: getIt<TaskRepository>(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: _authBloc),
+          BlocProvider.value(value: _taskBloc),
+          BlocProvider.value(value: _streaksBloc),
+          BlocProvider.value(value: _courseBloc),
+          BlocProvider.value(value: _calendarBloc),
+        ],
+        child: MaterialApp(
+          title: 'ZenFlow',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: _themeMode,
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            return AnimatedTheme(
+              data: _themeMode == ThemeMode.dark
+                  ? AppTheme.darkTheme
+                  : AppTheme.lightTheme,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOutCubic,
+              child: child!,
+            );
+          },
+          home: _showZenMode
+              ? ZenModeScreen(onExit: _exitZenMode, taskName: _zenTaskName)
+              : _buildMainScreen(),
+        ),
       ),
     );
   }

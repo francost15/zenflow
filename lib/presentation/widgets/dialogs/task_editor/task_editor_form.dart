@@ -3,7 +3,6 @@ import 'package:app/domain/entities/task.dart';
 import 'package:app/presentation/widgets/dialogs/task_editor/daily_load_indicator.dart';
 import 'package:app/presentation/widgets/dialogs/task_editor/task_editor_fields.dart';
 import 'package:app/presentation/widgets/dialogs/task_editor/task_editor_helpers.dart';
-import 'package:app/presentation/widgets/voice_input_button.dart';
 import 'package:flutter/material.dart';
 
 class TaskEditorForm extends StatelessWidget {
@@ -17,6 +16,7 @@ class TaskEditorForm extends StatelessWidget {
     required this.selectedCourseId,
     required this.titleError,
     this.collisionError,
+    this.warnings = const [],
     required this.isEditMode,
     required this.onTitleChanged,
     required this.onPriorityChanged,
@@ -33,6 +33,7 @@ class TaskEditorForm extends StatelessWidget {
   final String? selectedCourseId;
   final String? titleError;
   final String? collisionError;
+  final List<String> warnings;
   final bool isEditMode;
   final ValueChanged<String> onTitleChanged;
   final ValueChanged<TaskPriority> onPriorityChanged;
@@ -48,40 +49,19 @@ class TaskEditorForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (collisionError != null) ...[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
-              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  size: 16,
-                  color: AppColors.error,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    collisionError!,
-                    style: const TextStyle(
-                      fontFamily: 'Space Grotesk',
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.error,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        if (collisionError != null)
+          _buildBanner(
+            text: collisionError!,
+            color: AppColors.error,
+            icon: Icons.warning_amber_rounded,
           ),
+        ...warnings.map((w) => _buildBanner(
+              text: w,
+              color: AppColors.courseAmber,
+              icon: Icons.info_outline_rounded,
+            )),
+        if (collisionError != null || warnings.isNotEmpty)
           const SizedBox(height: 16),
-        ],
         TextField(
           controller: titleController,
           style: theme.textTheme.headlineSmall?.copyWith(
@@ -98,17 +78,6 @@ class TaskEditorForm extends StatelessWidget {
             errorText: titleError,
             errorBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: AppColors.error),
-            ),
-            suffixIcon: VoiceInputButton(
-              onResult: (text) {
-                if (text.isNotEmpty) {
-                  titleController.text = text;
-                  titleController.selection = TextSelection.fromPosition(
-                    TextPosition(offset: text.length),
-                  );
-                  onTitleChanged(text);
-                }
-              },
             ),
           ),
           onChanged: onTitleChanged,
@@ -127,7 +96,7 @@ class TaskEditorForm extends StatelessWidget {
             border: InputBorder.none,
           ),
         ),
-        const Divider(height: 32),
+        const SizedBox(height: 32),
         const Text(
           'PARÁMETROS DE ENFOQUE',
           style: TextStyle(
@@ -139,31 +108,38 @@ class TaskEditorForm extends StatelessWidget {
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
+          runSpacing: 8,
           children: TaskPriority.values.map((p) {
             final isSelected = priority == p;
-            return ChoiceChip(
-              label: Text(p.name.toUpperCase()),
-              selected: isSelected,
-              onSelected: (sel) {
-                if (sel) onPriorityChanged(p);
-              },
-              backgroundColor: isDark
-                  ? AppColors.darkSurfaceElevated
-                  : AppColors.lightSurfaceElevated,
-              selectedColor: priorityColor(p).withValues(alpha: 0.2),
-              labelStyle: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: isSelected
-                    ? priorityColor(p)
-                    : (isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary),
+            return GestureDetector(
+              onTap: () => onPriorityChanged(p),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? priorityColor(p).withValues(alpha: 0.15)
+                      : (isDark
+                          ? AppColors.darkSurfaceElevated
+                          : AppColors.lightSurfaceElevated),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  p.name.toUpperCase(),
+                  style: TextStyle(
+                    fontFamily: 'Space Grotesk',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    color: isSelected
+                        ? priorityColor(p)
+                        : (isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary),
+                  ),
+                ),
               ),
-              side: BorderSide(
-                color: isSelected ? priorityColor(p) : Colors.transparent,
-              ),
-              showCheckmark: false,
             );
           }).toList(),
         ),
@@ -201,4 +177,39 @@ class TaskEditorForm extends StatelessWidget {
 
 Color _hintColor(bool isDark) {
   return isDark ? AppColors.darkTextTertiary : AppColors.lightTextTertiary;
+}
+
+Widget _buildBanner({
+  required String text,
+  required Color color,
+  required IconData icon,
+}) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.1),
+      border: Border.all(color: color.withValues(alpha: 0.3)),
+      borderRadius: BorderRadius.circular(4),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontFamily: 'Space Grotesk',
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: color,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

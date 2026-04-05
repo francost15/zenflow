@@ -72,6 +72,25 @@ class TaskTileContent extends StatelessWidget {
                   Row(
                     children: [
                       TaskPriorityChip(priority: task.priority),
+                      if (_isOverdue(task))
+                        Container(
+                          margin: const EdgeInsets.only(left: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withAlpha(20),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'VENCIDA',
+                            style: TextStyle(
+                              fontFamily: 'Space Grotesk',
+                              fontSize: 8,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                              color: AppColors.error,
+                            ),
+                          ),
+                        ),
                       if (task.dueTime != null) ...[
                         _TaskDueTime(
                           dueTime: task.dueTime!,
@@ -179,4 +198,20 @@ class _TaskDueTime extends StatelessWidget {
       ],
     );
   }
+}
+
+bool _isOverdue(Task task) {
+  final now = DateTime.now();
+  final dueDate = task.dueDate;
+
+  if (task.dueTime != null) {
+    final dueDateTime = DateTime(
+      dueDate.year, dueDate.month, dueDate.day,
+      task.dueTime!.hour, task.dueTime!.minute,
+    );
+    return now.isAfter(dueDateTime);
+  }
+
+  final endOfDueDay = DateTime(dueDate.year, dueDate.month, dueDate.day + 1);
+  return now.isAfter(endOfDueDay);
 }

@@ -1,4 +1,5 @@
 import 'package:app/core/constants/app_colors.dart';
+import 'package:app/core/di/injection.dart';
 import 'package:app/core/utils/haptic_service.dart';
 import 'package:app/domain/entities/task.dart';
 import 'package:app/domain/repositories/task_repository.dart';
@@ -102,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _syncTasks() async {
     try {
-      final taskRepo = context.read<TaskRepository>();
+      final taskRepo = getIt<TaskRepository>();
       final result = await taskRepo.reconcileUnsyncedTasks();
       if (mounted) {
         if (result.syncedTasks.isNotEmpty) {

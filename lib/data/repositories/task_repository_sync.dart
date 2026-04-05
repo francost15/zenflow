@@ -170,10 +170,22 @@ class TaskRepositorySyncDelegate {
     return fallback;
   }
 
+  String _calendarColorIdFor(TaskPriority priority) {
+    switch (priority) {
+      case TaskPriority.high:
+        return '11'; // Tomato Red
+      case TaskPriority.medium:
+        return '5'; // Banana Yellow
+      case TaskPriority.low:
+        return '8'; // Graphite
+    }
+  }
+
   calendar.Event toCalendarEvent(Task task) {
     final event = calendar.Event()
       ..summary = calendarSummaryFor(task)
-      ..description = task.description;
+      ..description = task.description
+      ..colorId = _calendarColorIdFor(task.priority);
 
     if (task.dueTime == null) {
       final startDate = DateTime(

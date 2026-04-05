@@ -12,3 +12,4 @@
 | PHASE-06 | Performance Optimization | PHASE-05 | 28 | 25 | PHASE-05 closed, pagination and lazy loading working | flutter test, scroll performance |
 | PHASE-07 | Voice Input & Accessibility | PHASE-06 | 22 | 20 | PHASE-06 closed, voice input and haptics functional | Manual voice input test, haptic feedback test |
 | PHASE-08 | Polish & Animations | PHASE-07 | 20 | 18 | PHASE-07 closed, transitions and micro-interactions polished | Manual UI/UX review |
+| PHASE-09 | Quality close-out (E2E, theme consistency, file size gates) | PHASE-08 | 48 | 43 | PHASE-08 closed, `flutter test` green including repo_structure | See PHASE-09-01-PLAN.md |

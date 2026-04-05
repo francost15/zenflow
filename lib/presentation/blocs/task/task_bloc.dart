@@ -28,6 +28,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     emit(TaskLoading());
     try {
       final tasks = await _taskRepository.getTasks();
+      _sortTasks(tasks);
       _lastLoadedTasks = tasks;
       emit(
         TaskLoaded(tasks: tasks, noticeMessage: _consumeNextPendingNotice()),
@@ -45,6 +46,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     _selectedDate = event.date;
     try {
       final tasks = await _taskRepository.getTasksByDate(event.date);
+      _sortTasks(tasks);
       _lastLoadedTasks = tasks;
       emit(
         TaskLoaded(
@@ -135,5 +137,28 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     } else {
       add(TasksLoadRequested());
     }
+  }
+
+  void _sortTasks(List<Task> tasks) {
+    tasks.sort((a, b) {
+      // 1. Pending/InProgress before Completed
+      if (a.status == TaskStatus.completed && b.status != TaskStatus.completed) return 1;
+      if (a.status != TaskStatus.completed && b.status == TaskStatus.completed) return -1;
+
+      // 2. Sort by time ascending
+      int timeCompare = 0;
+      if (a.dueTime != null && b.dueTime != null) {
+        timeCompare = (a.dueTime!.hour * 60 + a.dueTime!.minute)
+            .compareTo(b.dueTime!.hour * 60 + b.dueTime!.minute);
+      } else if (a.dueTime != null) {
+        timeCompare = -1;
+      } else if (b.dueTime != null) {
+        timeCompare = 1;
+      }
+      if (timeCompare != 0) return timeCompare;
+
+      // 3. Sort by priority descending (High > Medium > Low)
+      return b.priority.index.compareTo(a.priority.index);
+    });
   }
 }
